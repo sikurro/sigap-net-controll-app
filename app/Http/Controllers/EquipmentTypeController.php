@@ -10,7 +10,7 @@ class EquipmentTypeController extends Controller
 {
     public function index()
     {
-        $equipmentTypes = EquipmentType::all();
+        $equipmentTypes = EquipmentType::with('jobPlans')->get();
         return Inertia::render('Master/EquipmentTypes/Index', [
             'equipmentTypes' => $equipmentTypes
         ]);
