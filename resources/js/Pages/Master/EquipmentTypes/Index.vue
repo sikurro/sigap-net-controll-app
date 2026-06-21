@@ -67,7 +67,7 @@ const openEquipmentEdit = (item) => {
     formEquipment.job_plans = item.job_plans ? item.job_plans.map(jp => ({
         id: jp.id,
         activity_name: jp.activity_name,
-        duration_hours: jp.duration_hours,
+        duration_minutes: jp.duration_minutes,
         frequency_per_year: jp.frequency_per_year,
     })) : [];
     showEquipmentModal.value = true;
@@ -76,7 +76,7 @@ const openEquipmentEdit = (item) => {
 const addJobPlanRow = () => {
     formEquipment.job_plans.push({
         activity_name: '',
-        duration_hours: '',
+        duration_minutes: '',
         frequency_per_year: '',
     });
 };
@@ -121,14 +121,14 @@ const formJobPlan = useForm({
     id: null,
     equipment_type_id: null,
     activity_name: '',
-    duration_hours: '',
+    duration_minutes: '',
     frequency_per_year: '',
 });
 
 const totalHoursCalculated = computed(() => {
-    const dur = parseFloat(formJobPlan.duration_hours) || 0;
+    const durMin = parseFloat(formJobPlan.duration_minutes) || 0;
     const freq = parseFloat(formJobPlan.frequency_per_year) || 0;
-    return dur * freq;
+    return ((durMin / 60) * freq);
 });
 
 const openJobPlanCreate = (equipmentId) => {
@@ -143,7 +143,7 @@ const openJobPlanEdit = (item) => {
     formJobPlan.id = item.id;
     formJobPlan.equipment_type_id = item.equipment_type_id;
     formJobPlan.activity_name = item.activity_name;
-    formJobPlan.duration_hours = item.duration_hours;
+    formJobPlan.duration_minutes = item.duration_minutes;
     formJobPlan.frequency_per_year = item.frequency_per_year;
     showJobPlanModal.value = true;
 };
@@ -183,6 +183,33 @@ const deleteJobPlan = (id) => {
         });
     }
 };
+const formImport = useForm({
+    excel_file: null,
+});
+
+const triggerImport = () => {
+    const fileInput = document.getElementById('import-file-input');
+    if (fileInput) {
+        fileInput.click();
+    }
+};
+
+const handleImportFile = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+        formImport.excel_file = file;
+        formImport.post(route('equipment-types.import'), {
+            preserveScroll: true,
+            onSuccess: () => {
+                alert('Data berhasil di-import!');
+                formImport.reset();
+            },
+            onError: (errors) => {
+                alert('Gagal mengimpor data: ' + Object.values(errors).join('\n'));
+            }
+        });
+    }
+};
 </script>
 
 <template>
@@ -198,9 +225,9 @@ const deleteJobPlan = (id) => {
 
         <div class="py-12">
             <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-                <!-- PANEL PENCARIAN -->
-                <div class="mb-4 bg-white p-4 shadow-sm rounded-lg flex justify-between items-center">
-                    <div class="w-1/3">
+                <!-- PANEL PENCARIAN & FITUR IMPORT/DOWNLOAD -->
+                <div class="mb-4 bg-white p-4 shadow-sm rounded-lg flex flex-col md:flex-row justify-between items-stretch md:items-center gap-4">
+                    <div class="w-full md:w-1/3">
                         <TextInput 
                             type="text" 
                             class="w-full text-sm" 
@@ -208,8 +235,26 @@ const deleteJobPlan = (id) => {
                             v-model="searchQuery"
                         />
                     </div>
-                    <div class="text-sm text-gray-500">
-                        Menampilkan {{ filteredEquipmentTypes.length }} jenis alat.
+                    <div class="flex flex-wrap items-center gap-3">
+                        <input 
+                            type="file" 
+                            id="import-file-input" 
+                            class="hidden" 
+                            accept=".xlsx, .xls" 
+                            @change="handleImportFile" 
+                        />
+                        <SecondaryButton @click="triggerImport" :disabled="formImport.processing">
+                            📤 Import Excel
+                        </SecondaryButton>
+                        <a 
+                            :href="route('equipment-types.download-template')" 
+                            class="inline-flex items-center px-4 py-2 bg-white border border-gray-300 rounded-md font-semibold text-xs text-gray-700 uppercase tracking-widest shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-25 transition ease-in-out duration-150"
+                        >
+                            📥 Unduh Template
+                        </a>
+                        <div class="text-sm text-gray-500">
+                            Menampilkan {{ filteredEquipmentTypes.length }} jenis alat.
+                        </div>
                     </div>
                 </div>
 
@@ -270,6 +315,7 @@ const deleteJobPlan = (id) => {
                                                         <thead class="bg-gray-100">
                                                             <tr>
                                                                 <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Aktivitas</th>
+                                                                <th class="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase">Durasi (Menit)</th>
                                                                 <th class="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase">Durasi (Jam)</th>
                                                                 <th class="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase">Frekuensi/Thn</th>
                                                                 <th class="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase">Total Jam/Thn</th>
@@ -279,7 +325,8 @@ const deleteJobPlan = (id) => {
                                                         <tbody class="divide-y divide-gray-100">
                                                             <tr v-for="jp in eq.job_plans" :key="jp.id" class="hover:bg-gray-50">
                                                                 <td class="px-4 py-2 text-sm font-medium text-gray-900">{{ jp.activity_name }}</td>
-                                                                <td class="px-4 py-2 text-sm text-center text-gray-600">{{ jp.duration_hours }}</td>
+                                                                <td class="px-4 py-2 text-sm text-center text-gray-600">{{ jp.duration_minutes }} mnt</td>
+                                                                <td class="px-4 py-2 text-sm text-center text-gray-600">{{ jp.duration_hours }} jam</td>
                                                                 <td class="px-4 py-2 text-sm text-center text-gray-600">{{ jp.frequency_per_year }} x</td>
                                                                 <td class="px-4 py-2 text-sm text-center font-bold text-indigo-600">{{ jp.total_hours_per_year }}</td>
                                                                 <td class="px-4 py-2 text-right space-x-3">
@@ -354,7 +401,8 @@ const deleteJobPlan = (id) => {
                                 <thead class="bg-gray-100">
                                     <tr>
                                         <th class="px-3 py-2 text-left font-medium text-gray-600">Nama Aktivitas</th>
-                                        <th class="px-3 py-2 text-center font-medium text-gray-600 w-28">Durasi (Jam)</th>
+                                        <th class="px-3 py-2 text-center font-medium text-gray-600 w-24">Durasi (Mnt)</th>
+                                        <th class="px-3 py-2 text-center font-medium text-gray-600 w-24">Durasi (Jam)</th>
                                         <th class="px-3 py-2 text-center font-medium text-gray-600 w-28">Frekuensi / Thn</th>
                                         <th class="px-3 py-2 text-center font-medium text-gray-600 w-28">Total Jam / Thn</th>
                                         <th class="px-3 py-2 text-center font-medium text-gray-600 w-12">Aksi</th>
@@ -377,14 +425,17 @@ const deleteJobPlan = (id) => {
                                         <td class="p-2 align-top text-center">
                                             <TextInput 
                                                 type="number" 
-                                                step="0.1" 
+                                                step="1" 
                                                 class="w-full text-sm text-center py-1" 
-                                                v-model="jp.duration_hours" 
+                                                v-model="jp.duration_minutes" 
                                                 required 
                                             />
-                                            <div v-if="formEquipment.errors[`job_plans.${index}.duration_hours`]" class="text-red-500 text-xs mt-1">
-                                                {{ formEquipment.errors[`job_plans.${index}.duration_hours`] }}
+                                            <div v-if="formEquipment.errors[`job_plans.${index}.duration_minutes`]" class="text-red-500 text-xs mt-1">
+                                                {{ formEquipment.errors[`job_plans.${index}.duration_minutes`] }}
                                             </div>
+                                        </td>
+                                        <td class="p-2 align-middle text-center text-gray-600 font-medium">
+                                            {{ (parseFloat(jp.duration_minutes || 0) / 60).toFixed(3) }} jam
                                         </td>
                                         <td class="p-2 align-top text-center">
                                             <TextInput 
@@ -399,7 +450,7 @@ const deleteJobPlan = (id) => {
                                             </div>
                                         </td>
                                         <td class="p-2 align-middle text-center font-semibold text-indigo-600">
-                                            {{ ((parseFloat(jp.duration_hours) || 0) * (parseFloat(jp.frequency_per_year) || 0)).toFixed(1) }}
+                                            {{ (((parseFloat(jp.duration_minutes) || 0) / 60) * (parseFloat(jp.frequency_per_year) || 0)).toFixed(3) }}
                                         </td>
                                         <td class="p-2 align-middle text-center">
                                             <button 
@@ -444,9 +495,10 @@ const deleteJobPlan = (id) => {
                     </div>
                     <div class="grid grid-cols-2 gap-4 mb-4">
                         <div>
-                            <InputLabel for="jp_duration" value="Durasi Pekerjaan (Jam)" />
-                            <TextInput id="jp_duration" type="number" step="0.1" class="mt-1 block w-full" v-model="formJobPlan.duration_hours" required />
-                            <div v-if="formJobPlan.errors.duration_hours" class="text-red-500 text-sm mt-1">{{ formJobPlan.errors.duration_hours }}</div>
+                            <InputLabel for="jp_duration" value="Durasi Pekerjaan (Menit)" />
+                            <TextInput id="jp_duration" type="number" step="1" class="mt-1 block w-full" v-model="formJobPlan.duration_minutes" required />
+                            <div v-if="formJobPlan.errors.duration_minutes" class="text-red-500 text-sm mt-1">{{ formJobPlan.errors.duration_minutes }}</div>
+                            <span class="text-xs text-gray-500 mt-1 block">Konversi: {{ (parseFloat(formJobPlan.duration_minutes || 0) / 60).toFixed(3) }} jam</span>
                         </div>
                         <div>
                             <InputLabel for="jp_frequency" value="Frekuensi per Tahun" />
@@ -457,7 +509,7 @@ const deleteJobPlan = (id) => {
                     
                     <div class="bg-gray-50 p-4 rounded-md mb-6 flex justify-between items-center border border-gray-200">
                         <span class="text-sm text-gray-600">Total Jam per Tahun:</span>
-                        <span class="font-bold text-lg text-indigo-600">{{ totalHoursCalculated }} Jam</span>
+                        <span class="font-bold text-lg text-indigo-600">{{ totalHoursCalculated.toFixed(3) }} Jam</span>
                     </div>
 
                     <div class="mt-6 flex justify-end space-x-3">

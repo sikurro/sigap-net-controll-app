@@ -13,10 +13,19 @@ class JobPlan extends Model
     protected $fillable = [
         'equipment_type_id',
         'activity_name',
-        'duration_hours',
+        'duration_minutes',
         'frequency_per_year',
         'total_hours_per_year',
     ];
+
+    protected $appends = [
+        'duration_hours',
+    ];
+
+    public function getDurationHoursAttribute()
+    {
+        return round($this->duration_minutes / 60, 3);
+    }
 
     public function equipmentType(): BelongsTo
     {

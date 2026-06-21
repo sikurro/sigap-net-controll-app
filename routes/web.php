@@ -42,6 +42,8 @@ use App\Http\Controllers\NonTechnicalPositionController;
 use App\Http\Controllers\NonTechnicalRequirementController;
 
 Route::middleware(['auth', 'verified', 'role:Super Admin'])->group(function () {
+    Route::post('equipment-types/import', [EquipmentTypeController::class, 'import'])->name('equipment-types.import');
+    Route::get('equipment-types/download-template', [EquipmentTypeController::class, 'downloadTemplate'])->name('equipment-types.download-template');
     Route::resource('equipment-types', EquipmentTypeController::class)->except(['create', 'show', 'edit']);
     Route::resource('job-plans', JobPlanController::class)->except(['create', 'show', 'edit']);
     Route::resource('site-classes', SiteClassController::class)->except(['create', 'show', 'edit']);
