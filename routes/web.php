@@ -40,6 +40,7 @@ use App\Http\Controllers\JobPlanController;
 use App\Http\Controllers\SiteClassController;
 use App\Http\Controllers\NonTechnicalPositionController;
 use App\Http\Controllers\NonTechnicalRequirementController;
+use App\Http\Controllers\SiteController;
 
 Route::middleware(['auth', 'verified', 'role:Super Admin'])->group(function () {
     Route::post('equipment-types/import', [EquipmentTypeController::class, 'import'])->name('equipment-types.import');
@@ -50,6 +51,7 @@ Route::middleware(['auth', 'verified', 'role:Super Admin'])->group(function () {
     Route::resource('non-technical-positions', NonTechnicalPositionController::class)->except(['create', 'show', 'edit']);
     Route::get('non-technical-requirements', [NonTechnicalRequirementController::class, 'index'])->name('non-technical-requirements.index');
     Route::post('non-technical-requirements', [NonTechnicalRequirementController::class, 'store'])->name('non-technical-requirements.store');
+    Route::resource('sites', SiteController::class)->except(['create', 'show', 'edit']);
 });
 
 require __DIR__.'/auth.php';
