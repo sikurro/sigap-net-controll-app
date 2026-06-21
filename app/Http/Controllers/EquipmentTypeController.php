@@ -127,15 +127,17 @@ class EquipmentTypeController extends Controller
                 if (strpos($colA, '(') === 0) {
                     $name = trim($colA, "() \t\n\r\0\x0B");
 
-                    // Generate code
-                    $words = explode(' ', $name);
-                    $code = '';
-                    foreach ($words as $w) {
-                        $code .= substr($w, 0, 1);
-                    }
+                    // Generate code: check if provided in column B (index 1)
+                    $code = !empty($row[1]) ? trim($row[1]) : '';
 
-                    if (strlen($name) <= 4) {
-                        $code = $name;
+                    if (empty($code)) {
+                        $words = explode(' ', $name);
+                        foreach ($words as $w) {
+                            $code .= substr($w, 0, 1);
+                        }
+                        if (strlen($name) <= 4) {
+                            $code = $name;
+                        }
                     }
 
                     $code = strtoupper($code);
@@ -197,6 +199,7 @@ class EquipmentTypeController extends Controller
 
         // Set headers and sample structure
         $sheet->setCellValue('A1', '(REACH STACKER)');
+        $sheet->setCellValue('B1', 'RS');
         
         $sheet->setCellValue('A2', 'Kegiatan');
         $sheet->setCellValue('B2', 'Durasi (Menit)');
@@ -220,6 +223,7 @@ class EquipmentTypeController extends Controller
 
         // Add second equipment sample
         $sheet->setCellValue('A6', '(FORKLIFT)');
+        $sheet->setCellValue('B6', 'FL');
         
         $sheet->setCellValue('A7', 'Kegiatan');
         $sheet->setCellValue('B7', 'Durasi (Menit)');
