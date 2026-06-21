@@ -7,6 +7,10 @@ use App\Models\EquipmentType;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\DB;
+use App\Exports\SitesExport;
+use App\Imports\SitesImport;
+use Maatwebsite\Excel\Facades\Excel;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class SiteController extends Controller
 {
@@ -135,5 +139,34 @@ class SiteController extends Controller
     {
         $site->delete();
         return redirect()->back()->with('success', 'Site berhasil dihapus.');
+    }
+
+    public function export()
+    {
+        return Excel::download(new SitesExport, 'sites_and_equipments.xlsx');
+    }
+
+    public function downloadTemplate(): BinaryFileResponse
+    {
+        $filePath = public_path('templates/Template_Import_Sites.xlsx');
+        if (!file_exists($filePath)) {
+            // Provide a minimal export as fallback if file doesn't exist
+            return Excel::download(new SitesExport, 'Template_Import_Sites.xlsx');
+        }
+        return response()->download($filePath);
+    }
+
+    public function import(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|mimes:xlsx,xls,csv|max:2048',
+        ]);
+
+        try {
+            Excel::import(new SitesImport, $request->file('file'));
+            return redirect()->back()->with('success', 'Data sites dan alat berhasil diimpor.');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Gagal mengimpor file: ' . $e->getMessage());
+        }
     }
 }

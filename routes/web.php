@@ -51,6 +51,9 @@ Route::middleware(['auth', 'verified', 'role:Super Admin'])->group(function () {
     Route::resource('non-technical-positions', NonTechnicalPositionController::class)->except(['create', 'show', 'edit']);
     Route::get('non-technical-requirements', [NonTechnicalRequirementController::class, 'index'])->name('non-technical-requirements.index');
     Route::post('non-technical-requirements', [NonTechnicalRequirementController::class, 'store'])->name('non-technical-requirements.store');
+    Route::post('sites/import', [SiteController::class, 'import'])->name('sites.import');
+    Route::get('sites/download-template', [SiteController::class, 'downloadTemplate'])->name('sites.download-template');
+    Route::get('sites/export', [SiteController::class, 'export'])->name('sites.export');
     Route::resource('sites', SiteController::class)->except(['create', 'show', 'edit']);
 });
 
