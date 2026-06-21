@@ -8,6 +8,7 @@ import InputLabel from '@/Components/InputLabel.vue';
 import TextInput from '@/Components/TextInput.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import SecondaryButton from '@/Components/SecondaryButton.vue';
+import DangerButton from '@/Components/DangerButton.vue';
 
 const props = defineProps({
     sites: Array,
@@ -25,6 +26,7 @@ const toggleRow = (id) => {
 };
 
 const showModal = ref(false);
+const showImportModal = ref(false);
 const isEditing = ref(false);
 
 const form = useForm({
@@ -33,6 +35,10 @@ const form = useForm({
     region: '',
     status: true,
     equipments: [],
+});
+
+const importForm = useForm({
+    file: null,
 });
 
 const openCreateModal = () => {
@@ -98,6 +104,23 @@ const deleteSite = (id) => {
         form.delete(route('sites.destroy', id));
     }
 };
+
+const openImportModal = () => {
+    importForm.reset();
+    importForm.clearErrors();
+    showImportModal.value = true;
+};
+
+const closeImportModal = () => {
+    showImportModal.value = false;
+    importForm.reset();
+};
+
+const submitImport = () => {
+    importForm.post(route('sites.import'), {
+        onSuccess: () => closeImportModal(),
+    });
+};
 </script>
 
 <template>
@@ -111,7 +134,18 @@ const deleteSite = (id) => {
         <div class="py-12">
             <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
                 
-                <div class="mb-4 flex justify-end">
+                <div class="mb-4 flex justify-between items-center">
+                    <div>
+                        <a :href="route('sites.download-template')" class="inline-flex items-center px-4 py-2 bg-white border border-gray-300 rounded-md font-semibold text-xs text-gray-700 uppercase tracking-widest shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-25 transition ease-in-out duration-150 mr-2">
+                            Download Template
+                        </a>
+                        <SecondaryButton @click="openImportModal" class="mr-2">
+                            Import Excel
+                        </SecondaryButton>
+                        <a :href="route('sites.export')" class="inline-flex items-center px-4 py-2 bg-white border border-gray-300 rounded-md font-semibold text-xs text-gray-700 uppercase tracking-widest shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-25 transition ease-in-out duration-150">
+                            Export Excel
+                        </a>
+                    </div>
                     <PrimaryButton @click="openCreateModal">
                         Tambah Site
                     </PrimaryButton>
@@ -290,6 +324,37 @@ const deleteSite = (id) => {
                     <SecondaryButton @click="closeModal">Batal</SecondaryButton>
                     <PrimaryButton @click="saveSite" class="ms-3" :class="{ 'opacity-25': form.processing }" :disabled="form.processing">
                         Simpan
+                    </PrimaryButton>
+                </div>
+            </div>
+        </Modal>
+        <Modal :show="showImportModal" @close="closeImportModal" maxWidth="md">
+            <div class="p-6">
+                <h2 class="text-lg font-medium text-gray-900 mb-4">
+                    Import Data Site (Excel)
+                </h2>
+
+                <div class="mb-4">
+                    <InputLabel for="file" value="File Excel (.xlsx, .xls, .csv)" />
+                    <input 
+                        id="file" 
+                        type="file" 
+                        @change="e => importForm.file = e.target.files[0]" 
+                        class="mt-1 block w-full text-sm text-gray-500
+                        file:mr-4 file:py-2 file:px-4
+                        file:rounded-md file:border-0
+                        file:text-sm file:font-semibold
+                        file:bg-indigo-50 file:text-indigo-700
+                        hover:file:bg-indigo-100"
+                        accept=".xlsx,.xls,.csv"
+                    />
+                    <InputError :message="importForm.errors.file" class="mt-2" />
+                </div>
+
+                <div class="mt-6 flex justify-end">
+                    <SecondaryButton @click="closeImportModal">Batal</SecondaryButton>
+                    <PrimaryButton @click="submitImport" class="ms-3" :class="{ 'opacity-25': importForm.processing }" :disabled="importForm.processing">
+                        Upload & Proses
                     </PrimaryButton>
                 </div>
             </div>
