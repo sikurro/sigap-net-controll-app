@@ -35,4 +35,19 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
+use App\Http\Controllers\EquipmentTypeController;
+use App\Http\Controllers\JobPlanController;
+use App\Http\Controllers\SiteClassController;
+use App\Http\Controllers\NonTechnicalPositionController;
+use App\Http\Controllers\NonTechnicalRequirementController;
+
+Route::middleware(['auth', 'verified', 'role:Super Admin'])->group(function () {
+    Route::resource('equipment-types', EquipmentTypeController::class)->except(['create', 'show', 'edit']);
+    Route::resource('job-plans', JobPlanController::class)->except(['create', 'show', 'edit']);
+    Route::resource('site-classes', SiteClassController::class)->except(['create', 'show', 'edit']);
+    Route::resource('non-technical-positions', NonTechnicalPositionController::class)->except(['create', 'show', 'edit']);
+    Route::get('non-technical-requirements', [NonTechnicalRequirementController::class, 'index'])->name('non-technical-requirements.index');
+    Route::post('non-technical-requirements', [NonTechnicalRequirementController::class, 'store'])->name('non-technical-requirements.store');
+});
+
 require __DIR__.'/auth.php';
