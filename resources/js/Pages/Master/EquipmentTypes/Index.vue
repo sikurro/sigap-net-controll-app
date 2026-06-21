@@ -317,7 +317,7 @@ const deleteJobPlan = (id) => {
         </div>
 
         <!-- ======================= MODAL JENIS ALAT ======================= -->
-        <Modal :show="showEquipmentModal" @close="showEquipmentModal = false" maxWidth="3xl">
+        <Modal :show="showEquipmentModal" @close="showEquipmentModal = false" maxWidth="2xl">
             <div class="p-6">
                 <h2 class="text-lg font-medium text-gray-900 mb-4">
                     {{ isEditingEquipment ? 'Edit Jenis Alat' : 'Tambah Jenis Alat' }}
