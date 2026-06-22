@@ -69,6 +69,8 @@ const isEditingSiteClass = ref(false);
 const formSiteClass = useForm({
     id: null,
     name: '',
+    min_weight: 0,
+    max_weight: null,
 });
 
 const openSiteClassCreate = () => {
@@ -82,6 +84,8 @@ const openSiteClassEdit = (item) => {
     isEditingSiteClass.value = true;
     formSiteClass.id = item.id;
     formSiteClass.name = item.name;
+    formSiteClass.min_weight = item.min_weight;
+    formSiteClass.max_weight = item.max_weight;
     showSiteClassListModal.value = false;
     showSiteClassFormModal.value = true;
 };
@@ -286,19 +290,23 @@ const deletePosition = (id) => {
                     <thead class="bg-gray-50">
                         <tr>
                             <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Kelas</th>
+                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Min Bobot</th>
+                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Max Bobot</th>
                             <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">Aksi</th>
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
                         <tr v-for="item in siteClasses" :key="item.id">
                             <td class="px-4 py-2 whitespace-nowrap">{{ item.name }}</td>
+                            <td class="px-4 py-2 whitespace-nowrap">{{ item.min_weight }}</td>
+                            <td class="px-4 py-2 whitespace-nowrap">{{ item.max_weight !== null ? item.max_weight : '∞' }}</td>
                             <td class="px-4 py-2 whitespace-nowrap space-x-2">
                                 <SecondaryButton class="text-xs px-2 py-1" @click="openSiteClassEdit(item)">Edit</SecondaryButton>
                                 <DangerButton class="text-xs px-2 py-1" @click="deleteSiteClass(item.id)">Hapus</DangerButton>
                             </td>
                         </tr>
                         <tr v-if="siteClasses.length === 0">
-                            <td colspan="2" class="px-4 py-2 text-center text-gray-500">Tidak ada data.</td>
+                            <td colspan="4" class="px-4 py-2 text-center text-gray-500">Tidak ada data.</td>
                         </tr>
                     </tbody>
                 </table>
@@ -315,10 +323,22 @@ const deletePosition = (id) => {
                     {{ isEditingSiteClass ? 'Edit Kelas Site' : 'Tambah Kelas Site' }}
                 </h2>
                 <form @submit.prevent="saveSiteClass">
-                    <div>
+                    <div class="mb-4">
                         <InputLabel for="site_name" value="Nama Kelas Site" />
                         <TextInput id="site_name" type="text" class="mt-1 block w-full" v-model="formSiteClass.name" required />
                         <div v-if="formSiteClass.errors.name" class="text-red-500 text-sm mt-1">{{ formSiteClass.errors.name }}</div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <InputLabel for="min_weight" value="Min Bobot" />
+                            <TextInput id="min_weight" type="number" class="mt-1 block w-full" v-model="formSiteClass.min_weight" required />
+                            <div v-if="formSiteClass.errors.min_weight" class="text-red-500 text-sm mt-1">{{ formSiteClass.errors.min_weight }}</div>
+                        </div>
+                        <div>
+                            <InputLabel for="max_weight" value="Max Bobot (Kosongkan jika tidak terbatas)" />
+                            <TextInput id="max_weight" type="number" class="mt-1 block w-full" v-model="formSiteClass.max_weight" />
+                            <div v-if="formSiteClass.errors.max_weight" class="text-red-500 text-sm mt-1">{{ formSiteClass.errors.max_weight }}</div>
+                        </div>
                     </div>
                     <div class="mt-6 flex justify-end space-x-3">
                         <SecondaryButton @click="showSiteClassFormModal = false; showSiteClassListModal = true">Batal</SecondaryButton>

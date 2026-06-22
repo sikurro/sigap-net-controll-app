@@ -160,6 +160,7 @@ const submitImport = () => {
                                     <th class="pb-4 pt-6 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Site</th>
                                     <th class="pb-4 pt-6 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Wilayah</th>
                                     <th class="pb-4 pt-6 px-6 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Kelas</th>
+                                    <th class="pb-4 pt-6 px-6 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Total Bobot</th>
                                     <th class="pb-4 pt-6 px-6 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Jml Alat</th>
                                     <th class="pb-4 pt-6 px-6 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Std Teknisi</th>
                                     <th class="pb-4 pt-6 px-6 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Std Non-Teknisi</th>
@@ -181,6 +182,7 @@ const submitImport = () => {
                                         <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900" @click="toggleRow(site.id)">{{ site.name }}</td>
                                         <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500" @click="toggleRow(site.id)">{{ site.region }}</td>
                                         <td class="px-4 py-4 whitespace-nowrap text-sm text-center font-bold text-gray-900" @click="toggleRow(site.id)">{{ site.site_class }}</td>
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-center font-semibold text-indigo-600" @click="toggleRow(site.id)">{{ site.total_weight }}</td>
                                         <td class="px-4 py-4 whitespace-nowrap text-sm text-center text-gray-500" @click="toggleRow(site.id)">{{ site.jumlah_alat }}</td>
                                         <td class="px-4 py-4 whitespace-nowrap text-sm text-center text-gray-500" @click="toggleRow(site.id)">{{ site.technical_staff_needed }}</td>
                                         <td class="px-4 py-4 whitespace-nowrap text-sm text-center text-gray-500" @click="toggleRow(site.id)">{{ site.non_technical_staff_needed }}</td>
@@ -195,7 +197,7 @@ const submitImport = () => {
                                     </tr>
                                     <!-- Child Row (Equipments) -->
                                     <tr v-if="expandedRows.includes(site.id)" class="bg-gray-50">
-                                        <td colspan="8" class="px-8 py-4">
+                                        <td colspan="9" class="px-8 py-4">
                                             <div v-if="site.equipments.length === 0" class="text-sm text-gray-500 italic">Belum ada alat.</div>
                                             <table v-else class="min-w-full divide-y divide-gray-200 border">
                                                 <thead class="bg-gray-100">
@@ -228,7 +230,7 @@ const submitImport = () => {
                                     </tr>
                                 </template>
                                 <tr v-if="sites.length === 0">
-                                    <td colspan="8" class="px-4 py-4 text-center text-sm text-gray-500">Tidak ada data site.</td>
+                                    <td colspan="9" class="px-4 py-4 text-center text-sm text-gray-500">Tidak ada data site.</td>
                                 </tr>
                             </tbody>
                         </table>

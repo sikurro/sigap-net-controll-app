@@ -49,6 +49,8 @@ const formEquipment = useForm({
     id: null,
     name: '',
     code: '',
+    weight: 0,
+    category: 'Others',
     job_plans: [],
 });
 
@@ -64,6 +66,8 @@ const openEquipmentEdit = (item) => {
     formEquipment.id = item.id;
     formEquipment.name = item.name;
     formEquipment.code = item.code;
+    formEquipment.weight = item.weight || 0;
+    formEquipment.category = item.category || 'Others';
     formEquipment.job_plans = item.job_plans ? item.job_plans.map(jp => ({
         id: jp.id,
         activity_name: jp.activity_name,
@@ -267,6 +271,8 @@ const handleImportFile = (event) => {
                                     <th class="w-10 px-6 py-3"></th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kode</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Jenis Alat</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kategori</th>
+                                    <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Bobot</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ringkasan</th>
                                     <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
                                 </tr>
@@ -282,6 +288,16 @@ const handleImportFile = (event) => {
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap font-medium text-gray-600">{{ eq.code || '-' }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap font-bold text-gray-900">{{ eq.name }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            <span class="px-2 py-1 rounded text-xs font-semibold" :class="{
+                                                'bg-purple-100 text-purple-800': eq.category === 'Crane',
+                                                'bg-blue-100 text-blue-800': eq.category === 'Mobile Equipment',
+                                                'bg-gray-100 text-gray-800': eq.category === 'Others'
+                                            }">
+                                                {{ eq.category }}
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-center font-bold text-gray-700">{{ eq.weight }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             <div class="flex space-x-2">
                                                 <span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full font-semibold">
@@ -300,7 +316,7 @@ const handleImportFile = (event) => {
 
                                     <!-- Baris Anak (Job Plan Nested) -->
                                     <tr v-show="isExpanded(eq.id)" class="bg-slate-50">
-                                        <td colspan="5" class="p-0 border-l-4 border-indigo-300">
+                                        <td colspan="7" class="p-0 border-l-4 border-indigo-300">
                                             <div class="p-6">
                                                 <div class="flex justify-between items-center mb-3">
                                                     <h4 class="font-bold text-gray-700">Daftar Job Plan - {{ eq.name }}</h4>
@@ -352,7 +368,7 @@ const handleImportFile = (event) => {
                                 </template>
                                 
                                 <tr v-if="filteredEquipmentTypes.length === 0">
-                                    <td colspan="5" class="px-6 py-12 text-center text-gray-500">
+                                    <td colspan="7" class="px-6 py-12 text-center text-gray-500">
                                         Tidak ada data Jenis Alat yang ditemukan.
                                     </td>
                                 </tr>
@@ -380,6 +396,22 @@ const handleImportFile = (event) => {
                             <InputLabel for="eq_name" value="Nama Jenis Alat" />
                             <TextInput id="eq_name" type="text" class="mt-1 block w-full" v-model="formEquipment.name" required />
                             <div v-if="formEquipment.errors.name" class="text-red-500 text-sm mt-1">{{ formEquipment.errors.name }}</div>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <InputLabel for="eq_weight" value="Bobot Alat (Weight)" />
+                            <TextInput id="eq_weight" type="number" class="mt-1 block w-full" v-model="formEquipment.weight" required />
+                            <div v-if="formEquipment.errors.weight" class="text-red-500 text-sm mt-1">{{ formEquipment.errors.weight }}</div>
+                        </div>
+                        <div>
+                            <InputLabel for="eq_category" value="Kategori Alat" />
+                            <select id="eq_category" v-model="formEquipment.category" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
+                                <option value="Crane">Crane</option>
+                                <option value="Mobile Equipment">Mobile Equipment</option>
+                                <option value="Others">Others</option>
+                            </select>
+                            <div v-if="formEquipment.errors.category" class="text-red-500 text-sm mt-1">{{ formEquipment.errors.category }}</div>
                         </div>
                     </div>
 

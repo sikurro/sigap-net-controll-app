@@ -20,9 +20,15 @@ class SiteClassController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255|unique:site_classes,name',
+            'min_weight' => 'required|integer|min:0',
+            'max_weight' => 'nullable|integer|gt:min_weight',
         ]);
 
         SiteClass::create($validated);
+        
+        // Trigger recalculation for all sites
+        resolve(\App\Services\SdmCalculationEngine::class)->recalculateAllSites();
+
         return redirect()->back()->with('message', 'Site Class created successfully.');
     }
 
@@ -30,9 +36,15 @@ class SiteClassController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255|unique:site_classes,name,' . $siteClass->id,
+            'min_weight' => 'required|integer|min:0',
+            'max_weight' => 'nullable|integer|gt:min_weight',
         ]);
 
         $siteClass->update($validated);
+
+        // Trigger recalculation for all sites
+        resolve(\App\Services\SdmCalculationEngine::class)->recalculateAllSites();
+
         return redirect()->back()->with('message', 'Site Class updated successfully.');
     }
 

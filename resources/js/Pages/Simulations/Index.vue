@@ -210,6 +210,11 @@ const formatNum = (num) => {
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-center font-bold text-indigo-600">{{ simulationResult.site_class }}</td>
                             </tr>
                             <tr>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Total Bobot</td>
+                                <td v-if="existingSiteData" class="px-6 py-4 whitespace-nowrap text-sm text-center text-gray-500">{{ existingSiteData.total_weight || 0 }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-center font-bold text-indigo-600">{{ simulationResult.total_weight }}</td>
+                            </tr>
+                            <tr>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Total Jam Pemeliharaan (Tahun)</td>
                                 <td v-if="existingSiteData" class="px-6 py-4 whitespace-nowrap text-sm text-center text-gray-500">-</td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-center font-bold text-indigo-600">{{ formatNum(simulationResult.total_maintenance_hours) }} Jam</td>
