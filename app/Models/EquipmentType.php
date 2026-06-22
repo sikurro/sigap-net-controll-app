@@ -13,6 +13,8 @@ class EquipmentType extends Model
     protected $fillable = [
         'name',
         'code',
+        'weight',
+        'category',
     ];
 
     public function jobPlans(): HasMany

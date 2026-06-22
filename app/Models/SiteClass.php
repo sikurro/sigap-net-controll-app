@@ -12,6 +12,8 @@ class SiteClass extends Model
 
     protected $fillable = [
         'name',
+        'min_weight',
+        'max_weight',
     ];
 
     public function nonTechnicalPositions(): BelongsToMany

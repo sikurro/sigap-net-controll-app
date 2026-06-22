@@ -25,6 +25,8 @@ class EquipmentTypeController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'code' => 'nullable|string|max:255|unique:equipment_types,code',
+            'weight' => 'required|integer|min:0',
+            'category' => 'required|string|in:Crane,Mobile Equipment,Others',
             'job_plans' => 'nullable|array',
             'job_plans.*.activity_name' => 'required|string|max:255',
             'job_plans.*.duration_minutes' => 'required|numeric|min:0',
@@ -35,6 +37,8 @@ class EquipmentTypeController extends Controller
             $equipmentType = EquipmentType::create([
                 'name' => $validated['name'],
                 'code' => $validated['code'] ?? null,
+                'weight' => $validated['weight'],
+                'category' => $validated['category'],
             ]);
 
             if (!empty($validated['job_plans'])) {
@@ -53,6 +57,9 @@ class EquipmentTypeController extends Controller
             }
         });
 
+        // Trigger recalculation for all sites
+        resolve(\App\Services\SdmCalculationEngine::class)->recalculateAllSites();
+
         return redirect()->back()->with('message', 'Equipment Type created successfully.');
     }
 
@@ -61,6 +68,8 @@ class EquipmentTypeController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'code' => 'nullable|string|max:255|unique:equipment_types,code,' . $equipmentType->id,
+            'weight' => 'required|integer|min:0',
+            'category' => 'required|string|in:Crane,Mobile Equipment,Others',
             'job_plans' => 'nullable|array',
             'job_plans.*.activity_name' => 'required|string|max:255',
             'job_plans.*.duration_minutes' => 'required|numeric|min:0',
@@ -71,6 +80,8 @@ class EquipmentTypeController extends Controller
             $equipmentType->update([
                 'name' => $validated['name'],
                 'code' => $validated['code'] ?? null,
+                'weight' => $validated['weight'],
+                'category' => $validated['category'],
             ]);
 
             // Sync job plans: Delete-Insert strategy
@@ -91,6 +102,9 @@ class EquipmentTypeController extends Controller
                 $equipmentType->jobPlans()->createMany($jobPlans);
             }
         });
+
+        // Trigger recalculation for all sites
+        resolve(\App\Services\SdmCalculationEngine::class)->recalculateAllSites();
 
         return redirect()->back()->with('message', 'Equipment Type updated successfully.');
     }

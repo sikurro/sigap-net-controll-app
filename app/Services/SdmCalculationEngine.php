@@ -19,18 +19,22 @@ class SdmCalculationEngine
         // 1. Calculate Total Maintenance Hours
         $totalHours = $this->calculateTotalMaintenanceHours($site);
 
-        // 2. Determine Site Class
-        $siteClass = $this->determineSiteClass($totalHours);
+        // 2. Calculate Total Weight
+        $totalWeight = $this->calculateTotalWeight($site);
 
-        // 3. Calculate Technical Staff Needed
+        // 3. Determine Site Class
+        $siteClass = $this->determineSiteClass($totalWeight);
+
+        // 4. Calculate Technical Staff Needed
         $technicalStaffNeeded = $this->calculateTechnicalStaff($totalHours);
 
-        // 4. Calculate Non-Technical Staff Needed
+        // 5. Calculate Non-Technical Staff Needed
         $nonTechnicalStaffNeeded = $this->calculateNonTechnicalStaff($siteClass);
 
-        // 5. Update Site Model
+        // 6. Update Site Model
         $site->update([
             'total_maintenance_hours' => $totalHours,
+            'total_weight' => $totalWeight,
             'site_class' => $siteClass,
             'technical_staff_needed' => $technicalStaffNeeded,
             'non_technical_staff_needed' => $nonTechnicalStaffNeeded,
@@ -53,6 +57,24 @@ class SdmCalculationEngine
         }
 
         return $this->calculateTotalHoursFromRaw($rawEquipments);
+    }
+
+    /**
+     * Calculate Total Weight for a Site
+     */
+    protected function calculateTotalWeight(Site $site): int
+    {
+        $rawEquipments = [];
+        foreach ($site->equipments as $siteEquipment) {
+            if ($siteEquipment->is_active) {
+                $rawEquipments[] = [
+                    'equipment_type_id' => $siteEquipment->equipment_type_id,
+                    'quantity' => $siteEquipment->quantity,
+                ];
+            }
+        }
+
+        return $this->calculateTotalWeightFromRaw($rawEquipments);
     }
 
     /**
@@ -89,17 +111,45 @@ class SdmCalculationEngine
     }
 
     /**
+     * Calculate Total Weight from raw array of equipments
+     * 
+     * @param array $equipments Array of ['equipment_type_id' => x, 'quantity' => y]
+     */
+    protected function calculateTotalWeightFromRaw(array $equipments): int
+    {
+        $totalWeight = 0;
+
+        foreach ($equipments as $eq) {
+            $qty = $eq['quantity'] ?? 0;
+            if ($qty <= 0) {
+                continue;
+            }
+
+            $equipmentType = \App\Models\EquipmentType::find($eq['equipment_type_id']);
+            if (!$equipmentType) {
+                continue;
+            }
+
+            $totalWeight += ($equipmentType->weight * $qty);
+        }
+
+        return $totalWeight;
+    }
+
+    /**
      * Calculate all parameters from raw equipment data without saving
      */
     public function calculateFromRawData(array $equipments): array
     {
         $totalHours = $this->calculateTotalHoursFromRaw($equipments);
-        $siteClass = $this->determineSiteClass($totalHours);
+        $totalWeight = $this->calculateTotalWeightFromRaw($equipments);
+        $siteClass = $this->determineSiteClass($totalWeight);
         $technicalStaffNeeded = $this->calculateTechnicalStaff($totalHours);
         $nonTechnicalStaffNeeded = $this->calculateNonTechnicalStaff($siteClass);
 
         return [
             'total_maintenance_hours' => $totalHours,
+            'total_weight' => $totalWeight,
             'site_class' => $siteClass ?? '-',
             'technical_staff_needed' => $technicalStaffNeeded,
             'non_technical_staff_needed' => $nonTechnicalStaffNeeded,
@@ -107,30 +157,22 @@ class SdmCalculationEngine
     }
 
     /**
-     * Determine the class of the site based on thresholds from settings
+     * Determine the class of the site based on weight ranges
      */
-    protected function determineSiteClass(float $totalHours): ?string
+    protected function determineSiteClass(int $totalWeight): ?string
     {
-        $thresholds = Setting::getValue('site_class_thresholds', []);
+        $siteClasses = \App\Models\SiteClass::orderBy('min_weight', 'desc')->get();
 
-        if (empty($thresholds)) {
-            return null; // Fallback if setting is missing
-        }
-
-        // We assume the thresholds are sorted by min_hours descending (A first)
-        // Let's sort them just to be safe
-        usort($thresholds, function ($a, $b) {
-            return $b['min_hours'] <=> $a['min_hours'];
-        });
-
-        foreach ($thresholds as $threshold) {
-            if ($totalHours >= $threshold['min_hours']) {
-                return $threshold['class'];
+        foreach ($siteClasses as $siteClass) {
+            if ($totalWeight >= $siteClass->min_weight) {
+                if (is_null($siteClass->max_weight) || $totalWeight <= $siteClass->max_weight) {
+                    return $siteClass->name;
+                }
             }
         }
 
-        // If it falls below all, return the lowest class
-        return end($thresholds)['class'] ?? null;
+        // Return E or lowest if not matched
+        return $siteClasses->last()->name ?? null;
     }
 
     /**

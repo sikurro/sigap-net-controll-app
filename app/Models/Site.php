@@ -14,6 +14,7 @@ class Site extends Model
         'region',
         'status',
         'site_class',
+        'total_weight',
         'total_maintenance_hours',
         'technical_staff_needed',
         'non_technical_staff_needed',
