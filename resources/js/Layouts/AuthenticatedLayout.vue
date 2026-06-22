@@ -32,8 +32,11 @@ const showingNavigationDropdown = ref(false);
                                 <NavLink :href="route('dashboard')" :active="route().current('dashboard')">
                                     Dashboard
                                 </NavLink>
-                                <NavLink :href="route('sites.index')" :active="route().current('sites.*')">
+                                <NavLink :href="route('sites.index')" :active="route().current('sites.index')">
                                     Manajemen Site
+                                </NavLink>
+                                <NavLink :href="route('settings.index')" :active="route().current('settings.index')">
+                                    Global Settings
                                 </NavLink>
                                 
                                 <div class="hidden sm:flex sm:items-center sm:ms-6">

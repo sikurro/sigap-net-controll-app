@@ -55,6 +55,9 @@ Route::middleware(['auth', 'verified', 'role:Super Admin'])->group(function () {
     Route::get('sites/download-template', [SiteController::class, 'downloadTemplate'])->name('sites.download-template');
     Route::get('sites/export', [SiteController::class, 'export'])->name('sites.export');
     Route::resource('sites', SiteController::class)->except(['create', 'show', 'edit']);
+
+    Route::get('settings', [App\Http\Controllers\SettingController::class, 'index'])->name('settings.index');
+    Route::put('settings', [App\Http\Controllers\SettingController::class, 'update'])->name('settings.update');
 });
 
 require __DIR__.'/auth.php';
