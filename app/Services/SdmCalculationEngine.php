@@ -42,34 +42,68 @@ class SdmCalculationEngine
      */
     protected function calculateTotalMaintenanceHours(Site $site): float
     {
+        $rawEquipments = [];
+        foreach ($site->equipments as $siteEquipment) {
+            if ($siteEquipment->is_active) {
+                $rawEquipments[] = [
+                    'equipment_type_id' => $siteEquipment->equipment_type_id,
+                    'quantity' => $siteEquipment->quantity,
+                ];
+            }
+        }
+
+        return $this->calculateTotalHoursFromRaw($rawEquipments);
+    }
+
+    /**
+     * Calculate Total Maintenance Hours from raw array of equipments
+     * 
+     * @param array $equipments Array of ['equipment_type_id' => x, 'quantity' => y]
+     */
+    protected function calculateTotalHoursFromRaw(array $equipments): float
+    {
         $totalHours = 0;
 
-        // Iterate through each equipment at the site
-        foreach ($site->equipments as $siteEquipment) {
-            $qty = $siteEquipment->quantity;
-            if ($qty <= 0 || !$siteEquipment->is_active) {
+        foreach ($equipments as $eq) {
+            $qty = $eq['quantity'] ?? 0;
+            if ($qty <= 0) {
                 continue;
             }
 
-            $equipmentType = $siteEquipment->equipmentType;
+            $equipmentType = \App\Models\EquipmentType::with('jobPlans')->find($eq['equipment_type_id']);
             if (!$equipmentType) {
                 continue;
             }
 
-            // Sum up hours from all job plans for this equipment type
             $jobPlansHours = 0;
             foreach ($equipmentType->jobPlans as $jobPlan) {
-                // job plan duration is in minutes
                 $hoursPerOccurrence = $jobPlan->duration_minutes / 60;
                 $hoursPerYear = $hoursPerOccurrence * $jobPlan->frequency_per_year;
                 $jobPlansHours += $hoursPerYear;
             }
 
-            // Multiply by quantity of equipment
             $totalHours += ($jobPlansHours * $qty);
         }
 
         return $totalHours;
+    }
+
+    /**
+     * Calculate all parameters from raw equipment data without saving
+     */
+    public function calculateFromRawData(array $equipments): array
+    {
+        $totalHours = $this->calculateTotalHoursFromRaw($equipments);
+        $siteClass = $this->determineSiteClass($totalHours);
+        $technicalStaffNeeded = $this->calculateTechnicalStaff($totalHours);
+        $nonTechnicalStaffNeeded = $this->calculateNonTechnicalStaff($siteClass);
+
+        return [
+            'total_maintenance_hours' => $totalHours,
+            'site_class' => $siteClass ?? '-',
+            'technical_staff_needed' => $technicalStaffNeeded,
+            'non_technical_staff_needed' => $nonTechnicalStaffNeeded,
+        ];
     }
 
     /**

@@ -33,6 +33,12 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::post('/settings', [SettingController::class, 'update'])->name('settings.update');
+
+    // Simulations
+    Route::get('/simulasi', [\App\Http\Controllers\SimulationController::class, 'index'])->name('simulasi.index');
+    Route::post('/simulasi/calculate', [\App\Http\Controllers\SimulationController::class, 'calculate'])->name('simulasi.calculate');
+    Route::post('/simulasi/store', [\App\Http\Controllers\SimulationController::class, 'store'])->name('simulasi.store');
 });
 
 use App\Http\Controllers\EquipmentTypeController;

@@ -35,6 +35,9 @@ const showingNavigationDropdown = ref(false);
                                 <NavLink :href="route('sites.index')" :active="route().current('sites.index')">
                                     Manajemen Site
                                 </NavLink>
+                                <NavLink :href="route('simulasi.index')" :active="route().current('simulasi.index')">
+                                    Simulasi Kalkulasi
+                                </NavLink>
                                 <NavLink :href="route('settings.index')" :active="route().current('settings.index')">
                                     Global Settings
                                 </NavLink>
