@@ -13,6 +13,10 @@ class Site extends Model
         'name',
         'region',
         'status',
+        'site_class',
+        'total_maintenance_hours',
+        'technical_staff_needed',
+        'non_technical_staff_needed',
     ];
 
     protected $casts = [

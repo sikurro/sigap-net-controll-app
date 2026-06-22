@@ -23,8 +23,9 @@ class SiteController extends Controller
                 'region' => $site->region,
                 'status' => $site->status,
                 'jumlah_alat' => $site->equipments->sum('quantity'),
-                'standar_teknisi' => $site->required_technicians,
-                'standar_non_teknisi' => $site->required_non_technicians,
+                'site_class' => $site->site_class ?? '-',
+                'technical_staff_needed' => $site->technical_staff_needed,
+                'non_technical_staff_needed' => $site->non_technical_staff_needed,
                 'equipments' => $site->equipments->map(function ($eq) {
                     return [
                         'id' => $eq->id,
