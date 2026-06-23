@@ -47,6 +47,7 @@ use App\Http\Controllers\SiteClassController;
 use App\Http\Controllers\NonTechnicalPositionController;
 use App\Http\Controllers\NonTechnicalRequirementController;
 use App\Http\Controllers\SiteController;
+use App\Http\Controllers\EquipmentCategoryBaselineController;
 
 Route::middleware(['auth', 'verified', 'role:Super Admin'])->group(function () {
     Route::post('equipment-types/import', [EquipmentTypeController::class, 'import'])->name('equipment-types.import');
@@ -57,6 +58,7 @@ Route::middleware(['auth', 'verified', 'role:Super Admin'])->group(function () {
     Route::resource('non-technical-positions', NonTechnicalPositionController::class)->except(['create', 'show', 'edit']);
     Route::get('non-technical-requirements', [NonTechnicalRequirementController::class, 'index'])->name('non-technical-requirements.index');
     Route::post('non-technical-requirements', [NonTechnicalRequirementController::class, 'store'])->name('non-technical-requirements.store');
+    Route::resource('equipment-category-baselines', EquipmentCategoryBaselineController::class)->except(['create', 'show', 'edit']);
     Route::post('sites/import', [SiteController::class, 'import'])->name('sites.import');
     Route::get('sites/download-template', [SiteController::class, 'downloadTemplate'])->name('sites.download-template');
     Route::get('sites/export', [SiteController::class, 'export'])->name('sites.export');
