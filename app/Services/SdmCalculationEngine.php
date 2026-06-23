@@ -208,7 +208,7 @@ class SdmCalculationEngine
 
         $highestBaseline = 0;
         $highestWeight = -1;
-        $highestWeightHours = 0;
+        $highestWeightSingleUnitHours = 0;
 
         foreach ($rawEquipments as $eq) {
             $qty = $eq['quantity'] ?? 0;
@@ -230,27 +230,26 @@ class SdmCalculationEngine
                 $highestBaseline = $baselineVal;
             }
 
-            // Calculate annual maintenance hours for this equipment type
+            // Calculate annual maintenance hours for this equipment type (1 unit)
             $jobPlansHours = 0;
             foreach ($equipmentType->jobPlans as $jobPlan) {
                 $hoursPerOccurrence = $jobPlan->duration_minutes / 60;
                 $hoursPerYear = $hoursPerOccurrence * $jobPlan->frequency_per_year;
                 $jobPlansHours += $hoursPerYear;
             }
-            $totalHoursForThisType = $jobPlansHours * $qty;
 
             // Find equipment type with highest weight
             if ($equipmentType->weight > $highestWeight) {
                 $highestWeight = $equipmentType->weight;
-                $highestWeightHours = $totalHoursForThisType;
+                $highestWeightSingleUnitHours = $jobPlansHours;
             } elseif ($equipmentType->weight === $highestWeight) {
-                if ($totalHoursForThisType > $highestWeightHours) {
-                    $highestWeightHours = $totalHoursForThisType;
+                if ($jobPlansHours > $highestWeightSingleUnitHours) {
+                    $highestWeightSingleUnitHours = $jobPlansHours;
                 }
             }
         }
 
-        $additionalHours = max(0, $totalHours - $highestWeightHours);
+        $additionalHours = max(0, $totalHours - $highestWeightSingleUnitHours);
         $additionalTech = $additionalHours / $effectiveWorkingHours;
 
         return round($highestBaseline + $additionalTech, 2);
