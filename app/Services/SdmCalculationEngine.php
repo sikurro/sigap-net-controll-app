@@ -25,13 +25,24 @@ class SdmCalculationEngine
         // 3. Determine Site Class
         $siteClass = $this->determineSiteClass($totalWeight);
 
-        // 4. Calculate Technical Staff Needed
-        $technicalStaffNeeded = $this->calculateTechnicalStaff($totalHours);
+        // 4. Extract active raw equipments for technical staff calculation
+        $rawEquipments = [];
+        foreach ($site->equipments as $siteEquipment) {
+            if ($siteEquipment->status) {
+                $rawEquipments[] = [
+                    'equipment_type_id' => $siteEquipment->equipment_type_id,
+                    'quantity' => $siteEquipment->quantity,
+                ];
+            }
+        }
 
-        // 5. Calculate Non-Technical Staff Needed
+        // 5. Calculate Technical Staff Needed
+        $technicalStaffNeeded = $this->calculateTechnicalStaff($rawEquipments, $totalHours);
+
+        // 6. Calculate Non-Technical Staff Needed
         $nonTechnicalStaffNeeded = $this->calculateNonTechnicalStaff($siteClass);
 
-        // 6. Update Site Model
+        // 7. Update Site Model
         $site->update([
             'total_maintenance_hours' => $totalHours,
             'total_weight' => $totalWeight,
@@ -144,7 +155,7 @@ class SdmCalculationEngine
         $totalHours = $this->calculateTotalHoursFromRaw($equipments);
         $totalWeight = $this->calculateTotalWeightFromRaw($equipments);
         $siteClass = $this->determineSiteClass($totalWeight);
-        $technicalStaffNeeded = $this->calculateTechnicalStaff($totalHours);
+        $technicalStaffNeeded = $this->calculateTechnicalStaff($equipments, $totalHours);
         $nonTechnicalStaffNeeded = $this->calculateNonTechnicalStaff($siteClass);
 
         return [
@@ -178,18 +189,70 @@ class SdmCalculationEngine
     /**
      * Calculate how many technical staff are needed
      */
-    protected function calculateTechnicalStaff(float $totalHours): float
+    protected function calculateTechnicalStaff(array $rawEquipments, float $totalHours): float
     {
+        if (empty($rawEquipments)) {
+            return 0;
+        }
+
         $effectiveWorkingHours = Setting::getValue('effective_working_hours_per_year', 1800);
 
         if ($effectiveWorkingHours <= 0) {
             return 0;
         }
 
-        // Return exact value (could be decimal like 4.5, which means 4-5 people needed)
-        // Or we could use ceil() to round up. Let's return the precise float value, 
-        // rounded to 2 decimal places so it looks clean on UI.
-        return round($totalHours / $effectiveWorkingHours, 2);
+        // 1. Get Category Baselines
+        $baselines = \App\Models\EquipmentCategoryBaseline::all()->keyBy(function ($item) {
+            return strtolower(trim($item->category));
+        });
+
+        $highestBaseline = 0;
+        $highestWeight = -1;
+        $highestWeightSingleUnitHours = 0;
+
+        foreach ($rawEquipments as $eq) {
+            $qty = $eq['quantity'] ?? 0;
+            if ($qty <= 0) {
+                continue;
+            }
+
+            $equipmentType = \App\Models\EquipmentType::with('jobPlans')->find($eq['equipment_type_id']);
+            if (!$equipmentType) {
+                continue;
+            }
+
+            // Find baseline value for this equipment's category
+            $categoryKey = strtolower(trim($equipmentType->category));
+            $baselineModel = $baselines->get($categoryKey);
+            $baselineVal = $baselineModel ? $baselineModel->baseline : 0;
+            
+            if ($baselineVal > $highestBaseline) {
+                $highestBaseline = $baselineVal;
+            }
+
+            // Calculate annual maintenance hours for this equipment type (1 unit)
+            $jobPlansHours = 0;
+            foreach ($equipmentType->jobPlans as $jobPlan) {
+                $hoursPerOccurrence = $jobPlan->duration_minutes / 60;
+                $hoursPerYear = $hoursPerOccurrence * $jobPlan->frequency_per_year;
+                $jobPlansHours += $hoursPerYear;
+            }
+
+            // Find equipment type with highest weight
+            if ($equipmentType->weight > $highestWeight) {
+                $highestWeight = $equipmentType->weight;
+                $highestWeightSingleUnitHours = $jobPlansHours;
+            } elseif ($equipmentType->weight === $highestWeight) {
+                if ($jobPlansHours > $highestWeightSingleUnitHours) {
+                    $highestWeightSingleUnitHours = $jobPlansHours;
+                }
+            }
+        }
+
+        $additionalHours = max(0, $totalHours - $highestWeightSingleUnitHours);
+        $additionalTech = $additionalHours / $effectiveWorkingHours;
+
+        return round($highestBaseline + $additionalTech, 2);
     }
 
     /**

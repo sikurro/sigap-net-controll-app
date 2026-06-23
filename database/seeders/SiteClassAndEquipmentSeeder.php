@@ -126,5 +126,19 @@ class SiteClassAndEquipmentSeeder extends Seeder
                 ]);
             }
         }
+
+        // 3. Seed Equipment Category Baselines
+        $baselines = [
+            ['category' => 'Crane', 'baseline' => 10],
+            ['category' => 'Mobile Equipment', 'baseline' => 5],
+            ['category' => 'Others', 'baseline' => 4],
+        ];
+
+        foreach ($baselines as $base) {
+            \App\Models\EquipmentCategoryBaseline::updateOrCreate(
+                ['category' => $base['category']],
+                ['baseline' => $base['baseline']]
+            );
+        }
     }
 }

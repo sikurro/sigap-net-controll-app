@@ -58,6 +58,7 @@ const showingNavigationDropdown = ref(false);
                                             <template #content>
                                                 <DropdownLink :href="route('equipment-types.index')">Alat & Job Plan</DropdownLink>
                                                 <DropdownLink :href="route('non-technical-requirements.index')">Matriks SDM Pendukung</DropdownLink>
+                                                <DropdownLink :href="route('equipment-category-baselines.index')">Baseline Kategori Alat</DropdownLink>
                                             </template>
                                         </Dropdown>
                                     </div>
