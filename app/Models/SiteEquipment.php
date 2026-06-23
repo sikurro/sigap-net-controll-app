@@ -14,8 +14,6 @@ class SiteEquipment extends Model
     protected $fillable = [
         'site_id',
         'equipment_type_id',
-        'name',
-        'code',
         'status',
         'quantity',
     ];

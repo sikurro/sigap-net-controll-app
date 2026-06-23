@@ -23,8 +23,8 @@ class SitesExport implements FromCollection, WithHeadings, WithMapping
             'Nama Site',
             'Wilayah',
             'Status Site',
-            'Nama Alat',
-            'Kode Alat',
+            'Teknisi Eksisting',
+            'Non-Teknisi Eksisting',
             'Jenis Alat',
             'Status Alat',
             'Jumlah Alat',
@@ -34,29 +34,29 @@ class SitesExport implements FromCollection, WithHeadings, WithMapping
     public function map($site): array
     {
         $rows = [];
-        $siteStatus = $site->status ? 'Aktif' : 'Non Aktif';
+        $siteStatus = $site->status ? 'Aktif' : 'Non-Aktif';
 
         if ($site->equipments->isEmpty()) {
             $rows[] = [
                 $site->name,
                 $site->region,
                 $siteStatus,
-                '',
-                '',
+                $site->existing_technical_staff,
+                $site->existing_non_technical_staff,
                 '',
                 '',
                 '',
             ];
         } else {
             foreach ($site->equipments as $eq) {
-                $eqStatus = $eq->status ? 'Aktif' : 'Non Aktif';
+                $eqStatus = $eq->status ? 'Aktif' : 'Non-Aktif';
                 $eqType = $eq->equipmentType ? $eq->equipmentType->name : '';
                 $rows[] = [
                     $site->name,
                     $site->region,
                     $siteStatus,
-                    $eq->name,
-                    $eq->code,
+                    $site->existing_technical_staff,
+                    $site->existing_non_technical_staff,
                     $eqType,
                     $eqStatus,
                     $eq->quantity,

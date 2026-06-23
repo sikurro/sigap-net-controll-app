@@ -24,15 +24,18 @@ class SiteController extends Controller
                 'status' => $site->status,
                 'jumlah_alat' => $site->equipments->sum('quantity'),
                 'site_class' => $site->site_class ?? '-',
+                'total_weight' => $site->total_weight ?? 0,
                 'technical_staff_needed' => $site->technical_staff_needed,
                 'non_technical_staff_needed' => $site->non_technical_staff_needed,
+                'existing_technical_staff' => $site->existing_technical_staff,
+                'existing_non_technical_staff' => $site->existing_non_technical_staff,
                 'equipments' => $site->equipments->map(function ($eq) {
                     return [
                         'id' => $eq->id,
-                        'name' => $eq->name,
-                        'code' => $eq->code,
                         'equipment_type_id' => $eq->equipment_type_id,
                         'equipment_type_name' => $eq->equipmentType ? $eq->equipmentType->name : '-',
+                        'code' => $eq->equipmentType ? $eq->equipmentType->code : '-',
+                        'weight' => $eq->equipmentType ? $eq->equipmentType->weight : 0,
                         'status' => $eq->status,
                         'quantity' => $eq->quantity,
                     ];
@@ -54,15 +57,13 @@ class SiteController extends Controller
             'name' => 'required|string|max:255',
             'region' => 'required|string|max:255',
             'status' => 'required|boolean',
+            'existing_technical_staff' => 'required|integer|min:0',
+            'existing_non_technical_staff' => 'required|integer|min:0',
             'equipments' => 'nullable|array',
-            'equipments.*.name' => 'required|string|max:255',
-            'equipments.*.code' => 'required|string|max:255',
             'equipments.*.equipment_type_id' => 'required|exists:equipment_types,id',
             'equipments.*.status' => 'required|boolean',
             'equipments.*.quantity' => 'required|integer|min:1',
         ], [
-            'equipments.*.name.required' => 'Nama alat wajib diisi.',
-            'equipments.*.code.required' => 'Kode alat wajib diisi.',
             'equipments.*.equipment_type_id.required' => 'Jenis alat wajib dipilih.',
             'equipments.*.quantity.min' => 'Jumlah minimal 1.',
         ]);
@@ -72,6 +73,8 @@ class SiteController extends Controller
                 'name' => $validated['name'],
                 'region' => $validated['region'],
                 'status' => $validated['status'],
+                'existing_technical_staff' => $validated['existing_technical_staff'],
+                'existing_non_technical_staff' => $validated['existing_non_technical_staff'],
             ]);
 
             if (!empty($validated['equipments'])) {
@@ -88,10 +91,10 @@ class SiteController extends Controller
             'name' => 'required|string|max:255',
             'region' => 'required|string|max:255',
             'status' => 'required|boolean',
+            'existing_technical_staff' => 'required|integer|min:0',
+            'existing_non_technical_staff' => 'required|integer|min:0',
             'equipments' => 'nullable|array',
             'equipments.*.id' => 'nullable|exists:site_equipments,id',
-            'equipments.*.name' => 'required|string|max:255',
-            'equipments.*.code' => 'required|string|max:255',
             'equipments.*.equipment_type_id' => 'required|exists:equipment_types,id',
             'equipments.*.status' => 'required|boolean',
             'equipments.*.quantity' => 'required|integer|min:1',
@@ -102,6 +105,8 @@ class SiteController extends Controller
                 'name' => $validated['name'],
                 'region' => $validated['region'],
                 'status' => $validated['status'],
+                'existing_technical_staff' => $validated['existing_technical_staff'],
+                'existing_non_technical_staff' => $validated['existing_non_technical_staff'],
             ]);
 
             $existingIds = [];
@@ -109,8 +114,6 @@ class SiteController extends Controller
                 foreach ($validated['equipments'] as $eqData) {
                     if (isset($eqData['id']) && $eqData['id']) {
                         $site->equipments()->where('id', $eqData['id'])->update([
-                            'name' => $eqData['name'],
-                            'code' => $eqData['code'],
                             'equipment_type_id' => $eqData['equipment_type_id'],
                             'status' => $eqData['status'],
                             'quantity' => $eqData['quantity'],
@@ -118,8 +121,6 @@ class SiteController extends Controller
                         $existingIds[] = $eqData['id'];
                     } else {
                         $newEq = $site->equipments()->create([
-                            'name' => $eqData['name'],
-                            'code' => $eqData['code'],
                             'equipment_type_id' => $eqData['equipment_type_id'],
                             'status' => $eqData['status'],
                             'quantity' => $eqData['quantity'],
