@@ -27,19 +27,24 @@ class SitesImport implements ToCollection, WithHeadingRow
 
             $siteStatusStr = strtolower(trim($row['status_site'] ?? 'aktif'));
             $siteStatus = $siteStatusStr === 'aktif';
+            
+            $existingTech = intval($row['teknisi_eksisting'] ?? 0);
+            $existingNonTech = intval($row['non_teknisi_eksisting'] ?? 0);
 
-            // Find or create the Site
-            $site = Site::firstOrCreate(
+            // Find or update the Site
+            $site = Site::updateOrCreate(
                 ['name' => $siteName, 'region' => $region],
-                ['status' => $siteStatus]
+                [
+                    'status' => $siteStatus,
+                    'existing_technical_staff' => $existingTech,
+                    'existing_non_technical_staff' => $existingNonTech,
+                ]
             );
 
             // Process equipment if available
-            $eqName = trim($row['nama_alat'] ?? '');
-            $eqCode = trim($row['kode_alat'] ?? '');
             $eqTypeNameStr = strtolower(trim($row['jenis_alat'] ?? ''));
 
-            if (!empty($eqName) && !empty($eqCode) && !empty($eqTypeNameStr)) {
+            if (!empty($eqTypeNameStr)) {
                 $eqType = $equipmentTypes->get($eqTypeNameStr);
 
                 if ($eqType) {
@@ -51,11 +56,9 @@ class SitesImport implements ToCollection, WithHeadingRow
                     // Create or update equipment for this site
                     $site->equipments()->updateOrCreate(
                         [
-                            'code' => $eqCode,
+                            'equipment_type_id' => $eqType->id,
                         ],
                         [
-                            'name' => $eqName,
-                            'equipment_type_id' => $eqType->id,
                             'status' => $eqStatus,
                             'quantity' => $quantity,
                         ]

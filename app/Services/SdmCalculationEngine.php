@@ -48,7 +48,7 @@ class SdmCalculationEngine
     {
         $rawEquipments = [];
         foreach ($site->equipments as $siteEquipment) {
-            if ($siteEquipment->is_active) {
+            if ($siteEquipment->status) {
                 $rawEquipments[] = [
                     'equipment_type_id' => $siteEquipment->equipment_type_id,
                     'quantity' => $siteEquipment->quantity,
@@ -66,7 +66,7 @@ class SdmCalculationEngine
     {
         $rawEquipments = [];
         foreach ($site->equipments as $siteEquipment) {
-            if ($siteEquipment->is_active) {
+            if ($siteEquipment->status) {
                 $rawEquipments[] = [
                     'equipment_type_id' => $siteEquipment->equipment_type_id,
                     'quantity' => $siteEquipment->quantity,

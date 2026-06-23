@@ -18,6 +18,8 @@ class Site extends Model
         'total_maintenance_hours',
         'technical_staff_needed',
         'non_technical_staff_needed',
+        'existing_technical_staff',
+        'existing_non_technical_staff',
     ];
 
     protected $casts = [
