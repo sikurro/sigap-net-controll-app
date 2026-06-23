@@ -30,7 +30,22 @@ class SiteClassAndEquipmentSeeder extends Seeder
             );
         }
 
-        // 2. Seed Equipment Types with weights and categories
+        // 2. Seed Equipment Category Baselines
+        $baselines = [
+            ['category' => 'Crane', 'baseline' => 10],
+            ['category' => 'Mobile Equipment', 'baseline' => 5],
+            ['category' => 'Others', 'baseline' => 4],
+        ];
+
+        $categoryModels = [];
+        foreach ($baselines as $base) {
+            $categoryModels[strtolower($base['category'])] = \App\Models\EquipmentCategoryBaseline::updateOrCreate(
+                ['category' => $base['category']],
+                ['baseline' => $base['baseline']]
+            );
+        }
+
+        // 3. Seed Equipment Types with weights and categories
         $equipments = [
             // Crane
             ['code' => 'GSU', 'name' => 'GRAB SHIP UNLOADER', 'weight' => 83, 'category' => 'Crane'],
@@ -106,12 +121,14 @@ class SiteClassAndEquipmentSeeder extends Seeder
         ];
 
         foreach ($equipments as $eq) {
+            $catKey = strtolower($eq['category']);
+            $catId = $categoryModels[$catKey]->id ?? null;
             EquipmentType::updateOrCreate(
                 ['code' => $eq['code']],
                 [
                     'name' => $eq['name'],
                     'weight' => $eq['weight'],
-                    'category' => $eq['category'],
+                    'category_id' => $catId,
                 ]
             );
         }
@@ -120,25 +137,13 @@ class SiteClassAndEquipmentSeeder extends Seeder
         foreach ($aliasMap as $oldCode => $eq) {
             $existing = EquipmentType::where('code', $oldCode)->first();
             if ($existing) {
+                $catKey = strtolower($eq['category']);
+                $catId = $categoryModels[$catKey]->id ?? null;
                 $existing->update([
                     'weight' => $eq['weight'],
-                    'category' => $eq['category'],
+                    'category_id' => $catId,
                 ]);
             }
-        }
-
-        // 3. Seed Equipment Category Baselines
-        $baselines = [
-            ['category' => 'Crane', 'baseline' => 10],
-            ['category' => 'Mobile Equipment', 'baseline' => 5],
-            ['category' => 'Others', 'baseline' => 4],
-        ];
-
-        foreach ($baselines as $base) {
-            \App\Models\EquipmentCategoryBaseline::updateOrCreate(
-                ['category' => $base['category']],
-                ['baseline' => $base['baseline']]
-            );
         }
     }
 }

@@ -201,11 +201,6 @@ class SdmCalculationEngine
             return 0;
         }
 
-        // 1. Get Category Baselines
-        $baselines = \App\Models\EquipmentCategoryBaseline::all()->keyBy(function ($item) {
-            return strtolower(trim($item->category));
-        });
-
         $highestBaseline = 0;
         $highestWeight = -1;
         $highestWeightSingleUnitHours = 0;
@@ -216,15 +211,13 @@ class SdmCalculationEngine
                 continue;
             }
 
-            $equipmentType = \App\Models\EquipmentType::with('jobPlans')->find($eq['equipment_type_id']);
+            $equipmentType = \App\Models\EquipmentType::with(['jobPlans', 'categoryBaseline'])->find($eq['equipment_type_id']);
             if (!$equipmentType) {
                 continue;
             }
 
             // Find baseline value for this equipment's category
-            $categoryKey = strtolower(trim($equipmentType->category));
-            $baselineModel = $baselines->get($categoryKey);
-            $baselineVal = $baselineModel ? $baselineModel->baseline : 0;
+            $baselineVal = $equipmentType->categoryBaseline ? $equipmentType->categoryBaseline->baseline : 0;
             
             if ($baselineVal > $highestBaseline) {
                 $highestBaseline = $baselineVal;
