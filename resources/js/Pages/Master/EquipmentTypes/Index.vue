@@ -11,6 +11,7 @@ import InputLabel from '@/Components/InputLabel.vue';
 
 const props = defineProps({
     equipmentTypes: Array,
+    baselines: Array,
 });
 
 // -- SEARCH & EXPAND LOGIC --
@@ -50,7 +51,7 @@ const formEquipment = useForm({
     name: '',
     code: '',
     weight: 0,
-    category: 'Others',
+    category_id: null,
     job_plans: [],
 });
 
@@ -67,7 +68,7 @@ const openEquipmentEdit = (item) => {
     formEquipment.name = item.name;
     formEquipment.code = item.code;
     formEquipment.weight = item.weight || 0;
-    formEquipment.category = item.category || 'Others';
+    formEquipment.category_id = item.category_id;
     formEquipment.job_plans = item.job_plans ? item.job_plans.map(jp => ({
         id: jp.id,
         activity_name: jp.activity_name,
@@ -290,11 +291,11 @@ const handleImportFile = (event) => {
                                         <td class="px-6 py-4 whitespace-nowrap font-bold text-gray-900">{{ eq.name }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                             <span class="px-2 py-1 rounded text-xs font-semibold" :class="{
-                                                'bg-purple-100 text-purple-800': eq.category === 'Crane',
-                                                'bg-blue-100 text-blue-800': eq.category === 'Mobile Equipment',
-                                                'bg-gray-100 text-gray-800': eq.category === 'Others'
+                                                'bg-purple-100 text-purple-800': eq.category_baseline?.category === 'Crane',
+                                                'bg-blue-100 text-blue-800': eq.category_baseline?.category === 'Mobile Equipment',
+                                                'bg-gray-100 text-gray-800': eq.category_baseline?.category === 'Others'
                                             }">
-                                                {{ eq.category }}
+                                                {{ eq.category_baseline ? eq.category_baseline.category : '-' }}
                                             </span>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-center font-bold text-gray-700">{{ eq.weight }}</td>
@@ -406,12 +407,13 @@ const handleImportFile = (event) => {
                         </div>
                         <div>
                             <InputLabel for="eq_category" value="Kategori Alat" />
-                            <select id="eq_category" v-model="formEquipment.category" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
-                                <option value="Crane">Crane</option>
-                                <option value="Mobile Equipment">Mobile Equipment</option>
-                                <option value="Others">Others</option>
+                            <select id="eq_category" v-model="formEquipment.category_id" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm" required>
+                                <option disabled value="null">-- Pilih Kategori --</option>
+                                <option v-for="baseline in baselines" :key="baseline.id" :value="baseline.id">
+                                    {{ baseline.category }}
+                                </option>
                             </select>
-                            <div v-if="formEquipment.errors.category" class="text-red-500 text-sm mt-1">{{ formEquipment.errors.category }}</div>
+                            <div v-if="formEquipment.errors.category_id" class="text-red-500 text-sm mt-1">{{ formEquipment.errors.category_id }}</div>
                         </div>
                     </div>
 

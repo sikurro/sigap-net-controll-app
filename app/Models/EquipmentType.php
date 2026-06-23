@@ -14,11 +14,16 @@ class EquipmentType extends Model
         'name',
         'code',
         'weight',
-        'category',
+        'category_id',
     ];
 
     public function jobPlans(): HasMany
     {
         return $this->hasMany(JobPlan::class);
+    }
+
+    public function categoryBaseline(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(EquipmentCategoryBaseline::class, 'category_id');
     }
 }

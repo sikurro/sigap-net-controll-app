@@ -14,9 +14,12 @@ class EquipmentTypeController extends Controller
 {
     public function index()
     {
-        $equipmentTypes = EquipmentType::with('jobPlans')->get();
+        $equipmentTypes = EquipmentType::with(['jobPlans', 'categoryBaseline'])->get();
+        $baselines = \App\Models\EquipmentCategoryBaseline::all();
+        
         return Inertia::render('Master/EquipmentTypes/Index', [
-            'equipmentTypes' => $equipmentTypes
+            'equipmentTypes' => $equipmentTypes,
+            'baselines' => $baselines
         ]);
     }
 
@@ -26,7 +29,7 @@ class EquipmentTypeController extends Controller
             'name' => 'required|string|max:255',
             'code' => 'nullable|string|max:255|unique:equipment_types,code',
             'weight' => 'required|integer|min:0',
-            'category' => 'required|string|in:Crane,Mobile Equipment,Others',
+            'category_id' => 'required|exists:equipment_category_baselines,id',
             'job_plans' => 'nullable|array',
             'job_plans.*.activity_name' => 'required|string|max:255',
             'job_plans.*.duration_minutes' => 'required|numeric|min:0',
@@ -38,7 +41,7 @@ class EquipmentTypeController extends Controller
                 'name' => $validated['name'],
                 'code' => $validated['code'] ?? null,
                 'weight' => $validated['weight'],
-                'category' => $validated['category'],
+                'category_id' => $validated['category_id'],
             ]);
 
             if (!empty($validated['job_plans'])) {
@@ -69,7 +72,7 @@ class EquipmentTypeController extends Controller
             'name' => 'required|string|max:255',
             'code' => 'nullable|string|max:255|unique:equipment_types,code,' . $equipmentType->id,
             'weight' => 'required|integer|min:0',
-            'category' => 'required|string|in:Crane,Mobile Equipment,Others',
+            'category_id' => 'required|exists:equipment_category_baselines,id',
             'job_plans' => 'nullable|array',
             'job_plans.*.activity_name' => 'required|string|max:255',
             'job_plans.*.duration_minutes' => 'required|numeric|min:0',
@@ -81,7 +84,7 @@ class EquipmentTypeController extends Controller
                 'name' => $validated['name'],
                 'code' => $validated['code'] ?? null,
                 'weight' => $validated['weight'],
-                'category' => $validated['category'],
+                'category_id' => $validated['category_id'],
             ]);
 
             // Sync job plans: Delete-Insert strategy
