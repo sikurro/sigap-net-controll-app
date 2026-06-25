@@ -146,6 +146,8 @@ class EquipmentTypeController extends Controller
 
                     // Generate code: check if provided in column B (index 1)
                     $code = !empty($row[1]) ? trim($row[1]) : '';
+                    $categoryName = !empty($row[2]) ? trim($row[2]) : 'Others';
+                    $weight = !empty($row[3]) ? intval($row[3]) : 0;
 
                     if (empty($code)) {
                         $words = explode(' ', $name);
@@ -158,10 +160,20 @@ class EquipmentTypeController extends Controller
                     }
 
                     $code = strtoupper($code);
+                    
+                    $category = \App\Models\EquipmentCategoryBaseline::firstOrCreate(
+                        ['category' => $categoryName],
+                        ['baseline' => 0]
+                    );
 
                     // If equipment type already exists by name, we find it. Otherwise we find a unique code to create it.
                     $existing = EquipmentType::where('name', $name)->first();
                     if ($existing) {
+                        $existing->update([
+                            'code' => $code,
+                            'category_id' => $category->id,
+                            'weight' => $weight
+                        ]);
                         $currentEquipmentType = $existing;
                     } else {
                         $originalCode = $code;
@@ -172,12 +184,13 @@ class EquipmentTypeController extends Controller
                         }
                         $currentEquipmentType = EquipmentType::create([
                             'name' => $name,
-                            'code' => $code
+                            'code' => $code,
+                            'category_id' => $category->id,
+                            'weight' => $weight
                         ]);
                     }
 
-                    // Sync: delete existing job plans first
-                    $currentEquipmentType->jobPlans()->delete();
+                    // Removed $currentEquipmentType->jobPlans()->delete(); to prevent hard delete
                     continue;
                 }
 
@@ -194,12 +207,14 @@ class EquipmentTypeController extends Controller
 
                     if ($durationMinutes > 0) {
                         $totalHours = ($durationMinutes / 60) * $frequency;
-                        $currentEquipmentType->jobPlans()->create([
-                            'activity_name' => $activityName,
-                            'duration_minutes' => $durationMinutes,
-                            'frequency_per_year' => $frequency,
-                            'total_hours_per_year' => $totalHours,
-                        ]);
+                        $currentEquipmentType->jobPlans()->updateOrCreate(
+                            ['activity_name' => $activityName],
+                            [
+                                'duration_minutes' => $durationMinutes,
+                                'frequency_per_year' => $frequency,
+                                'total_hours_per_year' => $totalHours,
+                            ]
+                        );
                     }
                 }
             }
@@ -217,6 +232,8 @@ class EquipmentTypeController extends Controller
         // Set headers and sample structure
         $sheet->setCellValue('A1', '(REACH STACKER)');
         $sheet->setCellValue('B1', 'RS');
+        $sheet->setCellValue('C1', 'Mobile Equipment');
+        $sheet->setCellValue('D1', 23);
         
         $sheet->setCellValue('A2', 'Kegiatan');
         $sheet->setCellValue('B2', 'Durasi (Menit)');
@@ -241,6 +258,8 @@ class EquipmentTypeController extends Controller
         // Add second equipment sample
         $sheet->setCellValue('A6', '(FORKLIFT)');
         $sheet->setCellValue('B6', 'FL');
+        $sheet->setCellValue('C6', 'Mobile Equipment');
+        $sheet->setCellValue('D6', 10);
         
         $sheet->setCellValue('A7', 'Kegiatan');
         $sheet->setCellValue('B7', 'Durasi (Menit)');
