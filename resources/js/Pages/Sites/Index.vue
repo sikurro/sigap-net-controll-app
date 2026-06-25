@@ -33,7 +33,6 @@ const form = useForm({
     id: null,
     name: '',
     region: '',
-    status: true,
     existing_technical_staff: 0,
     existing_non_technical_staff: 0,
     equipments: [],
@@ -57,13 +56,11 @@ const openEditModal = (site) => {
     form.id = site.id;
     form.name = site.name;
     form.region = site.region;
-    form.status = site.status;
     form.existing_technical_staff = site.existing_technical_staff;
     form.existing_non_technical_staff = site.existing_non_technical_staff;
     form.equipments = site.equipments.map(eq => ({
         id: eq.id,
         equipment_type_id: eq.equipment_type_id,
-        status: eq.status,
         quantity: eq.quantity,
     }));
     showModal.value = true;
@@ -78,7 +75,6 @@ const addEquipmentRow = () => {
     form.equipments.push({
         id: null,
         equipment_type_id: '',
-        status: true,
         quantity: 1,
     });
 };
@@ -134,6 +130,14 @@ const submitImport = () => {
         <div class="py-12">
             <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
                 
+                <div v-if="$page.props.flash.success" class="mb-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">
+                    <span class="block sm:inline" v-html="$page.props.flash.success"></span>
+                </div>
+                <div v-if="$page.props.flash.error" class="mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+                    <strong class="font-bold">Peringatan Import! </strong>
+                    <span class="block sm:inline" v-html="$page.props.flash.error"></span>
+                </div>
+
                 <div class="mb-4 flex justify-between items-center">
                     <div>
                         <a :href="route('sites.download-template')" class="inline-flex items-center px-4 py-2 bg-white border border-gray-300 rounded-md font-semibold text-xs text-gray-700 uppercase tracking-widest shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-25 transition ease-in-out duration-150 mr-2">
@@ -164,7 +168,6 @@ const submitImport = () => {
                                     <th class="pb-4 pt-6 px-6 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Jml Alat</th>
                                     <th class="pb-4 pt-6 px-6 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Teknisi (Eks / Butuh)</th>
                                     <th class="pb-4 pt-6 px-6 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Non-Teknisi (Eks / Butuh)</th>
-                                    <th class="pb-4 pt-6 px-6 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                                     <th class="pb-4 pt-6 px-6 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
                                 </tr>
                             </thead>
@@ -186,10 +189,6 @@ const submitImport = () => {
                                         <td class="px-4 py-4 whitespace-nowrap text-sm text-center text-gray-500" @click="toggleRow(site.id)">{{ site.jumlah_alat }}</td>
                                         <td class="px-4 py-4 whitespace-nowrap text-sm text-center text-gray-900 font-semibold" @click="toggleRow(site.id)">{{ site.existing_technical_staff }} <span class="text-gray-400 font-normal">/</span> {{ site.technical_staff_needed }}</td>
                                         <td class="px-4 py-4 whitespace-nowrap text-sm text-center text-gray-900 font-semibold" @click="toggleRow(site.id)">{{ site.existing_non_technical_staff }} <span class="text-gray-400 font-normal">/</span> {{ site.non_technical_staff_needed }}</td>
-                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-center">
-                                            <span v-if="site.status" class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Aktif</span>
-                                            <span v-else class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">Non Aktif</span>
-                                        </td>
                                         <td class="px-4 py-4 whitespace-nowrap text-sm text-center font-medium">
                                             <button @click.stop="openEditModal(site)" class="text-indigo-600 hover:text-indigo-900 mr-3">Edit</button>
                                             <button @click.stop="deleteSite(site.id)" class="text-red-600 hover:text-red-900">Delete</button>
@@ -204,7 +203,6 @@ const submitImport = () => {
                                                     <tr>
                                                         <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Kode Alat</th>
                                                         <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Jenis Alat</th>
-                                                        <th class="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase">Status</th>
                                                         <th class="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase">Bobot</th>
                                                         <th class="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase">Jumlah Alat</th>
                                                         <th class="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase">Total Bobot</th>
@@ -214,10 +212,6 @@ const submitImport = () => {
                                                     <tr v-for="eq in site.equipments" :key="eq.id">
                                                         <td class="px-3 py-2 whitespace-nowrap text-sm text-gray-900 font-medium">{{ eq.code }}</td>
                                                         <td class="px-3 py-2 whitespace-nowrap text-sm text-gray-500">{{ eq.equipment_type_name }}</td>
-                                                        <td class="px-3 py-2 whitespace-nowrap text-sm text-center">
-                                                            <span v-if="eq.status" class="text-green-600 font-semibold text-xs">Aktif</span>
-                                                            <span v-else class="text-red-600 font-semibold text-xs">Non Aktif</span>
-                                                        </td>
                                                         <td class="px-3 py-2 whitespace-nowrap text-sm text-center text-gray-500">{{ eq.weight }}</td>
                                                         <td class="px-3 py-2 whitespace-nowrap text-sm text-center text-gray-500">{{ eq.quantity }}</td>
                                                         <td class="px-3 py-2 whitespace-nowrap text-sm text-center text-gray-900 font-semibold">{{ eq.weight * eq.quantity }}</td>
@@ -264,14 +258,6 @@ const submitImport = () => {
                         <TextInput id="existing_non_technical_staff" v-model="form.existing_non_technical_staff" type="number" min="0" class="mt-1 block w-full" />
                         <InputError :message="form.errors.existing_non_technical_staff" class="mt-2" />
                     </div>
-                    <div class="md:col-span-2">
-                        <InputLabel for="status" value="Status" />
-                        <select id="status" v-model="form.status" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
-                            <option :value="true">Aktif</option>
-                            <option :value="false">Non Aktif</option>
-                        </select>
-                        <InputError :message="form.errors.status" class="mt-2" />
-                    </div>
                 </div>
 
                 <div class="border-t pt-4">
@@ -282,7 +268,7 @@ const submitImport = () => {
                         </PrimaryButton>
                     </div>
 
-                    <div v-for="(eq, index) in form.equipments" :key="index" class="bg-gray-50 p-4 mb-4 rounded border grid grid-cols-1 md:grid-cols-4 gap-4 items-start relative pr-10">
+                    <div v-for="(eq, index) in form.equipments" :key="index" class="bg-gray-50 p-4 mb-4 rounded border grid grid-cols-1 md:grid-cols-3 gap-4 items-start relative pr-10">
                         <button type="button" @click="removeEquipmentRow(index)" class="absolute top-2 right-2 text-red-500 hover:text-red-700">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                                 <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
@@ -298,15 +284,6 @@ const submitImport = () => {
                                 </option>
                             </select>
                             <InputError :message="form.errors[`equipments.${index}.equipment_type_id`]" class="mt-1" />
-                        </div>
-
-                        <div>
-                            <InputLabel :for="'eq_status_'+index" value="Status" />
-                            <select :id="'eq_status_'+index" v-model="eq.status" class="mt-1 block w-full text-sm border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
-                                <option :value="true">Aktif</option>
-                                <option :value="false">Non Aktif</option>
-                            </select>
-                            <InputError :message="form.errors[`equipments.${index}.status`]" class="mt-1" />
                         </div>
 
                         <div>

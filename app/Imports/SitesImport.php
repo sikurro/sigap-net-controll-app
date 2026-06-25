@@ -11,57 +11,37 @@ class SitesImport implements ToCollection
 {
     public function collection(Collection $rows)
     {
-        // Cache equipment types to avoid N+1 queries during import
-        $equipmentTypes = EquipmentType::all()->keyBy(function($item) {
+        // Cache equipment types by name and by code
+        $equipmentTypesByName = EquipmentType::all()->keyBy(function($item) {
             return strtolower(trim($item->name));
         });
+        $equipmentTypesByCode = EquipmentType::all()->keyBy(function($item) {
+            return strtolower(trim($item->code));
+        });
 
+        $parsedSites = [];
         $currentSite = null;
-
-        // Function to save the site block to the database
-        $saveCurrentSite = function() use (&$currentSite) {
-            if ($currentSite && !empty($currentSite['name'])) {
-                $site = Site::updateOrCreate(
-                    ['name' => $currentSite['name'], 'region' => $currentSite['region']],
-                    [
-                        'existing_technical_staff' => $currentSite['existingTech'],
-                        'existing_non_technical_staff' => $currentSite['existingNonTech'],
-                    ]
-                );
-
-                $importedEqIds = [];
-                foreach ($currentSite['equipments'] as $eqData) {
-                    $importedEqIds[] = $eqData['equipment_type_id'];
-                    $site->equipments()->updateOrCreate(
-                        ['equipment_type_id' => $eqData['equipment_type_id']],
-                        ['quantity' => $eqData['quantity']]
-                    );
-                }
-
-                // Sync: Remove equipments from database that were deleted in the Excel template
-                $site->equipments()->whereNotIn('equipment_type_id', $importedEqIds)->delete();
-            }
-        };
 
         foreach ($rows as $row) {
             $colA = trim($row[0] ?? '');
             $colA_lower = strtolower($colA);
 
             if (empty($colA)) {
-                continue; // Skip empty rows
+                continue;
             }
 
             if ($colA_lower === 'nama site') {
-                // Save previous site if exists
-                $saveCurrentSite();
+                if ($currentSite !== null) {
+                    $parsedSites[] = $currentSite;
+                }
 
-                // Start new site block
                 $currentSite = [
                     'name' => trim($row[1] ?? ''),
                     'region' => '',
                     'existingTech' => 0,
                     'existingNonTech' => 0,
-                    'equipments' => []
+                    'equipments' => [],
+                    'errors' => []
                 ];
                 continue;
             }
@@ -86,20 +66,69 @@ class SitesImport implements ToCollection
             }
 
             if ($colA_lower === 'jenis alat') {
-                continue; // Skip the header row for equipment table
+                continue; // Header
             }
 
-            // Otherwise, we treat ColA as equipment name and ColB as quantity
-            $eqType = $equipmentTypes->get($colA_lower);
+            // Otherwise, we treat ColA as equipment name/code
+            $eqType = $equipmentTypesByName->get($colA_lower);
+            if (!$eqType) {
+                $eqType = $equipmentTypesByCode->get($colA_lower);
+            }
+
             if ($eqType) {
                 $currentSite['equipments'][] = [
                     'equipment_type_id' => $eqType->id,
                     'quantity' => max(1, intval($row[1] ?? 1)),
                 ];
+            } else {
+                // Not found, record error
+                $currentSite['errors'][] = $colA;
             }
         }
 
-        // Save the last site
-        $saveCurrentSite();
+        if ($currentSite !== null) {
+            $parsedSites[] = $currentSite;
+        }
+
+        $errorMessages = [];
+        $successCount = 0;
+
+        foreach ($parsedSites as $siteData) {
+            if (empty($siteData['name'])) {
+                continue;
+            }
+
+            if (count($siteData['errors']) > 0) {
+                $errorMessages[] = "Site '{$siteData['name']}' ditolak karena alat tidak dikenal: " . implode(', ', $siteData['errors']);
+                continue; // Skip saving this site
+            }
+
+            // Save valid site
+            $site = Site::updateOrCreate(
+                ['name' => $siteData['name'], 'region' => $siteData['region']],
+                [
+                    'existing_technical_staff' => $siteData['existingTech'],
+                    'existing_non_technical_staff' => $siteData['existingNonTech'],
+                ]
+            );
+
+            $importedEqIds = [];
+            foreach ($siteData['equipments'] as $eqData) {
+                $importedEqIds[] = $eqData['equipment_type_id'];
+                $site->equipments()->updateOrCreate(
+                    ['equipment_type_id' => $eqData['equipment_type_id']],
+                    ['quantity' => $eqData['quantity']]
+                );
+            }
+
+            // Remove equipments from database that were deleted in Excel
+            $site->equipments()->whereNotIn('equipment_type_id', $importedEqIds)->delete();
+            $successCount++;
+        }
+
+        if (count($errorMessages) > 0) {
+            $summary = "Berhasil mengimpor $successCount site. Namun ada penolakan: <br>" . implode('<br>', $errorMessages);
+            throw new \Exception($summary);
+        }
     }
 }

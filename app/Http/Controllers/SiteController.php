@@ -21,7 +21,6 @@ class SiteController extends Controller
                 'id' => $site->id,
                 'name' => $site->name,
                 'region' => $site->region,
-                'status' => $site->status,
                 'jumlah_alat' => $site->equipments->sum('quantity'),
                 'site_class' => $site->site_class ?? '-',
                 'total_weight' => $site->total_weight ?? 0,
@@ -36,7 +35,6 @@ class SiteController extends Controller
                         'equipment_type_name' => $eq->equipmentType ? $eq->equipmentType->name : '-',
                         'code' => $eq->equipmentType ? $eq->equipmentType->code : '-',
                         'weight' => $eq->equipmentType ? $eq->equipmentType->weight : 0,
-                        'status' => $eq->status,
                         'quantity' => $eq->quantity,
                     ];
                 }),
@@ -56,12 +54,10 @@ class SiteController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'region' => 'required|string|max:255',
-            'status' => 'required|boolean',
             'existing_technical_staff' => 'required|integer|min:0',
             'existing_non_technical_staff' => 'required|integer|min:0',
             'equipments' => 'nullable|array',
             'equipments.*.equipment_type_id' => 'required|exists:equipment_types,id',
-            'equipments.*.status' => 'required|boolean',
             'equipments.*.quantity' => 'required|integer|min:1',
         ], [
             'equipments.*.equipment_type_id.required' => 'Jenis alat wajib dipilih.',
@@ -72,7 +68,6 @@ class SiteController extends Controller
             $site = Site::create([
                 'name' => $validated['name'],
                 'region' => $validated['region'],
-                'status' => $validated['status'],
                 'existing_technical_staff' => $validated['existing_technical_staff'],
                 'existing_non_technical_staff' => $validated['existing_non_technical_staff'],
             ]);
@@ -81,6 +76,8 @@ class SiteController extends Controller
                 $site->equipments()->createMany($validated['equipments']);
             }
         });
+        
+        resolve(\App\Services\SdmCalculationEngine::class)->recalculateAllSites();
 
         return redirect()->back()->with('success', 'Site berhasil ditambahkan.');
     }
@@ -90,13 +87,11 @@ class SiteController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'region' => 'required|string|max:255',
-            'status' => 'required|boolean',
             'existing_technical_staff' => 'required|integer|min:0',
             'existing_non_technical_staff' => 'required|integer|min:0',
             'equipments' => 'nullable|array',
             'equipments.*.id' => 'nullable|exists:site_equipments,id',
             'equipments.*.equipment_type_id' => 'required|exists:equipment_types,id',
-            'equipments.*.status' => 'required|boolean',
             'equipments.*.quantity' => 'required|integer|min:1',
         ]);
 
@@ -104,7 +99,6 @@ class SiteController extends Controller
             $site->update([
                 'name' => $validated['name'],
                 'region' => $validated['region'],
-                'status' => $validated['status'],
                 'existing_technical_staff' => $validated['existing_technical_staff'],
                 'existing_non_technical_staff' => $validated['existing_non_technical_staff'],
             ]);
@@ -115,14 +109,12 @@ class SiteController extends Controller
                     if (isset($eqData['id']) && $eqData['id']) {
                         $site->equipments()->where('id', $eqData['id'])->update([
                             'equipment_type_id' => $eqData['equipment_type_id'],
-                            'status' => $eqData['status'],
                             'quantity' => $eqData['quantity'],
                         ]);
                         $existingIds[] = $eqData['id'];
                     } else {
                         $newEq = $site->equipments()->create([
                             'equipment_type_id' => $eqData['equipment_type_id'],
-                            'status' => $eqData['status'],
                             'quantity' => $eqData['quantity'],
                         ]);
                         $existingIds[] = $newEq->id;
@@ -133,6 +125,8 @@ class SiteController extends Controller
             // Delete removed equipments
             $site->equipments()->whereNotIn('id', $existingIds)->delete();
         });
+        
+        resolve(\App\Services\SdmCalculationEngine::class)->recalculateAllSites();
 
         return redirect()->back()->with('success', 'Site berhasil diperbarui.');
     }
@@ -140,6 +134,9 @@ class SiteController extends Controller
     public function destroy(Site $site)
     {
         $site->delete();
+        
+        resolve(\App\Services\SdmCalculationEngine::class)->recalculateAllSites();
+        
         return redirect()->back()->with('success', 'Site berhasil dihapus.');
     }
 
@@ -148,14 +145,9 @@ class SiteController extends Controller
         return Excel::download(new SitesExport, 'sites_and_equipments.xlsx');
     }
 
-    public function downloadTemplate(): BinaryFileResponse
+    public function downloadTemplate()
     {
-        $filePath = public_path('templates/Template_Import_Sites.xlsx');
-        if (!file_exists($filePath)) {
-            // Provide a minimal export as fallback if file doesn't exist
-            return Excel::download(new SitesExport, 'Template_Import_Sites.xlsx');
-        }
-        return response()->download($filePath);
+        return Excel::download(new SitesExport, 'Template_Import_Sites.xlsx');
     }
 
     public function import(Request $request)
@@ -166,9 +158,13 @@ class SiteController extends Controller
 
         try {
             Excel::import(new SitesImport, $request->file('file'));
+            resolve(\App\Services\SdmCalculationEngine::class)->recalculateAllSites();
             return redirect()->back()->with('success', 'Data sites dan alat berhasil diimpor.');
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Gagal mengimpor file: ' . $e->getMessage());
+            // If the exception comes from our SitesImport custom validation, we still want to recalculate
+            resolve(\App\Services\SdmCalculationEngine::class)->recalculateAllSites();
+            
+            return redirect()->back()->with('error', $e->getMessage());
         }
     }
 }

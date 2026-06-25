@@ -28,12 +28,10 @@ class SdmCalculationEngine
         // 4. Extract active raw equipments for technical staff calculation
         $rawEquipments = [];
         foreach ($site->equipments as $siteEquipment) {
-            if ($siteEquipment->status) {
-                $rawEquipments[] = [
-                    'equipment_type_id' => $siteEquipment->equipment_type_id,
-                    'quantity' => $siteEquipment->quantity,
-                ];
-            }
+            $rawEquipments[] = [
+                'equipment_type_id' => $siteEquipment->equipment_type_id,
+                'quantity' => $siteEquipment->quantity,
+            ];
         }
 
         // 5. Calculate Technical Staff Needed
@@ -59,12 +57,10 @@ class SdmCalculationEngine
     {
         $rawEquipments = [];
         foreach ($site->equipments as $siteEquipment) {
-            if ($siteEquipment->status) {
-                $rawEquipments[] = [
-                    'equipment_type_id' => $siteEquipment->equipment_type_id,
-                    'quantity' => $siteEquipment->quantity,
-                ];
-            }
+            $rawEquipments[] = [
+                'equipment_type_id' => $siteEquipment->equipment_type_id,
+                'quantity' => $siteEquipment->quantity,
+            ];
         }
 
         return $this->calculateTotalHoursFromRaw($rawEquipments);
@@ -77,12 +73,10 @@ class SdmCalculationEngine
     {
         $rawEquipments = [];
         foreach ($site->equipments as $siteEquipment) {
-            if ($siteEquipment->status) {
-                $rawEquipments[] = [
-                    'equipment_type_id' => $siteEquipment->equipment_type_id,
-                    'quantity' => $siteEquipment->quantity,
-                ];
-            }
+            $rawEquipments[] = [
+                'equipment_type_id' => $siteEquipment->equipment_type_id,
+                'quantity' => $siteEquipment->quantity,
+            ];
         }
 
         return $this->calculateTotalWeightFromRaw($rawEquipments);
