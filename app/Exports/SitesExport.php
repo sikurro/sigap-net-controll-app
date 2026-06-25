@@ -4,66 +4,33 @@ namespace App\Exports;
 
 use App\Models\Site;
 use Maatwebsite\Excel\Concerns\FromCollection;
-use Maatwebsite\Excel\Concerns\WithHeadings;
-use Maatwebsite\Excel\Concerns\WithMapping;
 
-class SitesExport implements FromCollection, WithHeadings, WithMapping
+class SitesExport implements FromCollection
 {
     /**
     * @return \Illuminate\Support\Collection
     */
     public function collection()
     {
-        return Site::with('equipments.equipmentType')->get();
-    }
+        $sites = Site::with('equipments.equipmentType')->get();
+        $flatData = collect();
 
-    public function headings(): array
-    {
-        return [
-            'Nama Site',
-            'Wilayah',
-            'Status Site',
-            'Teknisi Eksisting',
-            'Non-Teknisi Eksisting',
-            'Jenis Alat',
-            'Status Alat',
-            'Jumlah Alat',
-        ];
-    }
-
-    public function map($site): array
-    {
-        $rows = [];
-        $siteStatus = $site->status ? 'Aktif' : 'Non-Aktif';
-
-        if ($site->equipments->isEmpty()) {
-            $rows[] = [
-                $site->name,
-                $site->region,
-                $siteStatus,
-                $site->existing_technical_staff,
-                $site->existing_non_technical_staff,
-                '',
-                '',
-                '',
-            ];
-        } else {
+        foreach ($sites as $site) {
+            $flatData->push(['Nama Site', $site->name]);
+            $flatData->push(['Wilayah', $site->region]);
+            $flatData->push(['Teknisi Eksisting', $site->existing_technical_staff]);
+            $flatData->push(['Non-Teknisi Eksisting', $site->existing_non_technical_staff]);
+            $flatData->push(['Jenis Alat', 'Jumlah Alat']);
+            
             foreach ($site->equipments as $eq) {
-                $eqStatus = $eq->status ? 'Aktif' : 'Non-Aktif';
                 $eqType = $eq->equipmentType ? $eq->equipmentType->name : '';
-                $rows[] = [
-                    $site->name,
-                    $site->region,
-                    $siteStatus,
-                    $site->existing_technical_staff,
-                    $site->existing_non_technical_staff,
-                    $eqType,
-                    $eqStatus,
-                    $eq->quantity,
-                ];
+                $flatData->push([$eqType, $eq->quantity]);
             }
+            
+            // Add an empty row for separation
+            $flatData->push(['', '']);
         }
 
-        return $rows;
+        return $flatData;
     }
 }

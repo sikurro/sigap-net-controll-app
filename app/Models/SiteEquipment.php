@@ -14,12 +14,10 @@ class SiteEquipment extends Model
     protected $fillable = [
         'site_id',
         'equipment_type_id',
-        'status',
         'quantity',
     ];
 
     protected $casts = [
-        'status' => 'boolean',
         'quantity' => 'integer',
     ];
 

@@ -12,7 +12,6 @@ class Site extends Model
     protected $fillable = [
         'name',
         'region',
-        'status',
         'site_class',
         'total_weight',
         'total_maintenance_hours',
@@ -20,10 +19,6 @@ class Site extends Model
         'non_technical_staff_needed',
         'existing_technical_staff',
         'existing_non_technical_staff',
-    ];
-
-    protected $casts = [
-        'status' => 'boolean',
     ];
 
     public function equipments()
