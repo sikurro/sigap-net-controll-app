@@ -2,35 +2,18 @@
 
 namespace App\Exports;
 
-use App\Models\Site;
-use Maatwebsite\Excel\Concerns\FromCollection;
+use Maatwebsite\Excel\Concerns\Exportable;
+use Maatwebsite\Excel\Concerns\WithMultipleSheets;
 
-class SitesExport implements FromCollection
+class SitesExport implements WithMultipleSheets
 {
-    /**
-    * @return \Illuminate\Support\Collection
-    */
-    public function collection()
+    use Exportable;
+
+    public function sheets(): array
     {
-        $sites = Site::with('equipments.equipmentType')->get();
-        $flatData = collect();
-
-        foreach ($sites as $site) {
-            $flatData->push(['Nama Site', $site->name]);
-            $flatData->push(['Wilayah', $site->region]);
-            $flatData->push(['Teknisi Eksisting', $site->existing_technical_staff]);
-            $flatData->push(['Non-Teknisi Eksisting', $site->existing_non_technical_staff]);
-            $flatData->push(['Jenis Alat', 'Jumlah Alat']);
-            
-            foreach ($site->equipments as $eq) {
-                $eqType = $eq->equipmentType ? $eq->equipmentType->name : '';
-                $flatData->push([$eqType, $eq->quantity]);
-            }
-            
-            // Add an empty row for separation
-            $flatData->push(['', '']);
-        }
-
-        return $flatData;
+        return [
+            new SitesDataSheet(),
+            new EquipmentMasterSheet(),
+        ];
     }
 }
