@@ -132,22 +132,32 @@ class EquipmentTypeController extends Controller
             $rows = $sheet->toArray();
 
             $currentEquipmentType = null;
+            $parsingState = ''; // 'equipment' or 'jobplan'
 
             foreach ($rows as $row) {
-                if (empty($row[0])) {
+                if (empty(trim($row[0] ?? ''))) {
                     continue;
                 }
 
                 $colA = trim($row[0]);
+                $colA_lower = strtolower($colA);
 
-                // Check if it is an equipment type row (starts with '(')
-                if (strpos($colA, '(') === 0) {
-                    $name = trim($colA, "() \t\n\r\0\x0B");
+                // Detect headers to switch parsing state
+                if ($colA_lower === 'nama jenis alat') {
+                    $parsingState = 'equipment';
+                    continue;
+                }
 
-                    // Generate code: check if provided in column B (index 1)
+                if ($colA_lower === 'kegiatan') {
+                    $parsingState = 'jobplan';
+                    continue;
+                }
+
+                if ($parsingState === 'equipment') {
+                    $name = $colA;
                     $code = !empty($row[1]) ? trim($row[1]) : '';
-                    $categoryName = !empty($row[2]) ? trim($row[2]) : 'Others';
-                    $weight = !empty($row[3]) ? intval($row[3]) : 0;
+                    $weight = !empty($row[2]) ? intval($row[2]) : 0;
+                    $categoryName = !empty($row[3]) ? trim($row[3]) : 'Others';
 
                     if (empty($code)) {
                         $words = explode(' ', $name);
@@ -190,20 +200,15 @@ class EquipmentTypeController extends Controller
                         ]);
                     }
 
-                    // Removed $currentEquipmentType->jobPlans()->delete(); to prevent hard delete
+                    // Reset state so consecutive rows aren't accidentally parsed as equipments
+                    $parsingState = ''; 
                     continue;
                 }
 
-                // Skip header row
-                if (strtolower($colA) === 'kegiatan') {
-                    continue;
-                }
-
-                // Detail job plan row
-                if ($currentEquipmentType) {
+                if ($parsingState === 'jobplan' && $currentEquipmentType) {
                     $activityName = $colA;
                     $durationMinutes = floatval($row[1] ?? 0);
-                    $frequency = floatval($row[3] ?? 0); // Column D is Satuan/kali (frequency)
+                    $frequency = floatval($row[2] ?? 0); // Column C is Frekuensi / Tahun
 
                     if ($durationMinutes > 0) {
                         $totalHours = ($durationMinutes / 60) * $frequency;
@@ -220,7 +225,10 @@ class EquipmentTypeController extends Controller
             }
         });
 
-        return redirect()->back()->with('message', 'Data berhasil di-import dari Excel.');
+        // Trigger recalculation for all sites since weights might have changed
+        resolve(\App\Services\SdmCalculationEngine::class)->recalculateAllSites();
+
+        return redirect()->back()->with('message', 'Data Master Alat dan Job Plan berhasil di-import.');
     }
 
     public function downloadTemplate()
@@ -229,49 +237,86 @@ class EquipmentTypeController extends Controller
         $sheet = $spreadsheet->getActiveSheet();
         $sheet->setTitle('JOB PLAN');
 
-        // Set headers and sample structure
-        $sheet->setCellValue('A1', '(REACH STACKER)');
-        $sheet->setCellValue('B1', 'RS');
-        $sheet->setCellValue('C1', 'Mobile Equipment');
-        $sheet->setCellValue('D1', 23);
-        
-        $sheet->setCellValue('A2', 'Kegiatan');
-        $sheet->setCellValue('B2', 'Durasi (Menit)');
-        $sheet->setCellValue('C2', 'Durasi (Jam)');
-        $sheet->setCellValue('D2', 'Frekuensi / Tahun');
-        $sheet->setCellValue('E2', 'Total Jam / Tahun');
+        $styleBold = ['font' => ['bold' => true]];
 
-        // Sample Row 1
-        $sheet->setCellValue('A3', 'Daily Inspection');
-        $sheet->setCellValue('B3', 82.5);
-        $sheet->setCellValue('C3', '=B3/60');
-        $sheet->setCellValue('D3', 365);
-        $sheet->setCellValue('E3', '=C3*D3');
+        // Block 1
+        $sheet->setCellValue('A1', 'Nama Jenis Alat');
+        $sheet->setCellValue('B1', 'Kode');
+        $sheet->setCellValue('C1', 'Bobot');
+        $sheet->setCellValue('D1', 'Kategori');
+        $sheet->getStyle('A1:D1')->applyFromArray($styleBold);
 
-        // Sample Row 2
-        $sheet->setCellValue('A4', 'Service 250 & 750');
-        $sheet->setCellValue('B4', 270);
-        $sheet->setCellValue('C4', '=B4/60');
-        $sheet->setCellValue('D4', 36);
+        $sheet->setCellValue('A2', 'GRAB SHIP UNLOADER');
+        $sheet->setCellValue('B2', 'GSU');
+        $sheet->setCellValue('C2', 83);
+        $sheet->setCellValue('D2', 'Crane');
+
+        $sheet->setCellValue('A3', 'Kegiatan');
+        $sheet->setCellValue('B3', 'Durasi (Menit)');
+        $sheet->setCellValue('C3', 'Frekuensi / Tahun');
+        $sheet->setCellValue('D3', 'Durasi (Jam)');
+        $sheet->setCellValue('E3', 'Jam/tahun');
+        $sheet->getStyle('A3:E3')->applyFromArray($styleBold);
+
+        $sheet->setCellValue('A4', 'Daily Inspection');
+        $sheet->setCellValue('B4', 82.5);
+        $sheet->setCellValue('C4', 365);
+        $sheet->setCellValue('D4', '=B4/60');
         $sheet->setCellValue('E4', '=C4*D4');
 
-        // Add second equipment sample
-        $sheet->setCellValue('A6', '(FORKLIFT)');
-        $sheet->setCellValue('B6', 'FL');
-        $sheet->setCellValue('C6', 'Mobile Equipment');
-        $sheet->setCellValue('D6', 10);
-        
-        $sheet->setCellValue('A7', 'Kegiatan');
-        $sheet->setCellValue('B7', 'Durasi (Menit)');
-        $sheet->setCellValue('C7', 'Durasi (Jam)');
-        $sheet->setCellValue('D7', 'Frekuensi / Tahun');
-        $sheet->setCellValue('E7', 'Total Jam / Tahun');
+        $sheet->setCellValue('A5', 'Service 250 & 750');
+        $sheet->setCellValue('B5', 270);
+        $sheet->setCellValue('C5', 36);
+        $sheet->setCellValue('D5', '=B5/60');
+        $sheet->setCellValue('E5', '=C5*D5');
 
-        $sheet->setCellValue('A8', 'Daily Check');
-        $sheet->setCellValue('B8', 30);
-        $sheet->setCellValue('C8', '=B8/60');
-        $sheet->setCellValue('D8', 300);
-        $sheet->setCellValue('E8', '=C8*D8');
+        // Block 2
+        $row = 7;
+        $sheet->setCellValue("A{$row}", 'Nama Jenis Alat');
+        $sheet->setCellValue("B{$row}", 'Kode');
+        $sheet->setCellValue("C{$row}", 'Bobot');
+        $sheet->setCellValue("D{$row}", 'Kategori');
+        $sheet->getStyle("A{$row}:D{$row}")->applyFromArray($styleBold);
+
+        $row++;
+        $sheet->setCellValue("A{$row}", 'REACH STACKER');
+        $sheet->setCellValue("B{$row}", 'RS');
+        $sheet->setCellValue("C{$row}", 23);
+        $sheet->setCellValue("D{$row}", 'Mobile Equipment');
+
+        $row++;
+        $sheet->setCellValue("A{$row}", 'Kegiatan');
+        $sheet->setCellValue("B{$row}", 'Durasi (Menit)');
+        $sheet->setCellValue("C{$row}", 'Frekuensi / Tahun');
+        $sheet->setCellValue("D{$row}", 'Durasi (Jam)');
+        $sheet->setCellValue("E{$row}", 'Jam/tahun');
+        $sheet->getStyle("A{$row}:E{$row}")->applyFromArray($styleBold);
+
+        $row++;
+        $sheet->setCellValue("A{$row}", 'Daily Inspection');
+        $sheet->setCellValue("B{$row}", 82.5);
+        $sheet->setCellValue("C{$row}", 365);
+        $sheet->setCellValue("D{$row}", '=B'.$row.'/60');
+        $sheet->setCellValue("E{$row}", '=C'.$row.'*D'.$row);
+
+        $row++;
+        $sheet->setCellValue("A{$row}", 'Service 250 & 750');
+        $sheet->setCellValue("B{$row}", 270);
+        $sheet->setCellValue("C{$row}", 36);
+        $sheet->setCellValue("D{$row}", '=B'.$row.'/60');
+        $sheet->setCellValue("E{$row}", '=C'.$row.'*D'.$row);
+
+        $row++;
+        $sheet->setCellValue("A{$row}", 'Service 500');
+        $sheet->setCellValue("B{$row}", 405);
+        $sheet->setCellValue("C{$row}", 18);
+        $sheet->setCellValue("D{$row}", '=B'.$row.'/60');
+        $sheet->setCellValue("E{$row}", '=C'.$row.'*D'.$row);
+
+        // Auto size columns
+        foreach (range('A', 'E') as $col) {
+            $sheet->getColumnDimension($col)->setAutoSize(true);
+        }
 
         $writer = new Xlsx($spreadsheet);
         
