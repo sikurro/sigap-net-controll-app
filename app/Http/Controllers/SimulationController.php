@@ -29,9 +29,10 @@ class SimulationController extends Controller
         ]);
 
         $equipments = $request->input('equipments', []);
+        $workScheme = $request->input('work_scheme', 'Non-Shift');
         
         // Use the refactored engine to calculate on the fly
-        $simulationResult = $engine->calculateFromRawData($equipments);
+        $simulationResult = $engine->calculateFromRawData($equipments, $workScheme);
 
         // Check if site already exists for comparison
         $existingSite = Site::where('name', $request->name)->first();
@@ -51,12 +52,13 @@ class SimulationController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'region' => 'required|string|max:255',
+            'work_scheme' => 'nullable|string|in:Shift,Non-Shift',
             'equipments' => 'array',
         ]);
 
         $site = Site::firstOrCreate(
             ['name' => $request->name],
-            ['region' => $request->region, 'status' => true]
+            ['region' => $request->region, 'work_scheme' => $request->input('work_scheme', 'Non-Shift'), 'status' => true]
         );
 
         // Update region if site already existed but region was changed in simulation

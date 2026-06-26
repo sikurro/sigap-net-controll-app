@@ -21,6 +21,7 @@ class SiteController extends Controller
                 'id' => $site->id,
                 'name' => $site->name,
                 'region' => $site->region,
+                'work_scheme' => $site->work_scheme ?? 'Non-Shift',
                 'jumlah_alat' => $site->equipments->sum('quantity'),
                 'site_class' => $site->site_class ?? '-',
                 'total_weight' => $site->total_weight ?? 0,
@@ -54,6 +55,7 @@ class SiteController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'region' => 'required|string|max:255',
+            'work_scheme' => 'required|string|in:Shift,Non-Shift',
             'existing_technical_staff' => 'required|integer|min:0',
             'existing_non_technical_staff' => 'required|integer|min:0',
             'equipments' => 'nullable|array',
@@ -68,6 +70,7 @@ class SiteController extends Controller
             $site = Site::create([
                 'name' => $validated['name'],
                 'region' => $validated['region'],
+                'work_scheme' => $validated['work_scheme'],
                 'existing_technical_staff' => $validated['existing_technical_staff'],
                 'existing_non_technical_staff' => $validated['existing_non_technical_staff'],
             ]);
@@ -87,6 +90,7 @@ class SiteController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'region' => 'required|string|max:255',
+            'work_scheme' => 'required|string|in:Shift,Non-Shift',
             'existing_technical_staff' => 'required|integer|min:0',
             'existing_non_technical_staff' => 'required|integer|min:0',
             'equipments' => 'nullable|array',
@@ -99,6 +103,7 @@ class SiteController extends Controller
             $site->update([
                 'name' => $validated['name'],
                 'region' => $validated['region'],
+                'work_scheme' => $validated['work_scheme'],
                 'existing_technical_staff' => $validated['existing_technical_staff'],
                 'existing_non_technical_staff' => $validated['existing_non_technical_staff'],
             ]);

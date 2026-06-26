@@ -33,6 +33,7 @@ const form = useForm({
     id: null,
     name: '',
     region: '',
+    work_scheme: 'Non-Shift',
     existing_technical_staff: 0,
     existing_non_technical_staff: 0,
     equipments: [],
@@ -46,6 +47,7 @@ const openCreateModal = () => {
     isEditing.value = false;
     form.reset();
     form.clearErrors();
+    form.work_scheme = 'Non-Shift';
     form.equipments = [];
     showModal.value = true;
 };
@@ -56,6 +58,7 @@ const openEditModal = (site) => {
     form.id = site.id;
     form.name = site.name;
     form.region = site.region;
+    form.work_scheme = site.work_scheme || 'Non-Shift';
     form.existing_technical_staff = site.existing_technical_staff;
     form.existing_non_technical_staff = site.existing_non_technical_staff;
     form.equipments = site.equipments.map(eq => ({
@@ -163,6 +166,7 @@ const submitImport = () => {
                                     <th class="w-8 pb-4 pt-6 px-6"></th>
                                     <th class="pb-4 pt-6 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Site</th>
                                     <th class="pb-4 pt-6 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Wilayah</th>
+                                    <th class="pb-4 pt-6 px-4 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Skema</th>
                                     <th class="pb-4 pt-6 px-6 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Kelas</th>
                                     <th class="pb-4 pt-6 px-6 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Total Bobot</th>
                                     <th class="pb-4 pt-6 px-6 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Jml Alat</th>
@@ -184,6 +188,9 @@ const submitImport = () => {
                                         </td>
                                         <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900" @click="toggleRow(site.id)">{{ site.name }}</td>
                                         <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500" @click="toggleRow(site.id)">{{ site.region }}</td>
+                                        <td class="px-4 py-4 whitespace-nowrap text-xs text-center" @click="toggleRow(site.id)">
+                                            <span :class="site.work_scheme === 'Shift' ? 'bg-blue-100 text-blue-800' : 'bg-amber-100 text-amber-800'" class="px-2 py-1 rounded font-bold">{{ site.work_scheme }}</span>
+                                        </td>
                                         <td class="px-4 py-4 whitespace-nowrap text-sm text-center font-bold text-gray-900" @click="toggleRow(site.id)">{{ site.site_class }}</td>
                                         <td class="px-4 py-4 whitespace-nowrap text-sm text-center font-semibold text-indigo-600" @click="toggleRow(site.id)">{{ site.total_weight }}</td>
                                         <td class="px-4 py-4 whitespace-nowrap text-sm text-center text-gray-500" @click="toggleRow(site.id)">{{ site.jumlah_alat }}</td>
@@ -247,6 +254,14 @@ const submitImport = () => {
                         <InputLabel for="region" value="Wilayah" />
                         <TextInput id="region" v-model="form.region" type="text" class="mt-1 block w-full" />
                         <InputError :message="form.errors.region" class="mt-2" />
+                    </div>
+                    <div class="md:col-span-2">
+                        <InputLabel for="work_scheme" value="Skema Kerja Teknisi Pemeliharaan" />
+                        <select id="work_scheme" v-model="form.work_scheme" class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm mt-1 block w-full font-bold">
+                            <option value="Non-Shift">Teknisi Non-Shift (Normal: ~1186 Jam Produktif / Tahun)</option>
+                            <option value="Shift">Teknisi Shift (Khusus: ~1171 Jam Produktif / Tahun)</option>
+                        </select>
+                        <InputError :message="form.errors.work_scheme" class="mt-2" />
                     </div>
                     <div>
                         <InputLabel for="existing_technical_staff" value="Jumlah Teknisi Eksisting" />
