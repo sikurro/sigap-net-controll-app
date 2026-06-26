@@ -55,19 +55,5 @@ class SettingSeeder extends Seeder
                 'description' => 'Matriks parameter perhitungan jam kerja produktif (Effective Working Hours / Man Hours) untuk teknisi Shift dan Non-Shift.',
             ]
         );
-
-        Setting::firstOrCreate(
-            ['key' => 'site_class_thresholds'],
-            [
-                'value' => json_encode([
-                    ['class' => 'A', 'min_hours' => 50000],
-                    ['class' => 'B', 'min_hours' => 20000],
-                    ['class' => 'C', 'min_hours' => 5000],
-                    ['class' => 'D', 'min_hours' => 0],
-                ]),
-                'type' => 'json',
-                'description' => 'Batas minimal total jam pemeliharaan (maintenance hours) untuk menentukan kelas sebuah Site. Kelas A harus berada paling atas dengan min_hours tertinggi.',
-            ]
-        );
     }
 }
