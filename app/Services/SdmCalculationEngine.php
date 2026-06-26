@@ -220,7 +220,8 @@ class SdmCalculationEngine
                    + floatval($deductions['meeting_report_travel'] ?? 0)
                    + floatval($deductions['training_doc'] ?? 0)
                    + floatval($deductions['standby'] ?? 0)
-                   + floatval($deductions['skill_factor'] ?? 0);
+                   + floatval($deductions['skill_factor'] ?? 0)
+                   + floatval($deductions['other'] ?? 0);
 
         $annualLeak = $dailyLeak * $activeDays;
         $productiveHours = max(1, $availableHours - $annualLeak);

@@ -30,7 +30,8 @@ class SettingSeeder extends Seeder
                             'meeting_report_travel' => 1.0,
                             'training_doc' => 0.06,
                             'standby' => 0.5,
-                            'skill_factor' => 0
+                            'skill_factor' => 0,
+                            'other' => 0
                         ]
                     ],
                     'non_shift' => [
@@ -45,7 +46,8 @@ class SettingSeeder extends Seeder
                             'meeting_report_travel' => 1.0,
                             'training_doc' => 0.06,
                             'standby' => 0.5,
-                            'skill_factor' => 0
+                            'skill_factor' => 0,
+                            'other' => 0
                         ]
                     ]
                 ]),

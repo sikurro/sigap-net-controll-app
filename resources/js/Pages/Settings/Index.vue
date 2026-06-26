@@ -38,7 +38,8 @@ const defaultMatrix = {
             meeting_report_travel: 1.0,
             training_doc: 0.06,
             standby: 0.5,
-            skill_factor: 0
+            skill_factor: 0,
+            other: 0
         }
     },
     non_shift: {
@@ -53,7 +54,8 @@ const defaultMatrix = {
             meeting_report_travel: 1.0,
             training_doc: 0.06,
             standby: 0.5,
-            skill_factor: 0
+            skill_factor: 0,
+            other: 0
         }
     }
 };
@@ -92,7 +94,7 @@ const getAvailableHours = (data) => {
 
 const getDailyLeak = (data) => {
     const d = data.daily_deductions || {};
-    return Number(d.meal_rest || 0) + Number(d.meeting_report_travel || 0) + Number(d.training_doc || 0) + Number(d.standby || 0) + Number(d.skill_factor || 0);
+    return Number(d.meal_rest || 0) + Number(d.meeting_report_travel || 0) + Number(d.training_doc || 0) + Number(d.standby || 0) + Number(d.skill_factor || 0) + Number(d.other || 0);
 };
 
 const getAnnualLeak = (data) => Number((getDailyLeak(data) * getActiveDays(data)).toFixed(1));
@@ -272,12 +274,19 @@ const submit = () => {
                                         <td class="p-2.5 text-center text-gray-500">Jam/Hari</td>
                                         <td class="p-2.5 text-gray-500 text-xs">Faktor keahlian teknisi</td>
                                     </tr>
+                                    <tr>
+                                        <td class="p-2.5 px-3 font-medium text-gray-700">10. Lain-lain (Other)</td>
+                                        <td class="p-1.5 px-3 border border-gray-200 bg-blue-50/20"><input type="number" step="0.1" v-model="matrixForm.shift.daily_deductions.other" class="w-full text-center py-1 border-gray-300 rounded text-sm font-bold" /></td>
+                                        <td class="p-1.5 px-3 border border-gray-200 bg-amber-50/20"><input type="number" step="0.1" v-model="matrixForm.non_shift.daily_deductions.other" class="w-full text-center py-1 border-gray-300 rounded text-sm font-bold" /></td>
+                                        <td class="p-2.5 text-center text-gray-500">Jam/Hari</td>
+                                        <td class="p-2.5 text-gray-500 text-xs">Alokasi kebocoran waktu lainnya</td>
+                                    </tr>
                                     <tr class="bg-red-50/40 font-semibold text-red-900">
                                         <td class="p-2 px-3 text-right text-xs">Total Kebocoran Harian:</td>
                                         <td class="p-2 px-3 text-center border border-gray-200 font-mono">{{ getDailyLeak(matrixForm.shift).toFixed(2) }}</td>
                                         <td class="p-2 px-3 text-center border border-gray-200 font-mono">{{ getDailyLeak(matrixForm.non_shift).toFixed(2) }}</td>
                                         <td class="p-2 text-center text-xs">Jam/Hari</td>
-                                        <td class="p-2 text-xs text-gray-500">Sum parameter 5 s.d 9</td>
+                                        <td class="p-2 text-xs text-gray-500">Sum parameter 5 s.d 10</td>
                                     </tr>
                                     <tr class="bg-red-100/60 font-bold text-red-950">
                                         <td class="p-2.5 px-3 text-right">Total Kebocoran Setahun:</td>
