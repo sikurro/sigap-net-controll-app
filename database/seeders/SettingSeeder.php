@@ -13,12 +13,46 @@ class SettingSeeder extends Seeder
      */
     public function run(): void
     {
-        Setting::firstOrCreate(
-            ['key' => 'effective_working_hours_per_year'],
+        Setting::updateOrCreate(
+            ['key' => 'man_hours_matrix'],
             [
-                'value' => '1800',
-                'type' => 'integer',
-                'description' => 'Total jam kerja efektif teknisi per orang dalam 1 tahun (setelah dikurangi cuti, libur, dll).',
+                'value' => json_encode([
+                    'calendar_mode' => 'annual',
+                    'shift' => [
+                        'hours_per_day' => 7,
+                        'days_per_week' => 6,
+                        'weeks_per_year' => 48,
+                        'active_days_per_year' => 288,
+                        'annual_leave_hours' => 84,
+                        'sick_leave_hours' => 24,
+                        'daily_deductions' => [
+                            'meal_rest' => 1.0,
+                            'meeting_report_travel' => 1.0,
+                            'training_doc' => 0.06,
+                            'standby' => 0.5,
+                            'skill_factor' => 0,
+                            'other' => 0
+                        ]
+                    ],
+                    'non_shift' => [
+                        'hours_per_day' => 8,
+                        'days_per_week' => 5,
+                        'weeks_per_year' => 48,
+                        'active_days_per_year' => 240,
+                        'annual_leave_hours' => 96,
+                        'sick_leave_hours' => 24,
+                        'daily_deductions' => [
+                            'meal_rest' => 1.0,
+                            'meeting_report_travel' => 1.0,
+                            'training_doc' => 0.06,
+                            'standby' => 0.5,
+                            'skill_factor' => 0,
+                            'other' => 0
+                        ]
+                    ]
+                ]),
+                'type' => 'json',
+                'description' => 'Matriks parameter perhitungan jam kerja produktif (Effective Working Hours / Man Hours) untuk teknisi Shift dan Non-Shift.',
             ]
         );
 

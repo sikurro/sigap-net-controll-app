@@ -35,7 +35,7 @@ class SdmCalculationEngine
         }
 
         // 5. Calculate Technical Staff Needed
-        $technicalStaffNeeded = $this->calculateTechnicalStaff($rawEquipments, $totalHours);
+        $technicalStaffNeeded = $this->calculateTechnicalStaff($rawEquipments, $totalHours, $site->work_scheme ?? 'Non-Shift');
 
         // 6. Calculate Non-Technical Staff Needed
         $nonTechnicalStaffNeeded = $this->calculateNonTechnicalStaff($siteClass);
@@ -48,44 +48,52 @@ class SdmCalculationEngine
             'technical_staff_needed' => $technicalStaffNeeded,
             'non_technical_staff_needed' => $nonTechnicalStaffNeeded,
         ]);
+
+        return $site;
     }
 
     /**
-     * Calculate Total Maintenance Hours for a Site
+     * Calculate total annual maintenance hours for a site
      */
     protected function calculateTotalMaintenanceHours(Site $site): float
     {
-        $rawEquipments = [];
+        $totalHours = 0;
+
         foreach ($site->equipments as $siteEquipment) {
-            $rawEquipments[] = [
-                'equipment_type_id' => $siteEquipment->equipment_type_id,
-                'quantity' => $siteEquipment->quantity,
-            ];
+            $equipmentType = $siteEquipment->equipmentType;
+            if (!$equipmentType) {
+                continue;
+            }
+
+            foreach ($equipmentType->jobPlans as $jobPlan) {
+                $hoursPerOccurrence = $jobPlan->duration_minutes / 60;
+                $hoursPerYear = $hoursPerOccurrence * $jobPlan->frequency_per_year;
+                $totalHours += $hoursPerYear * $siteEquipment->quantity;
+            }
         }
 
-        return $this->calculateTotalHoursFromRaw($rawEquipments);
+        return round($totalHours, 2);
     }
 
     /**
-     * Calculate Total Weight for a Site
+     * Calculate total weight for a site
      */
     protected function calculateTotalWeight(Site $site): int
     {
-        $rawEquipments = [];
+        $totalWeight = 0;
+
         foreach ($site->equipments as $siteEquipment) {
-            $rawEquipments[] = [
-                'equipment_type_id' => $siteEquipment->equipment_type_id,
-                'quantity' => $siteEquipment->quantity,
-            ];
+            $equipmentType = $siteEquipment->equipmentType;
+            if ($equipmentType) {
+                $totalWeight += $equipmentType->weight * $siteEquipment->quantity;
+            }
         }
 
-        return $this->calculateTotalWeightFromRaw($rawEquipments);
+        return $totalWeight;
     }
 
     /**
-     * Calculate Total Maintenance Hours from raw array of equipments
-     * 
-     * @param array $equipments Array of ['equipment_type_id' => x, 'quantity' => y]
+     * Calculate total hours from raw equipment array
      */
     protected function calculateTotalHoursFromRaw(array $equipments): float
     {
@@ -102,23 +110,18 @@ class SdmCalculationEngine
                 continue;
             }
 
-            $jobPlansHours = 0;
             foreach ($equipmentType->jobPlans as $jobPlan) {
                 $hoursPerOccurrence = $jobPlan->duration_minutes / 60;
                 $hoursPerYear = $hoursPerOccurrence * $jobPlan->frequency_per_year;
-                $jobPlansHours += $hoursPerYear;
+                $totalHours += $hoursPerYear * $qty;
             }
-
-            $totalHours += ($jobPlansHours * $qty);
         }
 
-        return $totalHours;
+        return round($totalHours, 2);
     }
 
     /**
-     * Calculate Total Weight from raw array of equipments
-     * 
-     * @param array $equipments Array of ['equipment_type_id' => x, 'quantity' => y]
+     * Calculate total weight from raw equipment array
      */
     protected function calculateTotalWeightFromRaw(array $equipments): int
     {
@@ -131,11 +134,9 @@ class SdmCalculationEngine
             }
 
             $equipmentType = \App\Models\EquipmentType::find($eq['equipment_type_id']);
-            if (!$equipmentType) {
-                continue;
+            if ($equipmentType) {
+                $totalWeight += $equipmentType->weight * $qty;
             }
-
-            $totalWeight += ($equipmentType->weight * $qty);
         }
 
         return $totalWeight;
@@ -144,12 +145,12 @@ class SdmCalculationEngine
     /**
      * Calculate all parameters from raw equipment data without saving
      */
-    public function calculateFromRawData(array $equipments): array
+    public function calculateFromRawData(array $equipments, string $workScheme = 'Non-Shift'): array
     {
         $totalHours = $this->calculateTotalHoursFromRaw($equipments);
         $totalWeight = $this->calculateTotalWeightFromRaw($equipments);
         $siteClass = $this->determineSiteClass($totalWeight);
-        $technicalStaffNeeded = $this->calculateTechnicalStaff($equipments, $totalHours);
+        $technicalStaffNeeded = $this->calculateTechnicalStaff($equipments, $totalHours, $workScheme);
         $nonTechnicalStaffNeeded = $this->calculateNonTechnicalStaff($siteClass);
 
         return [
@@ -168,6 +169,10 @@ class SdmCalculationEngine
     {
         $siteClasses = \App\Models\SiteClass::orderBy('min_weight', 'desc')->get();
 
+        if ($siteClasses->isEmpty()) {
+            return null;
+        }
+
         foreach ($siteClasses as $siteClass) {
             if ($totalWeight >= $siteClass->min_weight) {
                 if (is_null($siteClass->max_weight) || $totalWeight <= $siteClass->max_weight) {
@@ -181,15 +186,59 @@ class SdmCalculationEngine
     }
 
     /**
+     * Get dynamically calculated productive hours per year based on Man Hours Matrix
+     */
+    public function getProductiveHours(string $scheme = 'Non-Shift'): float
+    {
+        $matrixSetting = Setting::getValue('man_hours_matrix');
+        if (!$matrixSetting) {
+            return 1800; // Fallback
+        }
+
+        $matrix = is_string($matrixSetting) ? json_decode($matrixSetting, true) : $matrixSetting;
+        $data = ($scheme === 'Shift') ? ($matrix['shift'] ?? null) : ($matrix['non_shift'] ?? null);
+
+        if (!$data) {
+            return 1800;
+        }
+
+        $hoursPerDay = floatval($data['hours_per_day'] ?? 8);
+        $activeDays = floatval($data['active_days_per_year'] ?? 240);
+
+        if (($matrix['calendar_mode'] ?? 'annual') === 'weekly') {
+            $daysPerWeek = floatval($data['days_per_week'] ?? 5);
+            $weeksPerYear = floatval($data['weeks_per_year'] ?? 48);
+            $activeDays = $daysPerWeek * $weeksPerYear;
+        }
+
+        $baseAnnualHours = $hoursPerDay * $activeDays;
+        $leaveHours = floatval($data['annual_leave_hours'] ?? 0) + floatval($data['sick_leave_hours'] ?? 0);
+        $availableHours = max(0, $baseAnnualHours - $leaveHours);
+
+        $deductions = $data['daily_deductions'] ?? [];
+        $dailyLeak = floatval($deductions['meal_rest'] ?? 0)
+                   + floatval($deductions['meeting_report_travel'] ?? 0)
+                   + floatval($deductions['training_doc'] ?? 0)
+                   + floatval($deductions['standby'] ?? 0)
+                   + floatval($deductions['skill_factor'] ?? 0)
+                   + floatval($deductions['other'] ?? 0);
+
+        $annualLeak = $dailyLeak * $activeDays;
+        $productiveHours = max(1, $availableHours - $annualLeak);
+
+        return round($productiveHours);
+    }
+
+    /**
      * Calculate how many technical staff are needed
      */
-    protected function calculateTechnicalStaff(array $rawEquipments, float $totalHours): float
+    protected function calculateTechnicalStaff(array $rawEquipments, float $totalHours, string $workScheme = 'Non-Shift'): float
     {
         if (empty($rawEquipments)) {
             return 0;
         }
 
-        $effectiveWorkingHours = Setting::getValue('effective_working_hours_per_year', 1800);
+        $effectiveWorkingHours = $this->getProductiveHours($workScheme);
 
         if ($effectiveWorkingHours <= 0) {
             return 0;

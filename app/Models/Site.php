@@ -12,6 +12,7 @@ class Site extends Model
     protected $fillable = [
         'name',
         'region',
+        'work_scheme',
         'site_class',
         'total_weight',
         'total_maintenance_hours',
