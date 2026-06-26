@@ -117,17 +117,18 @@ const submit = () => {
         </template>
 
         <div class="py-12">
-            <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-8">
+            <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
                 
-                <!-- Section 1: Dynamic Man Hours Matrix Table -->
-                <div v-if="manHoursItem" class="bg-white overflow-hidden shadow-sm sm:rounded-lg border border-gray-200">
-                    <div class="p-6 text-gray-900">
-                        <div class="flex justify-between items-start mb-4">
-                            <div>
-                                <h3 class="text-xl font-bold text-gray-800">Matriks Perhitungan Jam Kerja Produktif (Man Hours)</h3>
-                                <p class="text-sm text-gray-500 mt-1">Sesuaikan rincian kalender formal dan kegiatan harian untuk menentukan kapasitas jam produktif teknisi.</p>
+                <form @submit.prevent="submit">
+                    <!-- Section 1: Dynamic Man Hours Matrix Table -->
+                    <div v-if="manHoursItem" class="bg-white overflow-hidden shadow-sm sm:rounded-lg border border-gray-200">
+                        <div class="p-6 text-gray-900">
+                            <div class="flex justify-between items-start mb-4">
+                                <div>
+                                    <h3 class="text-xl font-bold text-gray-800">Matriks Perhitungan Jam Kerja Produktif (Man Hours)</h3>
+                                    <p class="text-sm text-gray-500 mt-1">Sesuaikan rincian kalender formal dan kegiatan harian untuk menentukan kapasitas jam produktif teknisi.</p>
+                                </div>
                             </div>
-                        </div>
 
                         <!-- Mode Switcher -->
                         <div class="flex flex-wrap items-center gap-6 mb-6 bg-indigo-50/60 p-4 rounded-xl border border-indigo-100">
@@ -308,56 +309,22 @@ const submit = () => {
                                 </tbody>
                             </table>
                         </div>
+
+                        <div class="flex items-center justify-end gap-4 mt-6 pt-4 border-t border-gray-200">
+                            <Transition
+                                enter-active-class="transition ease-in-out"
+                                enter-from-class="opacity-0"
+                                leave-active-class="transition ease-in-out"
+                                leave-to-class="opacity-0"
+                            >
+                                <p v-if="form.recentlySuccessful" class="text-sm font-bold text-emerald-600 bg-emerald-50 px-3 py-1.5 rounded border border-emerald-200">✓ Parameter Matriks berhasil disimpan & dikalkulasi ulang.</p>
+                            </Transition>
+                            <InputError :message="form.errors.settings" class="mt-2" />
+                            <PrimaryButton :disabled="form.processing" class="px-6 py-3 text-base bg-indigo-600 hover:bg-indigo-700">Simpan Pengaturan Matriks</PrimaryButton>
+                        </div>
                     </div>
                 </div>
-
-                <!-- Section 2: Other Settings (e.g. Thresholds) -->
-                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg border border-gray-200">
-                    <div class="p-6 text-gray-900">
-                        <h3 class="text-xl font-bold text-gray-800 mb-6">Pengaturan Tambahan Lainnya</h3>
-                        
-                        <form @submit.prevent="submit">
-                            <div v-for="setting in form.settings.filter(s => s.key !== 'man_hours_matrix')" :key="setting.id" class="mb-6 pb-6 border-b border-gray-200 last:border-0 last:pb-0 last:mb-0">
-                                <InputLabel :for="'setting_' + setting.id" class="text-lg font-bold text-gray-800">
-                                    {{ setting.key }}
-                                </InputLabel>
-                                <p class="text-sm text-gray-500 mb-2 mt-1">{{ setting.description }}</p>
-                                
-                                <div v-if="setting.type === 'json'">
-                                    <textarea
-                                        :id="'setting_' + setting.id"
-                                        v-model="setting.value"
-                                        rows="6"
-                                        class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm mt-1 block w-full font-mono text-sm"
-                                    ></textarea>
-                                </div>
-                                <div v-else>
-                                    <TextInput
-                                        :id="'setting_' + setting.id"
-                                        type="text"
-                                        class="mt-1 block w-full"
-                                        v-model="setting.value"
-                                        required
-                                    />
-                                </div>
-                            </div>
-
-                            <div class="flex items-center gap-4 mt-8 pt-4 border-t">
-                                <PrimaryButton :disabled="form.processing" class="px-6 py-3 text-base">Simpan Seluruh Pengaturan</PrimaryButton>
-
-                                <Transition
-                                    enter-active-class="transition ease-in-out"
-                                    enter-from-class="opacity-0"
-                                    leave-active-class="transition ease-in-out"
-                                    leave-to-class="opacity-0"
-                                >
-                                    <p v-if="form.recentlySuccessful" class="text-sm font-bold text-emerald-600 bg-emerald-50 px-3 py-1.5 rounded border border-emerald-200">✓ Berhasil disimpan & dikalkulasi ulang.</p>
-                                </Transition>
-                                <InputError :message="form.errors.settings" class="mt-2" />
-                            </div>
-                        </form>
-                    </div>
-                </div>
+                </form>
 
             </div>
         </div>
