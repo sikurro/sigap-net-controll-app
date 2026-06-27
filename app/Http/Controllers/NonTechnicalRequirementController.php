@@ -12,7 +12,7 @@ class NonTechnicalRequirementController extends Controller
 {
     public function index()
     {
-        $siteClasses = SiteClass::all();
+        $siteClasses = SiteClass::orderBy('min_weight', 'desc')->get();
         $positions = NonTechnicalPosition::all();
         $requirements = NonTechnicalRequirement::all();
 
