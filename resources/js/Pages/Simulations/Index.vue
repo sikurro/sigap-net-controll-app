@@ -38,12 +38,42 @@ const removeEquipmentRow = (index) => {
     }
 };
 
+const formatEquipmentLabel = (type) => {
+    return `[${type.code || '-'}] ${type.name} (Bobot: ${type.weight} | ⏱️ ${type.annual_hours || 0} Jam/Thn)`;
+};
+
+const getSelectedType = (eq) => {
+    if (!eq.equipment_type_id) return null;
+    return props.equipmentTypes.find(t => t.id === eq.equipment_type_id) || null;
+};
+
+const totalSimulationHours = computed(() => {
+    let total = 0;
+    form.equipments.forEach(eq => {
+        const type = getSelectedType(eq);
+        if (type && eq.quantity > 0) {
+            total += (type.annual_hours || 0) * eq.quantity;
+        }
+    });
+    return total.toFixed(2);
+});
+
+const totalSimulationWeight = computed(() => {
+    let total = 0;
+    form.equipments.forEach(eq => {
+        const type = getSelectedType(eq);
+        if (type && eq.quantity > 0) {
+            total += (type.weight || 0) * eq.quantity;
+        }
+    });
+    return total;
+});
+
 const isExactMatch = (eq) => {
     if (!eq.equipment_type_id) return false;
-    const type = props.equipmentTypes.find(t => t.id === eq.equipment_type_id);
+    const type = getSelectedType(eq);
     if (!type) return false;
-    const expected = `[${type.code || '-'}] ${type.name} (Bobot: ${type.weight})`;
-    return eq.searchQuery === expected;
+    return eq.searchQuery === formatEquipmentLabel(type);
 };
 
 const filterEquipmentTypes = (eq) => {
@@ -61,7 +91,7 @@ const selectEquipmentType = (eq, type) => {
     eq.equipment_type_id = type.id;
     eq.name = type.name;
     eq.code = type.code || '-';
-    eq.searchQuery = `[${type.code || '-'}] ${type.name} (Bobot: ${type.weight})`;
+    eq.searchQuery = formatEquipmentLabel(type);
     eq.isOpen = false;
 };
 
@@ -82,9 +112,9 @@ const closeDropdown = (eq) => {
             eq.name = '';
             eq.code = '';
         } else if (eq.equipment_type_id) {
-            const type = props.equipmentTypes.find(t => t.id === eq.equipment_type_id);
+            const type = getSelectedType(eq);
             if (type) {
-                eq.searchQuery = `[${type.code || '-'}] ${type.name} (Bobot: ${type.weight})`;
+                eq.searchQuery = formatEquipmentLabel(type);
             }
         } else {
             eq.searchQuery = '';
@@ -254,9 +284,14 @@ const formatNum = (num) => {
                                                     <span class="font-bold text-indigo-900 mr-1.5">[{{ type.code || '-' }}]</span>
                                                     <span class="text-gray-800">{{ type.name }}</span>
                                                 </div>
-                                                <span class="text-xs px-2 py-0.5 bg-gray-100 text-gray-600 rounded-full font-medium ml-2 whitespace-nowrap">
-                                                    ⚖️ Bobot: {{ type.weight }}
-                                                </span>
+                                                <div class="flex items-center space-x-1.5 ml-2 whitespace-nowrap">
+                                                    <span class="text-xs px-2 py-0.5 bg-blue-50 text-blue-700 rounded-full font-medium">
+                                                        ⏱️ {{ type.annual_hours || 0 }} Jam/Thn
+                                                    </span>
+                                                    <span class="text-xs px-2 py-0.5 bg-gray-100 text-gray-600 rounded-full font-medium">
+                                                        ⚖️ Bobot: {{ type.weight }}
+                                                    </span>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -265,6 +300,40 @@ const formatNum = (num) => {
                                 <div class="md:col-span-3 pr-6">
                                     <InputLabel :for="'eq_qty_'+index" value="Jml Alat" />
                                     <TextInput :id="'eq_qty_'+index" v-model="eq.quantity" type="number" min="1" class="mt-1 block w-full text-sm" />
+                                </div>
+
+                                <div v-if="eq.equipment_type_id && getSelectedType(eq)" class="md:col-span-12 mt-1 pt-2 border-t border-gray-200 flex flex-wrap items-center justify-between text-xs text-indigo-900 bg-indigo-50/70 px-3 py-1.5 rounded">
+                                    <span class="font-semibold">⚡ Subtotal Baris ini ({{ eq.quantity || 0 }} Unit):</span>
+                                    <div class="flex items-center space-x-4">
+                                        <span>⏱️ Total Jam: <strong class="text-indigo-700">{{ ((getSelectedType(eq).annual_hours || 0) * (eq.quantity || 0)).toFixed(2) }} Jam/Tahun</strong></span>
+                                        <span>⚖️ Total Bobot: <strong class="text-indigo-700">{{ (getSelectedType(eq).weight || 0) * (eq.quantity || 0) }}</strong></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Banner Summary Grand Total -->
+                            <div class="bg-gradient-to-r from-slate-800 to-indigo-900 text-white p-4 rounded-lg shadow-md mb-6 flex flex-col md:flex-row items-center justify-between">
+                                <div class="flex items-center space-x-3 mb-3 md:mb-0">
+                                    <div class="p-2 bg-white/10 rounded-full">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-indigo-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-bold text-sm md:text-base">Akumulasi Sementara ({{ form.equipments.length }} Baris Alat)</h4>
+                                        <p class="text-xs text-indigo-200">Estimasi total kebutuhan pemeliharaan dan bobot site sebelum kalkulasi</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-center space-x-6 bg-black/20 px-4 py-2 rounded-md border border-white/10 w-full md:w-auto justify-around md:justify-end">
+                                    <div class="text-center">
+                                        <span class="block text-[10px] uppercase tracking-wider text-indigo-300">Total Jam Pemeliharaan</span>
+                                        <span class="font-extrabold text-lg text-amber-300">⏱️ {{ totalSimulationHours }} Jam/Thn</span>
+                                    </div>
+                                    <div class="h-8 w-px bg-white/20"></div>
+                                    <div class="text-center">
+                                        <span class="block text-[10px] uppercase tracking-wider text-indigo-300">Total Bobot Alat</span>
+                                        <span class="font-extrabold text-lg text-emerald-300">⚖️ {{ totalSimulationWeight }}</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
