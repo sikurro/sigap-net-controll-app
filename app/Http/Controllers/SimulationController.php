@@ -14,7 +14,7 @@ class SimulationController extends Controller
     public function index()
     {
         return Inertia::render('Simulations/Index', [
-            'equipmentTypes' => EquipmentType::all(),
+            'equipmentTypes' => EquipmentType::orderBy('name', 'asc')->get(),
             'existingSites' => Site::select('id', 'name', 'region', 'site_class', 'technical_staff_needed', 'non_technical_staff_needed')->get(),
         ]);
     }
