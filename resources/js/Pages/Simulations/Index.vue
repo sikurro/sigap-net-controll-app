@@ -18,7 +18,7 @@ const form = useForm({
     name: '',
     region: '',
     equipments: [
-        { equipment_type_id: '', name: '', code: '', quantity: 1 }
+        { equipment_type_id: '', name: '', code: '', quantity: 1, searchQuery: '', isOpen: false }
     ],
 });
 
@@ -29,13 +29,75 @@ const showTechBreakdown = ref(false);
 const showNonTechBreakdown = ref(false);
 
 const addEquipmentRow = () => {
-    form.equipments.push({ equipment_type_id: '', name: '', code: '', quantity: 1 });
+    form.equipments.push({ equipment_type_id: '', name: '', code: '', quantity: 1, searchQuery: '', isOpen: false });
 };
 
 const removeEquipmentRow = (index) => {
     if (form.equipments.length > 1) {
         form.equipments.splice(index, 1);
     }
+};
+
+const isExactMatch = (eq) => {
+    if (!eq.equipment_type_id) return false;
+    const type = props.equipmentTypes.find(t => t.id === eq.equipment_type_id);
+    if (!type) return false;
+    const expected = `[${type.code || '-'}] ${type.name} (Bobot: ${type.weight})`;
+    return eq.searchQuery === expected;
+};
+
+const filterEquipmentTypes = (eq) => {
+    if (!eq.searchQuery || isExactMatch(eq)) {
+        return props.equipmentTypes;
+    }
+    const q = eq.searchQuery.toLowerCase();
+    return props.equipmentTypes.filter(t => 
+        t.name.toLowerCase().includes(q) || 
+        (t.code && t.code.toLowerCase().includes(q))
+    );
+};
+
+const selectEquipmentType = (eq, type) => {
+    eq.equipment_type_id = type.id;
+    eq.name = type.name;
+    eq.code = type.code || '-';
+    eq.searchQuery = `[${type.code || '-'}] ${type.name} (Bobot: ${type.weight})`;
+    eq.isOpen = false;
+};
+
+const handleSearchInput = (eq) => {
+    eq.isOpen = true;
+    if (!eq.searchQuery.trim()) {
+        eq.equipment_type_id = '';
+        eq.name = '';
+        eq.code = '';
+    }
+};
+
+const closeDropdown = (eq) => {
+    setTimeout(() => {
+        eq.isOpen = false;
+        if (!eq.searchQuery.trim()) {
+            eq.equipment_type_id = '';
+            eq.name = '';
+            eq.code = '';
+        } else if (eq.equipment_type_id) {
+            const type = props.equipmentTypes.find(t => t.id === eq.equipment_type_id);
+            if (type) {
+                eq.searchQuery = `[${type.code || '-'}] ${type.name} (Bobot: ${type.weight})`;
+            }
+        } else {
+            eq.searchQuery = '';
+        }
+    }, 200);
+};
+
+const clearEquipmentType = (eq) => {
+    eq.equipment_type_id = '';
+    eq.name = '';
+    eq.code = '';
+    eq.searchQuery = '';
+    eq.isOpen = false;
 };
 
 const fillRegionFromExisting = () => {
@@ -144,34 +206,63 @@ const formatNum = (num) => {
                                 </PrimaryButton>
                             </div>
 
-                            <div v-for="(eq, index) in form.equipments" :key="index" class="bg-gray-50 p-4 mb-4 rounded border grid grid-cols-1 md:grid-cols-6 gap-4 items-start relative">
-                                <button v-if="form.equipments.length > 1" type="button" @click="removeEquipmentRow(index)" class="absolute top-2 right-2 text-red-500 hover:text-red-700">
+                            <div v-for="(eq, index) in form.equipments" :key="index" class="bg-gray-50 p-4 mb-4 rounded border grid grid-cols-1 md:grid-cols-12 gap-4 items-center relative">
+                                <button v-if="form.equipments.length > 1" type="button" @click="removeEquipmentRow(index)" class="absolute top-3 right-3 text-red-500 hover:text-red-700 z-10" title="Hapus baris alat">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                                         <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
                                     </svg>
                                 </button>
 
-                                <div class="md:col-span-2">
-                                    <InputLabel :for="'eq_name_'+index" value="Nama Alat (Opsional)" />
-                                    <TextInput :id="'eq_name_'+index" v-model="eq.name" type="text" class="mt-1 block w-full text-sm" />
+                                <div class="md:col-span-9 relative">
+                                    <InputLabel :for="'eq_type_'+index" value="Jenis Alat (Cari / Pilih)" />
+                                    <div class="relative mt-1">
+                                        <input 
+                                            :id="'eq_type_'+index" 
+                                            type="text" 
+                                            v-model="eq.searchQuery" 
+                                            @focus="eq.isOpen = true" 
+                                            @blur="closeDropdown(eq)" 
+                                            @input="handleSearchInput(eq)"
+                                            @keydown.esc="eq.isOpen = false; closeDropdown(eq)"
+                                            placeholder="🔍 Ketik kode atau nama jenis alat untuk mencari..." 
+                                            class="block w-full text-sm border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm pr-14 bg-white"
+                                            autocomplete="off"
+                                        />
+                                        <div class="absolute inset-y-0 right-0 flex items-center pr-2 space-x-1">
+                                            <button v-if="eq.searchQuery || eq.equipment_type_id" type="button" @mousedown.prevent="clearEquipmentType(eq)" class="text-gray-400 hover:text-red-500 p-1 rounded focus:outline-none" title="Hapus pilihan">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                                                </svg>
+                                            </button>
+                                            <button type="button" @mousedown.prevent="eq.isOpen = !eq.isOpen" class="text-gray-400 hover:text-gray-600 p-1 rounded focus:outline-none" title="Buka/Tutup Pilihan">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 transform transition-transform duration-200" :class="{ 'rotate-180': eq.isOpen }" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                                </svg>
+                                            </button>
+                                        </div>
+                                        <div v-if="eq.isOpen" class="absolute z-50 mt-1 w-full bg-white shadow-lg max-h-60 rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none sm:text-sm border border-gray-200">
+                                            <div v-if="filterEquipmentTypes(eq).length === 0" class="py-2 px-3 text-gray-500 text-xs italic">
+                                                Jenis alat tidak ditemukan.
+                                            </div>
+                                            <div 
+                                                v-for="type in filterEquipmentTypes(eq)" 
+                                                :key="type.id" 
+                                                @mousedown.prevent="selectEquipmentType(eq, type)" 
+                                                class="cursor-pointer select-none relative py-2 pl-3 pr-9 hover:bg-indigo-50 flex items-center justify-between border-b border-gray-50 last:border-none transition-colors"
+                                            >
+                                                <div class="truncate">
+                                                    <span class="font-bold text-indigo-900 mr-1.5">[{{ type.code || '-' }}]</span>
+                                                    <span class="text-gray-800">{{ type.name }}</span>
+                                                </div>
+                                                <span class="text-xs px-2 py-0.5 bg-gray-100 text-gray-600 rounded-full font-medium ml-2 whitespace-nowrap">
+                                                    ⚖️ Bobot: {{ type.weight }}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
 
-                                <div>
-                                    <InputLabel :for="'eq_code_'+index" value="Kode Alat (Opsional)" />
-                                    <TextInput :id="'eq_code_'+index" v-model="eq.code" type="text" class="mt-1 block w-full text-sm" />
-                                </div>
-
-                                <div class="md:col-span-2">
-                                    <InputLabel :for="'eq_type_'+index" value="Jenis Alat" />
-                                    <select :id="'eq_type_'+index" v-model="eq.equipment_type_id" class="mt-1 block w-full text-sm border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
-                                        <option value="" disabled>Pilih Jenis</option>
-                                        <option v-for="type in equipmentTypes" :key="type.id" :value="type.id">
-                                            {{ type.name }}
-                                        </option>
-                                    </select>
-                                </div>
-
-                                <div>
+                                <div class="md:col-span-3 pr-6">
                                     <InputLabel :for="'eq_qty_'+index" value="Jml Alat" />
                                     <TextInput :id="'eq_qty_'+index" v-model="eq.quantity" type="number" min="1" class="mt-1 block w-full text-sm" />
                                 </div>
