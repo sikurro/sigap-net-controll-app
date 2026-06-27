@@ -50,6 +50,13 @@ const getQuantityModel = (posId, classId) => {
     return formMatrix.requirements.find(r => r.non_technical_position_id === posId && r.site_class_id === classId);
 };
 
+const formatWeightRange = (sc) => {
+    if (!sc.max_weight || sc.max_weight === null) {
+        return `> ${sc.min_weight - 1}`;
+    }
+    return `${sc.min_weight} - ${sc.max_weight}`;
+};
+
 const saveMatrix = () => {
     formMatrix.post(route('non-technical-requirements.store'), {
         preserveScroll: true,
@@ -235,8 +242,11 @@ const deletePosition = (id) => {
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-100 sticky left-0 z-10">
                                             Jabatan \ Kelas Site
                                         </th>
-                                        <th v-for="sc in siteClasses" :key="sc.id" class="px-4 py-3 text-center text-xs font-bold text-gray-700 uppercase tracking-wider">
-                                            {{ sc.name }}
+                                        <th v-for="sc in siteClasses" :key="sc.id" class="px-4 py-3 text-center tracking-wider">
+                                            <div class="text-xs font-bold text-gray-700 uppercase">{{ sc.name }}</div>
+                                            <div class="mt-1 inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-indigo-50 text-indigo-700 border border-indigo-100 shadow-sm">
+                                                ⚖️ {{ formatWeightRange(sc) }}
+                                            </div>
                                         </th>
                                     </tr>
                                 </thead>
