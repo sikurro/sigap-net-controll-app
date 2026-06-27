@@ -25,6 +25,8 @@ const form = useForm({
 const isCalculating = ref(false);
 const simulationResult = ref(null);
 const existingSiteData = ref(null);
+const showTechBreakdown = ref(false);
+const showNonTechBreakdown = ref(false);
 
 const addEquipmentRow = () => {
     form.equipments.push({ equipment_type_id: '', name: '', code: '', quantity: 1 });
@@ -47,6 +49,8 @@ const calculateSimulation = async () => {
     // Clear previous results
     simulationResult.value = null;
     existingSiteData.value = null;
+    showTechBreakdown.value = false;
+    showNonTechBreakdown.value = false;
     
     // Validate minimal fields manually or let server do it
     if (!form.name || form.equipments.length === 0) {
@@ -220,7 +224,12 @@ const formatNum = (num) => {
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-center font-bold text-indigo-600">{{ formatNum(simulationResult.total_maintenance_hours) }} Jam</td>
                             </tr>
                             <tr>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Standar Teknisi</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 flex items-center justify-between">
+                                    <span>Standar Teknisi</span>
+                                    <button @click="showTechBreakdown = !showTechBreakdown" type="button" class="ml-2 text-xs bg-indigo-100 text-indigo-700 px-2.5 py-1 rounded-full hover:bg-indigo-200 font-semibold transition focus:outline-none">
+                                        {{ showTechBreakdown ? '❌ Tutup' : '🔍 Bedah Formula' }}
+                                    </button>
+                                </td>
                                 <td v-if="existingSiteData" class="px-6 py-4 whitespace-nowrap text-sm text-center text-gray-500">{{ formatNum(existingSiteData.technical_staff_needed) }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-center font-bold text-indigo-600">
                                     {{ formatNum(simulationResult.technical_staff_needed) }}
@@ -228,13 +237,76 @@ const formatNum = (num) => {
                                     <span v-if="existingSiteData && simulationResult.technical_staff_needed < existingSiteData.technical_staff_needed" class="text-xs text-green-500 ml-1">({{ formatNum(simulationResult.technical_staff_needed - existingSiteData.technical_staff_needed) }})</span>
                                 </td>
                             </tr>
+                            <tr v-if="showTechBreakdown && simulationResult.breakdown" class="bg-indigo-50/50">
+                                <td :colspan="existingSiteData ? 3 : 2" class="px-6 py-4">
+                                    <div class="bg-white p-4 rounded-lg border border-indigo-200 shadow-sm text-xs text-gray-700">
+                                        <h4 class="font-bold text-indigo-900 text-sm mb-3 flex items-center gap-1.5">
+                                            <span>📊 Transparansi Perhitungan Standar Teknisi</span>
+                                        </h4>
+                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div class="bg-indigo-50/50 p-3 rounded border border-indigo-100">
+                                                <span class="font-bold text-indigo-800 block mb-2 border-b border-indigo-200 pb-1">💡 Parameter Acuan Sistem</span>
+                                                <ul class="space-y-1.5">
+                                                    <li class="flex justify-between"><span>Skema Kerja:</span> <strong class="text-gray-900">{{ simulationResult.breakdown.work_scheme }}</strong></li>
+                                                    <li class="flex justify-between"><span>Kapasitas Pembagi (Man Hours):</span> <strong class="text-indigo-600">{{ formatNum(simulationResult.breakdown.productive_hours) }} Jam/Thn <span class="text-[10px] font-normal text-gray-500 block sm:inline">(Global Settings)</span></strong></li>
+                                                    <li class="flex justify-between"><span>Patokan Baseline Tertinggi:</span> <strong class="text-gray-900">{{ formatNum(simulationResult.breakdown.highest_baseline) }} Orang <span class="text-[10px] font-normal text-gray-500 block sm:inline">({{ simulationResult.breakdown.highest_baseline_category }})</span></strong></li>
+                                                    <li class="flex justify-between"><span>Total Jam Pemeliharaan:</span> <strong class="text-gray-900">{{ formatNum(simulationResult.breakdown.total_maintenance_hours) }} Jam/Thn</strong></li>
+                                                </ul>
+                                            </div>
+                                            <div class="bg-indigo-50/50 p-3 rounded border border-indigo-100 flex flex-col justify-between">
+                                                <div>
+                                                    <span class="font-bold text-indigo-800 block mb-2 border-b border-indigo-200 pb-1">🔢 Alur Kalkulasi Formula</span>
+                                                    <div class="space-y-2 text-gray-600">
+                                                        <div>
+                                                            <span class="block font-semibold text-gray-800">1. Jam Pemeliharaan Tambahan:</span>
+                                                            <span>{{ formatNum(simulationResult.breakdown.total_maintenance_hours) }} Jam - {{ formatNum(simulationResult.breakdown.highest_weight_single_unit_hours) }} Jam (1 Unit) = <strong>{{ formatNum(simulationResult.breakdown.additional_hours) }} Jam</strong></span>
+                                                        </div>
+                                                        <div>
+                                                            <span class="block font-semibold text-gray-800">2. Kebutuhan Teknisi Tambahan:</span>
+                                                            <span>{{ formatNum(simulationResult.breakdown.additional_hours) }} Jam ÷ {{ formatNum(simulationResult.breakdown.productive_hours) }} Jam/Thn = <strong>{{ formatNum(simulationResult.breakdown.additional_tech) }} Orang</strong></span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="mt-3 pt-2 border-t border-indigo-200 flex justify-between items-center text-sm font-bold text-indigo-900">
+                                                    <span>Total Standar Teknisi:</span>
+                                                    <span>{{ formatNum(simulationResult.breakdown.highest_baseline) }} + {{ formatNum(simulationResult.breakdown.additional_tech) }} = {{ formatNum(simulationResult.technical_staff_needed) }} Orang</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
                             <tr>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Standar Non-Teknisi</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 flex items-center justify-between">
+                                    <span>Standar Non-Teknisi</span>
+                                    <button @click="showNonTechBreakdown = !showNonTechBreakdown" type="button" class="ml-2 text-xs bg-indigo-100 text-indigo-700 px-2.5 py-1 rounded-full hover:bg-indigo-200 font-semibold transition focus:outline-none">
+                                        {{ showNonTechBreakdown ? '❌ Tutup' : '👥 Rincian Formasi' }}
+                                    </button>
+                                </td>
                                 <td v-if="existingSiteData" class="px-6 py-4 whitespace-nowrap text-sm text-center text-gray-500">{{ existingSiteData.non_technical_staff_needed }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-center font-bold text-indigo-600">
                                     {{ simulationResult.non_technical_staff_needed }}
                                     <span v-if="existingSiteData && simulationResult.non_technical_staff_needed > existingSiteData.non_technical_staff_needed" class="text-xs text-red-500 ml-1">(+{{ simulationResult.non_technical_staff_needed - existingSiteData.non_technical_staff_needed }})</span>
                                     <span v-if="existingSiteData && simulationResult.non_technical_staff_needed < existingSiteData.non_technical_staff_needed" class="text-xs text-green-500 ml-1">({{ simulationResult.non_technical_staff_needed - existingSiteData.non_technical_staff_needed }})</span>
+                                </td>
+                            </tr>
+                            <tr v-if="showNonTechBreakdown && simulationResult.breakdown" class="bg-indigo-50/50">
+                                <td :colspan="existingSiteData ? 3 : 2" class="px-6 py-4">
+                                    <div class="bg-white p-4 rounded-lg border border-indigo-200 shadow-sm text-xs text-gray-700">
+                                        <h4 class="font-bold text-indigo-900 text-sm mb-3 flex items-center gap-1.5">
+                                            <span>👥 Rincian Formasi Staf Non-Teknis (Kelas Site: {{ simulationResult.site_class }})</span>
+                                        </h4>
+                                        <div v-if="simulationResult.breakdown.non_technical_positions && simulationResult.breakdown.non_technical_positions.length > 0" class="flex flex-wrap gap-2">
+                                            <div v-for="(pos, idx) in simulationResult.breakdown.non_technical_positions" :key="idx" class="bg-indigo-50 border border-indigo-200 rounded-md px-3 py-2 flex items-center gap-2">
+                                                <span class="font-semibold text-indigo-900">{{ pos.title }}</span>
+                                                <span class="bg-indigo-600 text-white font-bold px-2 py-0.5 rounded text-[11px]">{{ pos.quantity }} Orang</span>
+                                                <span class="text-[10px] text-gray-500 uppercase">({{ pos.category }})</span>
+                                            </div>
+                                        </div>
+                                        <div v-else class="text-gray-500 italic">
+                                            Tidak ada kebutuhan staf non-teknis standar untuk kelas site ini.
+                                        </div>
+                                    </div>
                                 </td>
                             </tr>
                         </tbody>

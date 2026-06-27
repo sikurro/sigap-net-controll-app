@@ -152,6 +152,7 @@ class SdmCalculationEngine
         $siteClass = $this->determineSiteClass($totalWeight);
         $technicalStaffNeeded = $this->calculateTechnicalStaff($equipments, $totalHours, $workScheme);
         $nonTechnicalStaffNeeded = $this->calculateNonTechnicalStaff($siteClass);
+        $breakdown = $this->getCalculationBreakdown($equipments, $totalHours, $workScheme, $siteClass);
 
         return [
             'total_maintenance_hours' => $totalHours,
@@ -159,6 +160,7 @@ class SdmCalculationEngine
             'site_class' => $siteClass ?? '-',
             'technical_staff_needed' => $technicalStaffNeeded,
             'non_technical_staff_needed' => $nonTechnicalStaffNeeded,
+            'breakdown' => $breakdown,
         ];
     }
 
@@ -319,5 +321,90 @@ class SdmCalculationEngine
         foreach ($sites as $site) {
             $this->calculateForSite($site);
         }
+    }
+
+    /**
+     * Generate detailed calculation breakdown for simulation UI
+     */
+    public function getCalculationBreakdown(array $rawEquipments, float $totalHours, string $workScheme = 'Non-Shift', ?string $siteClass = null): array
+    {
+        $effectiveWorkingHours = $this->getProductiveHours($workScheme);
+        $highestBaseline = 0;
+        $highestBaselineCategory = '-';
+        $highestWeight = -1;
+        $highestWeightSingleUnitHours = 0;
+
+        foreach ($rawEquipments as $eq) {
+            $qty = $eq['quantity'] ?? 0;
+            if ($qty <= 0) {
+                continue;
+            }
+
+            $equipmentType = \App\Models\EquipmentType::with(['jobPlans', 'categoryBaseline'])->find($eq['equipment_type_id']);
+            if (!$equipmentType) {
+                continue;
+            }
+
+            $baselineVal = $equipmentType->categoryBaseline ? $equipmentType->categoryBaseline->baseline : 0;
+            $catName = $equipmentType->categoryBaseline ? $equipmentType->categoryBaseline->category : $equipmentType->name;
+
+            if ($baselineVal > $highestBaseline) {
+                $highestBaseline = $baselineVal;
+                $highestBaselineCategory = $catName;
+            } elseif ($baselineVal === $highestBaseline && $highestBaselineCategory === '-') {
+                $highestBaselineCategory = $catName;
+            }
+
+            $jobPlansHours = 0;
+            foreach ($equipmentType->jobPlans as $jobPlan) {
+                $hoursPerOccurrence = $jobPlan->duration_minutes / 60;
+                $hoursPerYear = $hoursPerOccurrence * $jobPlan->frequency_per_year;
+                $jobPlansHours += $hoursPerYear;
+            }
+
+            if ($equipmentType->weight > $highestWeight) {
+                $highestWeight = $equipmentType->weight;
+                $highestWeightSingleUnitHours = $jobPlansHours;
+            } elseif ($equipmentType->weight === $highestWeight) {
+                if ($jobPlansHours > $highestWeightSingleUnitHours) {
+                    $highestWeightSingleUnitHours = $jobPlansHours;
+                }
+            }
+        }
+
+        $additionalHours = max(0, $totalHours - $highestWeightSingleUnitHours);
+        $additionalTech = $effectiveWorkingHours > 0 ? round($additionalHours / $effectiveWorkingHours, 2) : 0;
+
+        $nonTechPositions = [];
+        if ($siteClass && $siteClass !== '-') {
+            $siteClassModel = \App\Models\SiteClass::where('name', $siteClass)->first();
+            if ($siteClassModel) {
+                $reqs = \App\Models\NonTechnicalRequirement::where('site_class_id', $siteClassModel->id)
+                            ->where('quantity', '>', 0)
+                            ->get();
+                foreach ($reqs as $req) {
+                    $pos = \App\Models\NonTechnicalPosition::find($req->non_technical_position_id);
+                    if ($pos) {
+                        $nonTechPositions[] = [
+                            'title' => $pos->title,
+                            'category' => $pos->category,
+                            'quantity' => $req->quantity,
+                        ];
+                    }
+                }
+            }
+        }
+
+        return [
+            'work_scheme' => $workScheme,
+            'productive_hours' => round($effectiveWorkingHours, 2),
+            'highest_baseline' => round($highestBaseline, 2),
+            'highest_baseline_category' => $highestBaselineCategory,
+            'total_maintenance_hours' => round($totalHours, 2),
+            'highest_weight_single_unit_hours' => round($highestWeightSingleUnitHours, 2),
+            'additional_hours' => round($additionalHours, 2),
+            'additional_tech' => $additionalTech,
+            'non_technical_positions' => $nonTechPositions,
+        ];
     }
 }
