@@ -55,5 +55,14 @@ class SettingSeeder extends Seeder
                 'description' => 'Matriks parameter perhitungan jam kerja produktif (Effective Working Hours / Man Hours) untuk teknisi Shift dan Non-Shift.',
             ]
         );
+
+        Setting::updateOrCreate(
+            ['key' => 'target_availability'],
+            [
+                'value' => '85',
+                'type' => 'float',
+                'description' => 'Target ketersediaan alat (Availability %) untuk menentukan rasio kebutuhan teknisi breakdown maintenance (100% - Target Availability).',
+            ]
+        );
     }
 }

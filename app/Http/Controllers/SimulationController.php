@@ -13,6 +13,7 @@ class SimulationController extends Controller
 {
     public function index()
     {
+        $engine = app(\App\Services\SdmCalculationEngine::class);
         return Inertia::render('Simulations/Index', [
             'equipmentTypes' => EquipmentType::with('jobPlans')->orderBy('name', 'asc')->get()->map(function ($type) {
                 $annualHours = 0;
@@ -24,6 +25,8 @@ class SimulationController extends Controller
                 return $type;
             }),
             'existingSites' => Site::select('id', 'name', 'region', 'site_class', 'technical_staff_needed', 'non_technical_staff_needed')->get(),
+            'targetAvailability' => floatval(\App\Models\Setting::getValue('target_availability', 85)),
+            'shiftProductiveHours' => $engine->getProductiveHours('Shift'),
         ]);
     }
 

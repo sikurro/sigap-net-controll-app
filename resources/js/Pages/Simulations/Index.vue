@@ -12,6 +12,8 @@ import axios from 'axios';
 const props = defineProps({
     equipmentTypes: Array,
     existingSites: Array,
+    targetAvailability: Number,
+    shiftProductiveHours: Number,
 });
 
 const form = useForm({
@@ -56,6 +58,23 @@ const totalSimulationHours = computed(() => {
         }
     });
     return total.toFixed(2);
+});
+
+const totalSimulationEquipmentUnits = computed(() => {
+    let total = 0;
+    form.equipments.forEach(eq => {
+        if (eq.equipment_type_id && eq.quantity > 0) {
+            total += Number(eq.quantity);
+        }
+    });
+    return total;
+});
+
+const totalSimulationBreakdownHours = computed(() => {
+    const avail = props.targetAvailability !== undefined ? props.targetAvailability : 85;
+    const rate = Math.max(0, (100 - avail) / 100);
+    const hoursPerUnit = 24 * 365 * rate;
+    return (hoursPerUnit * totalSimulationEquipmentUnits.value).toFixed(2);
 });
 
 const totalSimulationWeight = computed(() => {
@@ -324,15 +343,20 @@ const formatNum = (num) => {
                                         <p class="text-xs text-indigo-200">Estimasi total kebutuhan pemeliharaan dan bobot site sebelum kalkulasi</p>
                                     </div>
                                 </div>
-                                <div class="flex items-center space-x-6 bg-black/20 px-4 py-2 rounded-md border border-white/10 w-full md:w-auto justify-around md:justify-end">
+                                <div class="flex flex-wrap items-center gap-4 bg-black/20 px-4 py-2 rounded-md border border-white/10 w-full md:w-auto justify-around md:justify-end">
                                     <div class="text-center">
-                                        <span class="block text-[10px] uppercase tracking-wider text-indigo-300">Total Jam Pemeliharaan</span>
-                                        <span class="font-extrabold text-lg text-amber-300">⏱️ {{ totalSimulationHours }} Jam/Thn</span>
+                                        <span class="block text-[10px] uppercase tracking-wider text-indigo-300">Jam Preventive (Job Plan)</span>
+                                        <span class="font-extrabold text-base md:text-lg text-amber-300">⏱️ {{ totalSimulationHours }} Jam</span>
                                     </div>
-                                    <div class="h-8 w-px bg-white/20"></div>
+                                    <div class="h-8 w-px bg-white/20 hidden sm:block"></div>
+                                    <div class="text-center" :title="'Alokasi breakdown ' + (100 - (props.targetAvailability || 85)) + '% dari target availability'">
+                                        <span class="block text-[10px] uppercase tracking-wider text-rose-300">Jam Breakdown ({{ 100 - (props.targetAvailability || 85) }}%)</span>
+                                        <span class="font-extrabold text-base md:text-lg text-rose-300">🚨 {{ totalSimulationBreakdownHours }} Jam</span>
+                                    </div>
+                                    <div class="h-8 w-px bg-white/20 hidden sm:block"></div>
                                     <div class="text-center">
                                         <span class="block text-[10px] uppercase tracking-wider text-indigo-300">Total Bobot Alat</span>
-                                        <span class="font-extrabold text-lg text-emerald-300">⚖️ {{ totalSimulationWeight }}</span>
+                                        <span class="font-extrabold text-base md:text-lg text-emerald-300">⚖️ {{ totalSimulationWeight }}</span>
                                     </div>
                                 </div>
                             </div>
@@ -415,21 +439,25 @@ const formatNum = (num) => {
                                             </div>
                                             <div class="bg-indigo-50/50 p-3 rounded border border-indigo-100 flex flex-col justify-between">
                                                 <div>
-                                                    <span class="font-bold text-indigo-800 block mb-2 border-b border-indigo-200 pb-1">🔢 Alur Kalkulasi Formula</span>
+                                                    <span class="font-bold text-indigo-800 block mb-2 border-b border-indigo-200 pb-1">🔢 Rincian 3 Pilar Kebutuhan Teknisi</span>
                                                     <div class="space-y-2 text-gray-600">
                                                         <div>
-                                                            <span class="block font-semibold text-gray-800">1. Jam Pemeliharaan Tambahan:</span>
-                                                            <span>{{ formatNum(simulationResult.breakdown.total_maintenance_hours) }} Jam - {{ formatNum(simulationResult.breakdown.highest_weight_single_unit_hours) }} Jam (1 Unit) = <strong>{{ formatNum(simulationResult.breakdown.additional_hours) }} Jam</strong></span>
+                                                            <span class="block font-semibold text-gray-800">1. Pilar Baseline Kategori Tertinggi:</span>
+                                                            <span><strong>{{ formatNum(simulationResult.breakdown.highest_baseline) }} Orang</strong> <span class="text-[10px]">({{ simulationResult.breakdown.highest_baseline_category }})</span></span>
                                                         </div>
                                                         <div>
-                                                            <span class="block font-semibold text-gray-800">2. Kebutuhan Teknisi Tambahan:</span>
+                                                            <span class="block font-semibold text-gray-800">2. Pilar Preventive Tambahan (Job Plan):</span>
                                                             <span>{{ formatNum(simulationResult.breakdown.additional_hours) }} Jam ÷ {{ formatNum(simulationResult.breakdown.productive_hours) }} Jam/Thn = <strong>{{ formatNum(simulationResult.breakdown.additional_tech) }} Orang</strong></span>
+                                                        </div>
+                                                        <div v-if="simulationResult.breakdown.breakdown_tech !== undefined">
+                                                            <span class="block font-semibold text-rose-700">3. Pilar Breakdown Shift ({{ simulationResult.breakdown.breakdown_rate_percent }}% Avail):</span>
+                                                            <span>{{ formatNum(simulationResult.breakdown.total_breakdown_hours) }} Jam ÷ {{ formatNum(simulationResult.breakdown.shift_productive_hours) }} Jam/Thn = <strong class="text-rose-600">{{ formatNum(simulationResult.breakdown.breakdown_tech) }} Orang</strong></span>
                                                         </div>
                                                     </div>
                                                 </div>
                                                 <div class="mt-3 pt-2 border-t border-indigo-200 flex justify-between items-center text-sm font-bold text-indigo-900">
                                                     <span>Total Standar Teknisi:</span>
-                                                    <span>{{ formatNum(simulationResult.breakdown.highest_baseline) }} + {{ formatNum(simulationResult.breakdown.additional_tech) }} = {{ formatNum(simulationResult.technical_staff_needed) }} Orang</span>
+                                                    <span>{{ formatNum(simulationResult.breakdown.highest_baseline) }} + {{ formatNum(simulationResult.breakdown.additional_tech) }} <span v-if="simulationResult.breakdown.breakdown_tech !== undefined">+ {{ formatNum(simulationResult.breakdown.breakdown_tech) }}</span> = <strong class="text-indigo-700 text-base">{{ formatNum(simulationResult.technical_staff_needed) }} Orang</strong></span>
                                                 </div>
                                             </div>
                                         </div>

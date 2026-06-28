@@ -290,7 +290,22 @@ class SdmCalculationEngine
         $additionalHours = max(0, $totalHours - $highestWeightSingleUnitHours);
         $additionalTech = $additionalHours / $effectiveWorkingHours;
 
-        return round($highestBaseline + $additionalTech, 2);
+        $totalEquipmentUnits = 0;
+        foreach ($rawEquipments as $eq) {
+            $qty = $eq['quantity'] ?? 0;
+            if ($qty > 0) {
+                $totalEquipmentUnits += $qty;
+            }
+        }
+
+        $targetAvail = floatval(\App\Models\Setting::getValue('target_availability', 85));
+        $breakdownRate = max(0, (100 - $targetAvail) / 100);
+        $breakdownHoursPerUnit = 24 * 365 * $breakdownRate;
+        $totalBreakdownHours = $breakdownHoursPerUnit * $totalEquipmentUnits;
+        $shiftProductiveHours = $this->getProductiveHours('Shift');
+        $breakdownTech = $shiftProductiveHours > 0 ? ($totalBreakdownHours / $shiftProductiveHours) : 0;
+
+        return round($highestBaseline + $additionalTech + $breakdownTech, 2);
     }
 
     /**
@@ -375,6 +390,21 @@ class SdmCalculationEngine
         $additionalHours = max(0, $totalHours - $highestWeightSingleUnitHours);
         $additionalTech = $effectiveWorkingHours > 0 ? round($additionalHours / $effectiveWorkingHours, 2) : 0;
 
+        $totalEquipmentUnits = 0;
+        foreach ($rawEquipments as $eq) {
+            $qty = $eq['quantity'] ?? 0;
+            if ($qty > 0) {
+                $totalEquipmentUnits += $qty;
+            }
+        }
+
+        $targetAvail = floatval(\App\Models\Setting::getValue('target_availability', 85));
+        $breakdownRate = max(0, (100 - $targetAvail) / 100);
+        $breakdownHoursPerUnit = 24 * 365 * $breakdownRate;
+        $totalBreakdownHours = $breakdownHoursPerUnit * $totalEquipmentUnits;
+        $shiftProductiveHours = $this->getProductiveHours('Shift');
+        $breakdownTech = $shiftProductiveHours > 0 ? round($totalBreakdownHours / $shiftProductiveHours, 2) : 0;
+
         $nonTechPositions = [];
         if ($siteClass && $siteClass !== '-') {
             $siteClassModel = \App\Models\SiteClass::where('name', $siteClass)->first();
@@ -404,6 +434,13 @@ class SdmCalculationEngine
             'highest_weight_single_unit_hours' => round($highestWeightSingleUnitHours, 2),
             'additional_hours' => round($additionalHours, 2),
             'additional_tech' => $additionalTech,
+            'target_availability' => $targetAvail,
+            'breakdown_rate_percent' => round($breakdownRate * 100, 2),
+            'total_equipment_units' => $totalEquipmentUnits,
+            'total_breakdown_hours' => round($totalBreakdownHours, 2),
+            'shift_productive_hours' => round($shiftProductiveHours, 2),
+            'breakdown_tech' => $breakdownTech,
+            'total_technical_staff' => round($highestBaseline + $additionalTech + $breakdownTech, 2),
             'non_technical_positions' => $nonTechPositions,
         ];
     }
