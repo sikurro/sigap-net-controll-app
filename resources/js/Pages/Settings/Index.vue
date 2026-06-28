@@ -23,6 +23,7 @@ const form = useForm({
 
 // Find man_hours_matrix setting
 const manHoursItem = form.settings.find(s => s.key === 'man_hours_matrix');
+const targetAvailItem = form.settings.find(s => s.key === 'target_availability');
 
 const defaultMatrix = {
     calendar_mode: 'annual',
@@ -310,20 +311,61 @@ const submit = () => {
                             </table>
                         </div>
 
-                        <div class="flex items-center justify-end gap-4 mt-6 pt-4 border-t border-gray-200">
-                            <Transition
-                                enter-active-class="transition ease-in-out"
-                                enter-from-class="opacity-0"
-                                leave-active-class="transition ease-in-out"
-                                leave-to-class="opacity-0"
-                            >
-                                <p v-if="form.recentlySuccessful" class="text-sm font-bold text-emerald-600 bg-emerald-50 px-3 py-1.5 rounded border border-emerald-200">✓ Parameter Matriks berhasil disimpan & dikalkulasi ulang.</p>
-                            </Transition>
-                            <InputError :message="form.errors.settings" class="mt-2" />
-                            <PrimaryButton :disabled="form.processing" class="px-6 py-3 text-base bg-indigo-600 hover:bg-indigo-700">Simpan Pengaturan Matriks</PrimaryButton>
                         </div>
                     </div>
-                </div>
+
+                    <!-- Section 2: Target Availability & Breakdown Allowance -->
+                    <div v-if="targetAvailItem" class="bg-white overflow-hidden shadow-sm sm:rounded-lg border border-gray-200 mt-6">
+                        <div class="p-6 text-gray-900">
+                            <div class="flex justify-between items-start mb-4">
+                                <div>
+                                    <h3 class="text-xl font-bold text-gray-800">Target Availability & Breakdown Maintenance</h3>
+                                    <p class="text-sm text-gray-500 mt-1">Konfigurasi target ketersediaan alat (Availability %) untuk menentukan rasio kebutuhan teknisi gangguan tidak terencana (breakdown).</p>
+                                </div>
+                            </div>
+
+                            <div class="bg-indigo-50/60 p-6 rounded-xl border border-indigo-100 flex flex-col md:flex-row items-center justify-between gap-6">
+                                <div class="w-full md:w-1/3">
+                                    <InputLabel for="target_avail" value="Target Availability Alat (%)" class="text-sm font-bold text-gray-700" />
+                                    <div class="mt-2 flex items-center">
+                                        <TextInput
+                                            id="target_avail"
+                                            v-model="targetAvailItem.value"
+                                            type="number"
+                                            step="0.1"
+                                            min="0"
+                                            max="100"
+                                            class="block w-full text-lg font-bold text-indigo-900 border-indigo-300 focus:ring-indigo-500"
+                                        />
+                                        <span class="ml-2 font-bold text-gray-600 text-lg">%</span>
+                                    </div>
+                                </div>
+                                <div class="w-full md:w-2/3 bg-white p-4 rounded-lg border border-indigo-100 shadow-sm">
+                                    <h4 class="text-xs font-bold uppercase tracking-wider text-indigo-900 mb-1">⚡ Alokasi Breakdown Maintenance Otomatis:</h4>
+                                    <p class="text-sm text-gray-700">
+                                        Rasio Breakdown = 100% - <strong class="text-indigo-700">{{ targetAvailItem.value || 0 }}%</strong> = <strong class="text-rose-600 text-base">{{ (100 - (targetAvailItem.value || 0)).toFixed(1) }}%</strong>
+                                    </p>
+                                    <p class="text-xs text-gray-500 mt-1">
+                                        ℹ️ Estimasi jam gangguan per alat = 8.760 jam × {{ ((100 - (targetAvailItem.value || 0))/100).toFixed(3) }} = <strong class="text-gray-800">{{ (8760 * ((100 - (targetAvailItem.value || 0))/100)).toFixed(1) }} Jam/Tahun</strong>. Alokasi teknisi dihitung dengan membagi total jam breakdown site dengan Jam Produktif Shift ({{ getProductiveHours(matrixForm.shift) }} Jam/Thn).
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Global Submit Button -->
+                    <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg border border-gray-200 mt-6 p-6 flex items-center justify-between">
+                        <Transition
+                            enter-active-class="transition ease-in-out"
+                            enter-from-class="opacity-0"
+                            leave-active-class="transition ease-in-out"
+                            leave-to-class="opacity-0"
+                        >
+                            <p v-if="form.recentlySuccessful" class="text-sm font-bold text-emerald-600 bg-emerald-50 px-3 py-1.5 rounded border border-emerald-200">✓ Seluruh pengaturan berhasil disimpan & dikalkulasi ulang.</p>
+                        </Transition>
+                        <InputError :message="form.errors.settings" class="mt-2" />
+                        <PrimaryButton :disabled="form.processing" class="px-8 py-3 text-base bg-indigo-600 hover:bg-indigo-700 ml-auto">Simpan Pengaturan Global</PrimaryButton>
+                    </div>
                 </form>
 
             </div>
