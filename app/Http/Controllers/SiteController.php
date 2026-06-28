@@ -147,12 +147,12 @@ class SiteController extends Controller
 
     public function export()
     {
-        return Excel::download(new SitesExport, 'sites_and_equipments.xlsx');
+        return Excel::download(new SitesExport(false), 'sites_and_equipments.xlsx');
     }
 
     public function downloadTemplate()
     {
-        return Excel::download(new SitesExport, 'Template_Import_Sites.xlsx');
+        return Excel::download(new SitesExport(true), 'Template_Import_Sites.xlsx');
     }
 
     public function import(Request $request)

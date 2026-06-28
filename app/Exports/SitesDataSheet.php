@@ -3,11 +3,19 @@
 namespace App\Exports;
 
 use App\Models\Site;
+use App\Models\EquipmentType;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithTitle;
 
 class SitesDataSheet implements FromCollection, WithTitle
 {
+    protected $isTemplate;
+
+    public function __construct(bool $isTemplate = false)
+    {
+        $this->isTemplate = $isTemplate;
+    }
+
     /**
     * @return \Illuminate\Support\Collection
     */
@@ -15,6 +23,21 @@ class SitesDataSheet implements FromCollection, WithTitle
     {
         $sites = Site::with('equipments.equipmentType')->get();
         $flatData = collect();
+
+        if ($this->isTemplate || $sites->isEmpty()) {
+            $equipmentTypes = EquipmentType::orderBy('name')->get();
+            $flatData->push(['Nama Site', 'CONTOH TERMINAL PELABUHAN']);
+            $flatData->push(['Wilayah', 'I']);
+            $flatData->push(['Teknisi Eksisting', 10]);
+            $flatData->push(['Non-Teknisi Eksisting', 5]);
+            $flatData->push(['Jenis Alat', 'Jumlah Alat']);
+
+            foreach ($equipmentTypes as $eq) {
+                $flatData->push([$eq->name, 1]);
+            }
+
+            return $flatData;
+        }
 
         foreach ($sites as $site) {
             $flatData->push(['Nama Site', $site->name]);
