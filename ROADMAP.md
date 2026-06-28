@@ -8,29 +8,31 @@ Fokus pada penyiapan infrastruktur dasar *software* dan pemastian keamanan akses
   * Perancangan struktur *database* awal (*schema design*).
   * Implementasi sistem manajemen pengguna, *role*, dan *permission* menggunakan `Laravel Permission`.
 
-## Milestone 2: Digitalisasi Data Master (Parameter Acuan)
-Fokus pada penyediaan antarmuka untuk memasukkan semua parameter baku pelabuhan yang menjadi dasar rumus kalkulasi.
-* **Target Capaian:** Seluruh data regulasi, matriks jabatan, dan standar durasi *Job Plan* terdokumentasi di sistem.
+## Milestone 2: Digitalisasi Data Master & Parameter Global
+Fokus pada penyediaan antarmuka untuk memasukkan semua parameter baku pelabuhan dan pengaturan global yang menjadi dasar rumus kalkulasi.
+* **Target Capaian:** Seluruh data regulasi, matriks jabatan, standar durasi *Job Plan*, dan parameter kalkulasi SDM terdokumentasi dan dapat dikonfigurasi di sistem.
 * **Item Pekerjaan:**
-  * CRUD Master Jenis Alat Pelabuhan (CC, RTG, RS, dll).
+  * CRUD Master Jenis Alat Pelabuhan (CC, RTG, RS, dll) beserta bobot alat.
   * CRUD Master Job Plan (memasukkan detail kegiatan, durasi per menit/jam, dan frekuensi per tahun).
   * CRUD Master Kelas Site dan Matriks Standar Kebutuhan Personil Non-Teknis (Fungsional & Non-Fungsional).
+  * Pembuatan antarmuka **Global Settings** untuk konfigurasi dinamis *Man Hours Matrix* (Shift/Non-Shift) dan *Target Availability (%)* untuk alokasi *Breakdown Maintenance*.
 
 ## Milestone 3: Modul Operasional & Inventarisir Lapangan
 Fokus pada pendataan kondisi riil dan jumlah alat yang beroperasi di masing-masing terminal pelabuhan.
 * **Target Capaian:** Pengguna dapat memetakan aset alat berat per terminal secara fleksibel, baik input manual maupun massal.
 * **Item Pekerjaan:**
   * Manajemen Profil Site/Terminal Pelabuhan (contoh: TPK Banjarmasin, Tenau Kupang).
-  * Pembuatan modul Inventarisir Alat per *site*.
+  * Pembuatan modul Inventarisir Alat per *site* dengan UI *Searchable Dropdown* (dilengkapi fitur *revert on cancel*).
   * Integrasi *library* `Laravel Excel` untuk fitur *import* data inventaris dari *spreadsheet* agar mempercepat input operasional.
 
-## Milestone 4: Pengembangan Core Engine Kalkulasi SDM
-Fokus pada perakitan algoritma komputasi otomatis yang mempertemukan data inventaris lapangan dengan matriks master data.
-* **Target Capaian:** Sistem mampu mengeluarkan angka rekomendasi jumlah kebutuhan orang (teknik & non-teknik) secara instan dan akurat.
+## Milestone 4: Pengembangan Core Engine Kalkulasi SDM & Simulasi
+Fokus pada perakitan algoritma komputasi otomatis yang mempertemukan data inventaris lapangan dengan parameter global dan matriks master data.
+* **Target Capaian:** Sistem mampu mengeluarkan angka rekomendasi jumlah kebutuhan orang (teknik & non-teknik) secara instan, transparan, dan akurat.
 * **Item Pekerjaan:**
-  * Pembuatan logika *Auto-Generate Cluster Site* berdasarkan beban kerja atau jumlah alat.
-  * Pengembangan kalkulator kebutuhan Teknisi (Total jam kerja per tahun dari *Job Plan* vs Jam kerja efektif teknisi).
+  * Pembuatan logika *Auto-Generate Cluster Site* berdasarkan total bobot alat.
+  * Pengembangan kalkulator kebutuhan Teknisi berbasis **3 Pilar Utama** (Pilar Baseline Kategori Tertinggi + Pilar Preventive Job Plan + Pilar Breakdown Shift berdasarkan *Target Availability*).
   * Pengembangan kalkulator kebutuhan Staf Non-Teknis (pencocokan otomatis kelas *site* ke matriks SDM pendukung).
+  * Pembuatan antarmuka **Simulasi Kebutuhan SDM interaktif** dengan live calculation, *Real-Time Subtotal*, *Banner Grand Total* live, dan panel *Bedah Formula* transparan.
 
 ## Milestone 5: Dashboard Visualisasi & Sistem Pelaporan (Output)
 Fokus pada penyajian data kalkulasi ke dalam bentuk yang mudah dipahami oleh pengambil keputusan dan manajemen puncak.
