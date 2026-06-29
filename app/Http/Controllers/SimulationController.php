@@ -69,7 +69,7 @@ class SimulationController extends Controller
 
         $site = Site::firstOrCreate(
             ['name' => $request->name],
-            ['region' => $request->region, 'work_scheme' => $request->input('work_scheme', 'Non-Shift'), 'status' => true]
+            ['region' => $request->region, 'work_scheme' => $request->input('work_scheme', 'Non-Shift')]
         );
 
         // Update region if site already existed but region was changed in simulation
@@ -95,7 +95,6 @@ class SimulationController extends Controller
                 'name' => $eq['name'] ?? '-',
                 'code' => $eq['code'] ?? '-',
                 'quantity' => $eq['quantity'],
-                'status' => true,
             ]);
         }
 
