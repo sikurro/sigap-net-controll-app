@@ -21,7 +21,7 @@ class SiteSeeder extends Seeder
         foreach ($sites as $siteData) {
             $site = Site::firstOrCreate(
                 ['name' => $siteData['site_name']],
-                ['region' => 'Pelindo 3', 'status' => true]
+                ['region' => 'Pelindo 3']
             );
 
             $equipments = json_decode($siteData['equipments'], true);
@@ -33,7 +33,7 @@ class SiteSeeder extends Seeder
                     if ($eqModel) {
                         $site->equipments()->updateOrCreate(
                             ['equipment_type_id' => $eqModel->id],
-                            ['quantity' => $eq['quantity'], 'status' => true]
+                            ['quantity' => $eq['quantity']]
                         );
                     }
                 }
