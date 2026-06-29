@@ -15,6 +15,11 @@ export default {
             fontFamily: {
                 sans: ['Figtree', ...defaultTheme.fontFamily.sans],
             },
+            colors: {
+                'pelindo-blue': '#00549A',
+                'pelindo-cyan': '#00A3E0',
+                'pelindo-orange': '#F97316',
+            },
         },
     },
 
