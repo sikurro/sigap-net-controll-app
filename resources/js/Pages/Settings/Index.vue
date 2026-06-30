@@ -122,7 +122,7 @@ const submit = () => {
                 
                 <form @submit.prevent="submit">
                     <!-- Section 1: Dynamic Man Hours Matrix Table -->
-                    <div v-if="manHoursItem" class="bg-white overflow-hidden shadow-sm sm:rounded-lg border border-gray-200">
+                    <div v-if="manHoursItem" class="bg-white overflow-hidden shadow-sm rounded-2xl border border-slate-200/80">
                         <div class="p-6 text-gray-900">
                             <div class="flex justify-between items-start mb-4">
                                 <div>
@@ -148,12 +148,12 @@ const submit = () => {
                         <div class="overflow-x-auto">
                             <table class="w-full text-sm text-left border-collapse border border-gray-200">
                                 <thead>
-                                    <tr class="bg-gray-100 font-bold text-gray-700 text-center uppercase tracking-wider text-xs">
-                                        <th class="p-3 border border-gray-200 text-left">Komponen Parameter</th>
-                                        <th class="p-3 border border-gray-200 w-36 bg-blue-50/50 text-blue-900">Teknisi Shift</th>
-                                        <th class="p-3 border border-gray-200 w-36 bg-amber-50/50 text-amber-900">Teknisi Non-Shift</th>
-                                        <th class="p-3 border border-gray-200 w-24">Satuan</th>
-                                        <th class="p-3 border border-gray-200 text-left">Keterangan / Formula</th>
+                                    <tr class="bg-slate-800 font-bold text-white text-center uppercase tracking-wider text-xs">
+                                        <th class="p-3 border border-slate-700 text-left">Komponen Parameter</th>
+                                        <th class="p-3 border border-slate-700 w-36 bg-pelindo-blue/20 text-pelindo-cyan">Teknisi Shift</th>
+                                        <th class="p-3 border border-slate-700 w-36 bg-slate-700 text-slate-200">Teknisi Non-Shift</th>
+                                        <th class="p-3 border border-slate-700 w-24">Satuan</th>
+                                        <th class="p-3 border border-slate-700 text-left">Keterangan / Formula</th>
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-gray-200">
@@ -229,12 +229,12 @@ const submit = () => {
                                         <td class="p-2.5 text-center text-gray-500">Jam</td>
                                         <td class="p-2.5 text-gray-500 text-xs">Alokasi izin sakit setahun</td>
                                     </tr>
-                                    <tr class="bg-yellow-100/80 font-bold text-yellow-950 border-t-2 border-yellow-300">
+                                    <tr class="bg-pelindo-cyan/10 font-bold text-[#003B6F] border-t-2 border-pelindo-cyan/30">
                                         <td class="p-3 px-3 uppercase tracking-wider">JAM TERSEDIA / TAHUN</td>
-                                        <td class="p-3 px-3 text-center border border-yellow-200 text-base font-mono">{{ getAvailableHours(matrixForm.shift) }}</td>
-                                        <td class="p-3 px-3 text-center border border-yellow-200 text-base font-mono">{{ getAvailableHours(matrixForm.non_shift) }}</td>
+                                        <td class="p-3 px-3 text-center border border-pelindo-cyan/20 text-base font-mono">{{ getAvailableHours(matrixForm.shift) }}</td>
+                                        <td class="p-3 px-3 text-center border border-pelindo-cyan/20 text-base font-mono">{{ getAvailableHours(matrixForm.non_shift) }}</td>
                                         <td class="p-3 text-center text-xs">Jam</td>
-                                        <td class="p-3 text-xs text-yellow-800">Total Jam Dasar - (Cuti + Sakit)</td>
+                                        <td class="p-3 text-xs text-[#003B6F]/80">Total Jam Dasar - (Cuti + Sakit)</td>
                                     </tr>
 
                                     <!-- C. KEBOCORAN WAKTU HARIAN -->
@@ -315,7 +315,7 @@ const submit = () => {
                     </div>
 
                     <!-- Section 2: Target Availability & Breakdown Allowance -->
-                    <div v-if="targetAvailItem" class="bg-white overflow-hidden shadow-sm sm:rounded-lg border border-gray-200 mt-6">
+                    <div v-if="targetAvailItem" class="bg-white overflow-hidden shadow-sm rounded-2xl border border-slate-200/80 mt-6">
                         <div class="p-6 text-gray-900">
                             <div class="flex justify-between items-start mb-4">
                                 <div>
@@ -324,7 +324,7 @@ const submit = () => {
                                 </div>
                             </div>
 
-                            <div class="bg-indigo-50/60 p-6 rounded-xl border border-indigo-100 flex flex-col md:flex-row items-center justify-between gap-6">
+                            <div class="bg-pelindo-blue/5 p-6 rounded-xl border border-pelindo-blue/20 flex flex-col md:flex-row items-center justify-between gap-6">
                                 <div class="w-full md:w-1/3">
                                     <InputLabel for="target_avail" value="Target Availability Alat (%)" class="text-sm font-bold text-gray-700" />
                                     <div class="mt-2 flex items-center">
@@ -335,15 +335,15 @@ const submit = () => {
                                             step="0.1"
                                             min="0"
                                             max="100"
-                                            class="block w-full text-lg font-bold text-indigo-900 border-indigo-300 focus:ring-indigo-500"
+                                            class="block w-full text-lg font-bold text-pelindo-blue border-pelindo-blue/30 focus:ring-pelindo-blue rounded-xl"
                                         />
                                         <span class="ml-2 font-bold text-gray-600 text-lg">%</span>
                                     </div>
                                 </div>
-                                <div class="w-full md:w-2/3 bg-white p-4 rounded-lg border border-indigo-100 shadow-sm">
-                                    <h4 class="text-xs font-bold uppercase tracking-wider text-indigo-900 mb-1">⚡ Alokasi Breakdown Maintenance Otomatis:</h4>
+                                <div class="w-full md:w-2/3 bg-pelindo-cyan/5 p-4 rounded-xl border border-pelindo-cyan/30 shadow-sm">
+                                    <h4 class="text-xs font-bold uppercase tracking-wider text-pelindo-blue mb-1">⚡ Alokasi Breakdown Maintenance Otomatis:</h4>
                                     <p class="text-sm text-gray-700">
-                                        Rasio Breakdown = 100% - <strong class="text-indigo-700">{{ targetAvailItem.value || 0 }}%</strong> = <strong class="text-rose-600 text-base">{{ (100 - (targetAvailItem.value || 0)).toFixed(1) }}%</strong>
+                                        Rasio Breakdown = 100% - <strong class="text-pelindo-blue">{{ targetAvailItem.value || 0 }}%</strong> = <strong class="text-rose-600 text-base">{{ (100 - (targetAvailItem.value || 0)).toFixed(1) }}%</strong>
                                     </p>
                                     <p class="text-xs text-gray-500 mt-1">
                                         ℹ️ Estimasi jam gangguan per alat = 8.760 jam × {{ ((100 - (targetAvailItem.value || 0))/100).toFixed(3) }} = <strong class="text-gray-800">{{ (8760 * ((100 - (targetAvailItem.value || 0))/100)).toFixed(1) }} Jam/Tahun</strong>. Alokasi teknisi dihitung dengan membagi total jam breakdown site dengan Jam Produktif Shift ({{ getProductiveHours(matrixForm.shift) }} Jam/Thn).
@@ -354,7 +354,7 @@ const submit = () => {
                     </div>
 
                     <!-- Global Submit Button -->
-                    <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg border border-gray-200 mt-6 p-6 flex items-center justify-between">
+                    <div class="bg-white overflow-hidden shadow-sm rounded-2xl border border-slate-200/80 mt-6 p-6 flex items-center justify-between">
                         <Transition
                             enter-active-class="transition ease-in-out"
                             enter-from-class="opacity-0"
@@ -364,7 +364,7 @@ const submit = () => {
                             <p v-if="form.recentlySuccessful" class="text-sm font-bold text-emerald-600 bg-emerald-50 px-3 py-1.5 rounded border border-emerald-200">✓ Seluruh pengaturan berhasil disimpan & dikalkulasi ulang.</p>
                         </Transition>
                         <InputError :message="form.errors.settings" class="mt-2" />
-                        <PrimaryButton :disabled="form.processing" class="px-8 py-3 text-base bg-indigo-600 hover:bg-indigo-700 ml-auto">Simpan Pengaturan Global</PrimaryButton>
+                        <PrimaryButton :disabled="form.processing" class="px-8 py-3 bg-gradient-to-r from-pelindo-blue to-[#003B6F] border border-pelindo-cyan/20 hover:opacity-90 text-white font-bold text-xs uppercase tracking-wider rounded-xl shadow-md transition ml-auto">Simpan Pengaturan Global</PrimaryButton>
                     </div>
                 </form>
 
