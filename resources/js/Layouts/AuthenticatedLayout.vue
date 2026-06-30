@@ -13,7 +13,7 @@ const showingNavigationDropdown = ref(false);
 <template>
     <div>
         <div class="min-h-screen bg-gray-100">
-            <nav class="bg-white/95 backdrop-blur-md border-b border-pelindo-cyan/20 sticky top-0 z-40 shadow-sm">
+            <nav class="bg-gradient-to-r from-[#00284D] via-[#003B6F] to-[#001D38] border-b border-pelindo-cyan/30 sticky top-0 z-40 shadow-lg text-white">
                 <!-- Primary Navigation Menu -->
                 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div class="flex justify-between h-16">
@@ -45,9 +45,9 @@ const showingNavigationDropdown = ref(false);
                                         <Dropdown align="left" width="48">
                                             <template #trigger>
                                                 <span class="inline-flex rounded-md">
-                                                    <button type="button" class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 bg-white hover:text-gray-700 focus:outline-none transition ease-in-out duration-150">
+                                                    <button type="button" class="inline-flex items-center px-3 py-2 border border-transparent hover:border-white/20 text-sm leading-4 font-medium rounded-xl text-slate-200 bg-transparent hover:text-white hover:bg-white/10 focus:outline-none transition ease-in-out duration-150">
                                                         Master Data
-                                                        <svg class="ms-2 -me-0.5 h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                                        <svg class="ms-2 -me-0.5 h-4 w-4 text-pelindo-cyan" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                                                             <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
                                                         </svg>
                                                     </button>
@@ -72,12 +72,12 @@ const showingNavigationDropdown = ref(false);
                                         <span class="inline-flex rounded-md">
                                             <button
                                                 type="button"
-                                                class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 bg-white hover:text-gray-700 focus:outline-none transition ease-in-out duration-150"
+                                                class="inline-flex items-center px-3.5 py-2 border border-white/10 hover:border-white/20 text-sm leading-4 font-bold rounded-xl text-white bg-white/10 hover:bg-white/15 focus:outline-none shadow-sm transition ease-in-out duration-150"
                                             >
                                                 {{ $page.props.auth.user.name }}
 
                                                 <svg
-                                                    class="ms-2 -me-0.5 h-4 w-4"
+                                                    class="ms-2 -me-0.5 h-4 w-4 text-pelindo-cyan"
                                                     xmlns="http://www.w3.org/2000/svg"
                                                     viewBox="0 0 20 20"
                                                     fill="currentColor"
@@ -106,7 +106,7 @@ const showingNavigationDropdown = ref(false);
                         <div class="-me-2 flex items-center sm:hidden">
                             <button
                                 @click="showingNavigationDropdown = !showingNavigationDropdown"
-                                class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 focus:text-gray-500 transition duration-150 ease-in-out"
+                                class="inline-flex items-center justify-center p-2 rounded-xl text-slate-300 hover:text-white hover:bg-white/10 focus:outline-none focus:bg-white/10 focus:text-white transition duration-150 ease-in-out"
                             >
                                 <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
                                     <path
@@ -147,12 +147,12 @@ const showingNavigationDropdown = ref(false);
                     </div>
 
                     <!-- Responsive Settings Options -->
-                    <div class="pt-4 pb-1 border-t border-gray-200">
+                    <div class="pt-4 pb-1 border-t border-white/10">
                         <div class="px-4">
-                            <div class="font-medium text-base text-gray-800">
+                            <div class="font-medium text-base text-white">
                                 {{ $page.props.auth.user.name }}
                             </div>
-                            <div class="font-medium text-sm text-gray-500">{{ $page.props.auth.user.email }}</div>
+                            <div class="font-medium text-sm text-pelindo-cyan">{{ $page.props.auth.user.email }}</div>
                         </div>
 
                         <div class="mt-3 space-y-1">

@@ -119,24 +119,32 @@ const maintenanceOptions = computed(() => ({
                 </div>
 
                 <!-- Action Bar & Filter -->
-                <div class="flex flex-wrap items-center gap-3">
-                    <div class="flex items-center gap-2 bg-white px-3 py-1.5 rounded-lg border border-slate-200 shadow-sm">
-                        <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Wilayah:</span>
-                        <select v-model="selectedRegion" @change="onRegionChange" class="text-sm font-medium border-none bg-transparent focus:ring-0 text-slate-700 py-0 pr-8 pl-1 cursor-pointer">
+                <div class="bg-white p-2.5 rounded-2xl border border-slate-200/80 shadow-sm flex flex-wrap items-center justify-between gap-4">
+                    <!-- Sisi Kiri: Filter Wilayah -->
+                    <div class="flex items-center gap-2 px-2 py-1">
+                        <svg class="w-4 h-4 text-pelindo-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/></svg>
+                        <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Wilayah:</span>
+                        <select v-model="selectedRegion" @change="onRegionChange" class="text-sm font-bold border-none bg-transparent focus:ring-0 text-pelindo-blue py-0 pr-8 pl-1 cursor-pointer">
                             <option value="ALL">Semua Wilayah</option>
                             <option v-for="reg in regions" :key="reg" :value="reg">Wilayah {{ reg }}</option>
                         </select>
                     </div>
 
-                    <a :href="printReportUrl" target="_blank" class="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-pelindo-blue to-[#003B6F] border border-pelindo-cyan/20 hover:opacity-90 text-white text-xs font-bold rounded-xl shadow-md transition uppercase tracking-wider">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
-                        Cetak Laporan Resmi (PDF)
-                    </a>
+                    <!-- Garis Pembatas -->
+                    <div class="border-l border-slate-200 h-6 hidden sm:block"></div>
 
-                    <a :href="exportExcelUrl" target="_blank" class="inline-flex items-center gap-2 px-4 py-2 bg-white border border-slate-300 text-slate-700 hover:border-pelindo-cyan hover:bg-pelindo-cyan/5 text-xs font-bold rounded-xl shadow-sm transition uppercase tracking-wider">
-                        <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                        Export Excel (.xlsx)
-                    </a>
+                    <!-- Sisi Kanan: Action Buttons -->
+                    <div class="flex flex-wrap items-center gap-2.5">
+                        <a :href="printReportUrl" target="_blank" class="h-10 px-4 inline-flex items-center gap-2 bg-gradient-to-r from-pelindo-blue to-[#003B6F] border border-pelindo-cyan/20 hover:opacity-90 text-white text-xs font-bold rounded-xl shadow-md transition uppercase tracking-wider">
+                            <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+                            Cetak Laporan Resmi (PDF)
+                        </a>
+
+                        <a :href="exportExcelUrl" target="_blank" class="h-10 px-4 inline-flex items-center gap-2 bg-white border border-slate-300 text-slate-700 hover:border-pelindo-cyan hover:bg-pelindo-cyan/5 text-xs font-bold rounded-xl shadow-sm transition uppercase tracking-wider">
+                            <svg class="w-4 h-4 text-emerald-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                            Export Excel (.xlsx)
+                        </a>
+                    </div>
                 </div>
             </div>
         </template>
