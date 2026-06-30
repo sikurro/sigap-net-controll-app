@@ -264,18 +264,18 @@ const handleImportFile = (event) => {
                 </div>
 
                 <!-- TABEL MASTER-DETAIL -->
-                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                <div class="bg-white overflow-hidden shadow-sm rounded-2xl border border-slate-200/80">
                     <div class="overflow-x-auto">
                         <table class="min-w-full divide-y divide-gray-200">
-                            <thead class="bg-gray-100">
+                            <thead class="bg-slate-800 text-white">
                                 <tr>
                                     <th class="w-10 px-6 py-3"></th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kode</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Jenis Alat</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kategori</th>
-                                    <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Bobot</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ringkasan</th>
-                                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                                    <th class="px-6 py-3 text-left text-xs font-bold text-white uppercase tracking-wider">Kode</th>
+                                    <th class="px-6 py-3 text-left text-xs font-bold text-white uppercase tracking-wider">Nama Jenis Alat</th>
+                                    <th class="px-6 py-3 text-left text-xs font-bold text-white uppercase tracking-wider">Kategori</th>
+                                    <th class="px-6 py-3 text-center text-xs font-bold text-white uppercase tracking-wider">Bobot</th>
+                                    <th class="px-6 py-3 text-left text-xs font-bold text-white uppercase tracking-wider">Ringkasan</th>
+                                    <th class="px-6 py-3 text-right text-xs font-bold text-white uppercase tracking-wider">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody class="bg-white divide-y divide-gray-200">
@@ -290,10 +290,10 @@ const handleImportFile = (event) => {
                                         <td class="px-6 py-4 whitespace-nowrap font-medium text-gray-600">{{ eq.code || '-' }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap font-bold text-gray-900">{{ eq.name }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                            <span class="px-2 py-1 rounded text-xs font-semibold" :class="{
-                                                'bg-purple-100 text-purple-800': eq.category_baseline?.category === 'Crane',
-                                                'bg-blue-100 text-blue-800': eq.category_baseline?.category === 'Mobile Equipment',
-                                                'bg-gray-100 text-gray-800': eq.category_baseline?.category === 'Others'
+                                            <span class="px-2.5 py-1 rounded-full text-xs font-semibold border" :class="{
+                                                'bg-pelindo-blue/10 text-pelindo-blue border-pelindo-blue/20': eq.category_baseline?.category === 'Crane',
+                                                'bg-pelindo-cyan/10 text-[#003B6F] border-pelindo-cyan/30': eq.category_baseline?.category === 'Mobile Equipment',
+                                                'bg-slate-100 text-slate-700 border-slate-200': eq.category_baseline?.category === 'Others'
                                             }">
                                                 {{ eq.category_baseline ? eq.category_baseline.category : '-' }}
                                             </span>
@@ -301,10 +301,10 @@ const handleImportFile = (event) => {
                                         <td class="px-6 py-4 whitespace-nowrap text-center font-bold text-gray-700">{{ eq.weight }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             <div class="flex space-x-2">
-                                                <span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full font-semibold">
+                                                <span class="bg-pelindo-blue/10 text-pelindo-blue border border-pelindo-blue/20 text-xs px-2.5 py-1 rounded-full font-semibold">
                                                     {{ eq.job_plans ? eq.job_plans.length : 0 }} Job Plan
                                                 </span>
-                                                <span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full font-semibold">
+                                                <span class="bg-emerald-100 text-emerald-800 border border-emerald-200 text-xs px-2.5 py-1 rounded-full font-semibold">
                                                     {{ getTotalHours(eq.job_plans) }} Jam/Thn
                                                 </span>
                                             </div>
@@ -317,7 +317,7 @@ const handleImportFile = (event) => {
 
                                     <!-- Baris Anak (Job Plan Nested) -->
                                     <tr v-show="isExpanded(eq.id)" class="bg-slate-50">
-                                        <td colspan="7" class="p-0 border-l-4 border-indigo-300">
+                                        <td colspan="7" class="p-0 border-l-4 border-pelindo-blue">
                                             <div class="p-6">
                                                 <div class="flex justify-between items-center mb-3">
                                                     <h4 class="font-bold text-gray-700">Daftar Job Plan - {{ eq.name }}</h4>
@@ -329,14 +329,14 @@ const handleImportFile = (event) => {
                                                 <!-- Tabel Job Plan -->
                                                 <div v-if="eq.job_plans && eq.job_plans.length > 0" class="border rounded-lg bg-white shadow-sm overflow-hidden">
                                                     <table class="min-w-full divide-y divide-gray-200">
-                                                        <thead class="bg-gray-100">
+                                                        <thead class="bg-slate-700 text-white">
                                                             <tr>
-                                                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Aktivitas</th>
-                                                                <th class="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase">Durasi (Menit)</th>
-                                                                <th class="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase">Durasi (Jam)</th>
-                                                                <th class="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase">Frekuensi/Thn</th>
-                                                                <th class="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase">Total Jam/Thn</th>
-                                                                <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase w-32">Aksi</th>
+                                                                <th class="px-4 py-2 text-left text-xs font-bold uppercase">Aktivitas</th>
+                                                                <th class="px-4 py-2 text-center text-xs font-bold uppercase">Durasi (Menit)</th>
+                                                                <th class="px-4 py-2 text-center text-xs font-bold uppercase">Durasi (Jam)</th>
+                                                                <th class="px-4 py-2 text-center text-xs font-bold uppercase">Frekuensi/Thn</th>
+                                                                <th class="px-4 py-2 text-center text-xs font-bold uppercase">Total Jam/Thn</th>
+                                                                <th class="px-4 py-2 text-right text-xs font-bold uppercase w-32">Aksi</th>
                                                             </tr>
                                                         </thead>
                                                         <tbody class="divide-y divide-gray-100">
@@ -345,7 +345,7 @@ const handleImportFile = (event) => {
                                                                 <td class="px-4 py-2 text-sm text-center text-gray-600">{{ jp.duration_minutes }} mnt</td>
                                                                 <td class="px-4 py-2 text-sm text-center text-gray-600">{{ jp.duration_hours }} jam</td>
                                                                 <td class="px-4 py-2 text-sm text-center text-gray-600">{{ jp.frequency_per_year }} x</td>
-                                                                <td class="px-4 py-2 text-sm text-center font-bold text-indigo-600">{{ jp.total_hours_per_year }}</td>
+                                                                <td class="px-4 py-2 text-sm text-center font-bold text-pelindo-blue">{{ jp.total_hours_per_year }}</td>
                                                                 <td class="px-4 py-2 text-right space-x-3">
                                                                     <button @click="openJobPlanEdit(jp)" class="text-blue-600 hover:text-blue-900 text-xs font-medium">Edit</button>
                                                                     <button @click="deleteJobPlan(jp.id)" class="text-red-600 hover:text-red-900 text-xs font-medium">Hapus</button>
@@ -407,7 +407,7 @@ const handleImportFile = (event) => {
                         </div>
                         <div>
                             <InputLabel for="eq_category" value="Kategori Alat" />
-                            <select id="eq_category" v-model="formEquipment.category_id" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm" required>
+                            <select id="eq_category" v-model="formEquipment.category_id" class="mt-1 block w-full border-gray-300 focus:border-pelindo-blue focus:ring-pelindo-blue rounded-md shadow-sm" required>
                                 <option disabled value="null">-- Pilih Kategori --</option>
                                 <option v-for="baseline in baselines" :key="baseline.id" :value="baseline.id">
                                     {{ baseline.category }}
@@ -483,7 +483,7 @@ const handleImportFile = (event) => {
                                                 {{ formEquipment.errors[`job_plans.${index}.frequency_per_year`] }}
                                             </div>
                                         </td>
-                                        <td class="p-2 align-middle text-center font-semibold text-indigo-600">
+                                        <td class="p-2 align-middle text-center font-semibold text-pelindo-blue">
                                             {{ (((parseFloat(jp.duration_minutes) || 0) / 60) * (parseFloat(jp.frequency_per_year) || 0)).toFixed(3) }}
                                         </td>
                                         <td class="p-2 align-middle text-center">
@@ -543,7 +543,7 @@ const handleImportFile = (event) => {
                     
                     <div class="bg-gray-50 p-4 rounded-md mb-6 flex justify-between items-center border border-gray-200">
                         <span class="text-sm text-gray-600">Total Jam per Tahun:</span>
-                        <span class="font-bold text-lg text-indigo-600">{{ totalHoursCalculated.toFixed(3) }} Jam</span>
+                        <span class="font-bold text-lg text-pelindo-blue">{{ totalHoursCalculated.toFixed(3) }} Jam</span>
                     </div>
 
                     <div class="mt-6 flex justify-end space-x-3">

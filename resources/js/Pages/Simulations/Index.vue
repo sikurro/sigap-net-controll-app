@@ -331,32 +331,32 @@ const formatNum = (num) => {
                             </div>
 
                             <!-- Banner Summary Grand Total -->
-                            <div class="bg-gradient-to-r from-slate-800 to-indigo-900 text-white p-4 rounded-lg shadow-md mb-6 flex flex-col md:flex-row items-center justify-between">
+                            <div class="bg-gradient-to-r from-pelindo-blue to-slate-900 text-white p-4 rounded-2xl shadow-xl mb-6 flex flex-col md:flex-row items-center justify-between border border-pelindo-cyan/20">
                                 <div class="flex items-center space-x-3 mb-3 md:mb-0">
                                     <div class="p-2 bg-white/10 rounded-full">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-indigo-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-pelindo-cyan" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                                         </svg>
                                     </div>
                                     <div>
                                         <h4 class="font-bold text-sm md:text-base">Akumulasi Sementara ({{ form.equipments.length }} Baris Alat)</h4>
-                                        <p class="text-xs text-indigo-200">Estimasi total kebutuhan pemeliharaan dan bobot site sebelum kalkulasi</p>
+                                        <p class="text-xs text-slate-200">Estimasi total kebutuhan pemeliharaan dan bobot site sebelum kalkulasi</p>
                                     </div>
                                 </div>
-                                <div class="flex flex-wrap items-center gap-4 bg-black/20 px-4 py-2 rounded-md border border-white/10 w-full md:w-auto justify-around md:justify-end">
+                                <div class="flex flex-wrap items-center gap-4 bg-black/20 px-4 py-2 rounded-xl border border-white/10 w-full md:w-auto justify-around md:justify-end">
                                     <div class="text-center">
-                                        <span class="block text-[10px] uppercase tracking-wider text-indigo-300">Jam Preventive (Job Plan)</span>
-                                        <span class="font-extrabold text-base md:text-lg text-amber-300">⏱️ {{ totalSimulationHours }} Jam</span>
+                                        <span class="block text-[10px] uppercase tracking-wider text-slate-300 font-bold">Jam Preventive (Job Plan)</span>
+                                        <span class="font-black text-base md:text-lg text-pelindo-cyan">⏱️ {{ totalSimulationHours }} Jam</span>
                                     </div>
                                     <div class="h-8 w-px bg-white/20 hidden sm:block"></div>
                                     <div class="text-center" :title="'Alokasi breakdown ' + (100 - (props.targetAvailability || 85)) + '% dari target availability'">
-                                        <span class="block text-[10px] uppercase tracking-wider text-rose-300">Jam Breakdown ({{ 100 - (props.targetAvailability || 85) }}%)</span>
-                                        <span class="font-extrabold text-base md:text-lg text-rose-300">🚨 {{ totalSimulationBreakdownHours }} Jam</span>
+                                        <span class="block text-[10px] uppercase tracking-wider text-rose-300 font-bold">Jam Breakdown ({{ 100 - (props.targetAvailability || 85) }}%)</span>
+                                        <span class="font-black text-base md:text-lg text-pelindo-cyan">🚨 {{ totalSimulationBreakdownHours }} Jam</span>
                                     </div>
                                     <div class="h-8 w-px bg-white/20 hidden sm:block"></div>
                                     <div class="text-center">
-                                        <span class="block text-[10px] uppercase tracking-wider text-indigo-300">Total Bobot Alat</span>
-                                        <span class="font-extrabold text-base md:text-lg text-emerald-300">⚖️ {{ totalSimulationWeight }}</span>
+                                        <span class="block text-[10px] uppercase tracking-wider text-slate-300 font-bold">Total Bobot Alat</span>
+                                        <span class="font-black text-base md:text-lg text-pelindo-cyan">⚖️ {{ totalSimulationWeight }}</span>
                                     </div>
                                 </div>
                             </div>
@@ -371,9 +371,9 @@ const formatNum = (num) => {
                 </div>
 
                 <!-- Hasil Simulasi -->
-                <div v-if="simulationResult" class="p-4 sm:p-8 bg-indigo-50 border-indigo-200 border shadow sm:rounded-lg">
+                <div v-if="simulationResult" class="p-4 sm:p-8 bg-white border border-slate-200/80 shadow rounded-2xl">
                     <header class="flex justify-between items-center mb-6">
-                        <h2 class="text-xl font-bold text-indigo-900">Hasil Kalkulasi Simulasi</h2>
+                        <h2 class="text-xl font-bold text-pelindo-blue">Hasil Kalkulasi Simulasi</h2>
                         <PrimaryButton @click="saveSimulation">Simpan ke Database</PrimaryButton>
                     </header>
 
@@ -383,29 +383,29 @@ const formatNum = (num) => {
                         Menekan tombol "Simpan" akan me-replace data alat di site eksisting tersebut.
                     </div>
 
-                    <table class="min-w-full divide-y divide-indigo-200 bg-white rounded overflow-hidden shadow-sm">
-                        <thead class="bg-indigo-100">
+                    <table class="min-w-full divide-y divide-gray-200 bg-white rounded-xl overflow-hidden shadow-sm border border-slate-200">
+                        <thead class="bg-slate-800 text-white">
                             <tr>
-                                <th class="px-6 py-3 text-left text-xs font-bold text-indigo-700 uppercase tracking-wider">Parameter</th>
-                                <th v-if="existingSiteData" class="px-6 py-3 text-center text-xs font-bold text-gray-500 uppercase tracking-wider">Kondisi Eksisting</th>
-                                <th class="px-6 py-3 text-center text-xs font-bold text-indigo-700 uppercase tracking-wider">Hasil Simulasi</th>
+                                <th class="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider">Parameter</th>
+                                <th v-if="existingSiteData" class="px-6 py-3 text-center text-xs font-bold uppercase tracking-wider">Kondisi Eksisting</th>
+                                <th class="px-6 py-3 text-center text-xs font-bold uppercase tracking-wider">Hasil Simulasi</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-indigo-100">
+                        <tbody class="divide-y divide-gray-100">
                             <tr>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Kelas Site</td>
                                 <td v-if="existingSiteData" class="px-6 py-4 whitespace-nowrap text-sm text-center text-gray-500">{{ existingSiteData.site_class }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-center font-bold text-indigo-600">{{ simulationResult.site_class }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-center font-bold text-pelindo-blue">{{ simulationResult.site_class }}</td>
                             </tr>
                             <tr>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Total Bobot</td>
                                 <td v-if="existingSiteData" class="px-6 py-4 whitespace-nowrap text-sm text-center text-gray-500">{{ existingSiteData.total_weight || 0 }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-center font-bold text-indigo-600">{{ simulationResult.total_weight }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-center font-bold text-pelindo-blue">{{ simulationResult.total_weight }}</td>
                             </tr>
                             <tr>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Total Jam Pemeliharaan (Tahun)</td>
                                 <td v-if="existingSiteData" class="px-6 py-4 whitespace-nowrap text-sm text-center text-gray-500">-</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-center font-bold text-indigo-600">{{ formatNum(simulationResult.total_maintenance_hours) }} Jam</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-center font-bold text-pelindo-blue">{{ formatNum(simulationResult.total_maintenance_hours) }} Jam</td>
                             </tr>
                             <tr>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 flex items-center justify-between">
@@ -415,7 +415,7 @@ const formatNum = (num) => {
                                     </button>
                                 </td>
                                 <td v-if="existingSiteData" class="px-6 py-4 whitespace-nowrap text-sm text-center text-gray-500">{{ formatNum(existingSiteData.technical_staff_needed) }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-center font-bold text-indigo-600">
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-center font-bold text-pelindo-blue">
                                     {{ formatNum(simulationResult.technical_staff_needed) }}
                                     <span v-if="existingSiteData && simulationResult.technical_staff_needed > existingSiteData.technical_staff_needed" class="text-xs text-red-500 ml-1">(+{{ formatNum(simulationResult.technical_staff_needed - existingSiteData.technical_staff_needed) }})</span>
                                     <span v-if="existingSiteData && simulationResult.technical_staff_needed < existingSiteData.technical_staff_needed" class="text-xs text-green-500 ml-1">({{ formatNum(simulationResult.technical_staff_needed - existingSiteData.technical_staff_needed) }})</span>
@@ -472,7 +472,7 @@ const formatNum = (num) => {
                                     </button>
                                 </td>
                                 <td v-if="existingSiteData" class="px-6 py-4 whitespace-nowrap text-sm text-center text-gray-500">{{ existingSiteData.non_technical_staff_needed }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-center font-bold text-indigo-600">
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-center font-bold text-pelindo-blue">
                                     {{ simulationResult.non_technical_staff_needed }}
                                     <span v-if="existingSiteData && simulationResult.non_technical_staff_needed > existingSiteData.non_technical_staff_needed" class="text-xs text-red-500 ml-1">(+{{ simulationResult.non_technical_staff_needed - existingSiteData.non_technical_staff_needed }})</span>
                                     <span v-if="existingSiteData && simulationResult.non_technical_staff_needed < existingSiteData.non_technical_staff_needed" class="text-xs text-green-500 ml-1">({{ simulationResult.non_technical_staff_needed - existingSiteData.non_technical_staff_needed }})</span>

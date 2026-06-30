@@ -8,6 +8,7 @@ import InputLabel from '@/Components/InputLabel.vue';
 import TextInput from '@/Components/TextInput.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import SecondaryButton from '@/Components/SecondaryButton.vue';
+import DangerButton from '@/Components/DangerButton.vue';
 
 defineProps({
     baselines: Array,
@@ -79,23 +80,23 @@ const deleteBaseline = (id) => {
                     </PrimaryButton>
                 </div>
 
-                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
+                <div class="bg-white overflow-hidden shadow-sm rounded-2xl border border-slate-200/80 p-6">
                     <div class="overflow-x-auto">
                         <table class="min-w-full divide-y divide-gray-200">
-                            <thead class="bg-gray-50">
+                            <thead class="bg-slate-800 text-white">
                                 <tr>
-                                    <th class="pb-4 pt-6 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kategori Alat</th>
-                                    <th class="pb-4 pt-6 px-6 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Baseline Teknisi (Orang)</th>
-                                    <th class="pb-4 pt-6 px-6 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                                    <th class="py-3 px-6 text-left text-xs font-bold uppercase tracking-wider">Kategori Alat</th>
+                                    <th class="py-3 px-6 text-center text-xs font-bold uppercase tracking-wider">Baseline Teknisi (Orang)</th>
+                                    <th class="py-3 px-6 text-center text-xs font-bold uppercase tracking-wider">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody class="bg-white divide-y divide-gray-200">
                                 <tr v-for="baseline in baselines" :key="baseline.id" class="hover:bg-gray-50">
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ baseline.category }}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-center font-semibold text-indigo-600">{{ baseline.baseline }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-center font-bold text-pelindo-blue">{{ baseline.baseline }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-center font-medium">
-                                        <button @click="openEditModal(baseline)" class="text-indigo-600 hover:text-indigo-900 mr-3">Edit</button>
-                                        <button @click="deleteBaseline(baseline.id)" class="text-red-600 hover:text-red-900">Delete</button>
+                                        <SecondaryButton class="text-xs px-2 py-1 mr-2" @click="openEditModal(baseline)">Edit</SecondaryButton>
+                                        <DangerButton class="text-xs px-2 py-1" @click="deleteBaseline(baseline.id)">Hapus</DangerButton>
                                     </td>
                                 </tr>
                                 <tr v-if="baselines.length === 0">

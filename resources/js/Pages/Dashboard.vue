@@ -53,7 +53,7 @@ const comparisonOptions = computed(() => ({
         title: { text: 'Personel / Unit' }
     },
     fill: { opacity: 1 },
-    colors: ['#3b82f6', '#10b981', '#059669', '#f59e0b', '#d97706'],
+    colors: ['#00549A', '#00A3E0', '#0284c7', '#F97316', '#ea580c'],
     tooltip: {
         y: { formatter: (val) => `${val}` }
     }
@@ -65,7 +65,7 @@ const compositionOptions = computed(() => ({
         fontFamily: 'Inherit',
     },
     labels: props.chartData.composition.labels,
-    colors: ['#2563eb', '#14b8a6'],
+    colors: ['#00549A', '#00A3E0'],
     legend: { position: 'bottom' },
     plotOptions: {
         pie: {
@@ -101,7 +101,7 @@ const maintenanceOptions = computed(() => ({
         categories: props.chartData.maintenance.labels,
         title: { text: 'Jam Kerja per Tahun' }
     },
-    colors: ['#0284c7', '#f43f5e'],
+    colors: ['#00549A', '#F97316'],
     legend: { position: 'top', horizontalAlign: 'left' },
     fill: { opacity: 1 },
 }));
@@ -128,13 +128,13 @@ const maintenanceOptions = computed(() => ({
                         </select>
                     </div>
 
-                    <a :href="printReportUrl" target="_blank" class="inline-flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-900 text-white text-sm font-medium rounded-lg shadow transition">
+                    <a :href="printReportUrl" target="_blank" class="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-pelindo-blue to-[#003B6F] border border-pelindo-cyan/20 hover:opacity-90 text-white text-xs font-bold rounded-xl shadow-md transition uppercase tracking-wider">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
                         Cetak Laporan Resmi (PDF)
                     </a>
 
-                    <a :href="exportExcelUrl" target="_blank" class="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-lg shadow transition">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                    <a :href="exportExcelUrl" target="_blank" class="inline-flex items-center gap-2 px-4 py-2 bg-white border border-slate-300 text-slate-700 hover:border-pelindo-cyan hover:bg-pelindo-cyan/5 text-xs font-bold rounded-xl shadow-sm transition uppercase tracking-wider">
+                        <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                         Export Excel (.xlsx)
                     </a>
                 </div>
@@ -285,7 +285,7 @@ const maintenanceOptions = computed(() => ({
                     <div class="overflow-x-auto">
                         <table class="w-full text-left border-collapse">
                             <thead>
-                                <tr class="bg-slate-50 border-b border-slate-200 text-[11px] font-bold uppercase tracking-wider text-slate-500">
+                                <tr class="bg-slate-800 text-white text-[11px] font-bold uppercase tracking-wider">
                                     <th class="py-3 px-4">Nama Terminal</th>
                                     <th class="py-3 px-4">Wilayah</th>
                                     <th class="py-3 px-4">Kelas</th>

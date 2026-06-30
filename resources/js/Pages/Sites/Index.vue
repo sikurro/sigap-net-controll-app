@@ -143,13 +143,13 @@ const submitImport = () => {
 
                 <div class="mb-4 flex justify-between items-center">
                     <div>
-                        <a :href="route('sites.download-template')" class="inline-flex items-center px-4 py-2 bg-white border border-gray-300 rounded-md font-semibold text-xs text-gray-700 uppercase tracking-widest shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-25 transition ease-in-out duration-150 mr-2">
+                        <a :href="route('sites.download-template')" class="inline-flex items-center px-4 py-2 bg-white border border-slate-300 rounded-xl font-semibold text-xs text-slate-700 uppercase tracking-widest shadow-sm hover:bg-pelindo-cyan/5 hover:border-pelindo-cyan focus:outline-none transition ease-in-out duration-150 mr-2">
                             Download Template
                         </a>
                         <SecondaryButton @click="openImportModal" class="mr-2">
                             Import Excel
                         </SecondaryButton>
-                        <a :href="route('sites.export')" class="inline-flex items-center px-4 py-2 bg-white border border-gray-300 rounded-md font-semibold text-xs text-gray-700 uppercase tracking-widest shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-25 transition ease-in-out duration-150">
+                        <a :href="route('sites.export')" class="inline-flex items-center px-4 py-2 bg-white border border-slate-300 rounded-xl font-semibold text-xs text-slate-700 uppercase tracking-widest shadow-sm hover:bg-pelindo-cyan/5 hover:border-pelindo-cyan focus:outline-none transition ease-in-out duration-150">
                             Export Excel
                         </a>
                     </div>
@@ -158,26 +158,26 @@ const submitImport = () => {
                     </PrimaryButton>
                 </div>
 
-                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
+                <div class="bg-white overflow-hidden shadow-sm rounded-2xl border border-slate-200/80 p-6">
                     <div class="overflow-x-auto">
                         <table class="min-w-full divide-y divide-gray-200">
-                            <thead class="bg-gray-50">
+                            <thead class="bg-slate-800 text-white">
                                 <tr>
                                     <th class="w-8 pb-4 pt-6 px-6"></th>
-                                    <th class="pb-4 pt-6 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Site</th>
-                                    <th class="pb-4 pt-6 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Wilayah</th>
-                                    <th class="pb-4 pt-6 px-4 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Skema</th>
-                                    <th class="pb-4 pt-6 px-6 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Kelas</th>
-                                    <th class="pb-4 pt-6 px-6 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Total Bobot</th>
-                                    <th class="pb-4 pt-6 px-6 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Jml Alat</th>
-                                    <th class="pb-4 pt-6 px-6 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Teknisi (Eks / Butuh)</th>
-                                    <th class="pb-4 pt-6 px-6 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Non-Teknisi (Eks / Butuh)</th>
-                                    <th class="pb-4 pt-6 px-6 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                                    <th class="pb-4 pt-6 px-6 text-left text-xs font-bold uppercase tracking-wider">Nama Site</th>
+                                    <th class="pb-4 pt-6 px-6 text-left text-xs font-bold uppercase tracking-wider">Wilayah</th>
+                                    <th class="pb-4 pt-6 px-4 text-center text-xs font-bold uppercase tracking-wider">Skema</th>
+                                    <th class="pb-4 pt-6 px-6 text-center text-xs font-bold uppercase tracking-wider">Kelas</th>
+                                    <th class="pb-4 pt-6 px-6 text-center text-xs font-bold uppercase tracking-wider">Total Bobot</th>
+                                    <th class="pb-4 pt-6 px-6 text-center text-xs font-bold uppercase tracking-wider">Jml Alat</th>
+                                    <th class="pb-4 pt-6 px-6 text-center text-xs font-bold uppercase tracking-wider">Teknisi (Eks / Butuh)</th>
+                                    <th class="pb-4 pt-6 px-6 text-center text-xs font-bold uppercase tracking-wider">Non-Teknisi (Eks / Butuh)</th>
+                                    <th class="pb-4 pt-6 px-6 text-center text-xs font-bold uppercase tracking-wider">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody class="bg-white divide-y divide-gray-200">
                                 <template v-for="site in sites" :key="site.id">
-                                    <tr class="hover:bg-gray-50 cursor-pointer">
+                                    <tr class="hover:bg-slate-50/80 cursor-pointer transition">
                                         <td class="px-4 py-4 whitespace-nowrap text-center" @click="toggleRow(site.id)">
                                             <svg v-if="expandedRows.includes(site.id)" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500 inline-block" viewBox="0 0 20 20" fill="currentColor">
                                                 <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
@@ -189,15 +189,15 @@ const submitImport = () => {
                                         <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900" @click="toggleRow(site.id)">{{ site.name }}</td>
                                         <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500" @click="toggleRow(site.id)">{{ site.region }}</td>
                                         <td class="px-4 py-4 whitespace-nowrap text-xs text-center" @click="toggleRow(site.id)">
-                                            <span :class="site.work_scheme === 'Shift' ? 'bg-blue-100 text-blue-800' : 'bg-amber-100 text-amber-800'" class="px-2 py-1 rounded font-bold">{{ site.work_scheme }}</span>
+                                            <span :class="site.work_scheme === 'Shift' ? 'bg-pelindo-blue/10 text-pelindo-blue border border-pelindo-blue/20' : 'bg-pelindo-cyan/10 text-[#007baf] border border-pelindo-cyan/30'" class="px-2 py-1 rounded font-bold">{{ site.work_scheme }}</span>
                                         </td>
                                         <td class="px-4 py-4 whitespace-nowrap text-sm text-center font-bold text-gray-900" @click="toggleRow(site.id)">{{ site.site_class }}</td>
-                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-center font-semibold text-indigo-600" @click="toggleRow(site.id)">{{ site.total_weight }}</td>
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-center font-semibold text-pelindo-blue" @click="toggleRow(site.id)">{{ site.total_weight }}</td>
                                         <td class="px-4 py-4 whitespace-nowrap text-sm text-center text-gray-500" @click="toggleRow(site.id)">{{ site.jumlah_alat }}</td>
                                         <td class="px-4 py-4 whitespace-nowrap text-sm text-center text-gray-900 font-semibold" @click="toggleRow(site.id)">{{ site.existing_technical_staff }} <span class="text-gray-400 font-normal">/</span> {{ site.technical_staff_needed }}</td>
                                         <td class="px-4 py-4 whitespace-nowrap text-sm text-center text-gray-900 font-semibold" @click="toggleRow(site.id)">{{ site.existing_non_technical_staff }} <span class="text-gray-400 font-normal">/</span> {{ site.non_technical_staff_needed }}</td>
                                         <td class="px-4 py-4 whitespace-nowrap text-sm text-center font-medium">
-                                            <button @click.stop="openEditModal(site)" class="text-indigo-600 hover:text-indigo-900 mr-3">Edit</button>
+                                            <button @click.stop="openEditModal(site)" class="text-pelindo-blue hover:text-[#003B6F] font-bold mr-3">Edit</button>
                                             <button @click.stop="deleteSite(site.id)" class="text-red-600 hover:text-red-900">Delete</button>
                                         </td>
                                     </tr>
@@ -336,8 +336,8 @@ const submitImport = () => {
                         file:mr-4 file:py-2 file:px-4
                         file:rounded-md file:border-0
                         file:text-sm file:font-semibold
-                        file:bg-indigo-50 file:text-indigo-700
-                        hover:file:bg-indigo-100"
+                        file:bg-pelindo-cyan/10 file:text-pelindo-blue
+                        hover:file:bg-pelindo-cyan/20"
                         accept=".xlsx,.xls,.csv"
                     />
                     <InputError :message="importForm.errors.file" class="mt-2" />

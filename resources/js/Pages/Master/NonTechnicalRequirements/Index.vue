@@ -206,7 +206,7 @@ const deletePosition = (id) => {
                 <!-- PANEL PENGELOLAAN MASTER -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                     <!-- Card Kelas Site -->
-                    <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6 flex justify-between items-center border border-gray-100">
+                    <div class="bg-white overflow-hidden shadow-sm rounded-2xl p-6 flex justify-between items-center border border-slate-200/80">
                         <div>
                             <h3 class="font-bold text-gray-800">Kelas Site</h3>
                             <p class="text-sm text-gray-500">Kelola master kolom</p>
@@ -218,7 +218,7 @@ const deletePosition = (id) => {
                     </div>
 
                     <!-- Card Jabatan -->
-                    <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6 flex justify-between items-center border border-gray-100">
+                    <div class="bg-white overflow-hidden shadow-sm rounded-2xl p-6 flex justify-between items-center border border-slate-200/80">
                         <div>
                             <h3 class="font-bold text-gray-800">Jabatan Non-Teknis</h3>
                             <p class="text-sm text-gray-500">Kelola master baris</p>
@@ -231,20 +231,20 @@ const deletePosition = (id) => {
                 </div>
 
                 <!-- MATRIKS -->
-                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6 border border-gray-100">
+                <div class="bg-white overflow-hidden shadow-sm rounded-2xl p-6 border border-slate-200/80">
                     <p class="mb-4 text-gray-600">Isi jumlah kebutuhan (kuantitas) SDM untuk setiap jabatan berdasarkan kelas site.</p>
                     
                     <form @submit.prevent="saveMatrix">
                         <div class="overflow-x-auto">
                             <table class="min-w-full divide-y divide-gray-200 border">
-                                <thead class="bg-gray-50">
+                                <thead class="bg-slate-800 text-white">
                                     <tr>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-100 sticky left-0 z-10">
+                                        <th class="px-6 py-3 text-left text-xs font-bold text-white uppercase tracking-wider bg-slate-800 sticky left-0 z-10">
                                             Jabatan \ Kelas Site
                                         </th>
                                         <th v-for="sc in siteClasses" :key="sc.id" class="px-4 py-3 text-center tracking-wider">
-                                            <div class="text-xs font-bold text-gray-700 uppercase">{{ sc.name }}</div>
-                                            <div class="mt-1 inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-indigo-50 text-indigo-700 border border-indigo-100 shadow-sm">
+                                            <div class="text-xs font-bold text-white uppercase">{{ sc.name }}</div>
+                                            <div class="mt-1 inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-pelindo-cyan/20 text-pelindo-cyan border border-pelindo-cyan/30 shadow-sm">
                                                 ⚖️ {{ formatWeightRange(sc) }}
                                             </div>
                                         </th>
@@ -261,7 +261,7 @@ const deletePosition = (id) => {
                                                 <input 
                                                     type="number" 
                                                     min="0"
-                                                    class="w-20 text-center border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm"
+                                                    class="w-20 text-center border-gray-300 focus:border-pelindo-blue focus:ring-pelindo-blue rounded-md shadow-sm"
                                                     v-model="getQuantityModel(pos.id, sc.id).quantity"
                                                 />
                                             </template>
@@ -297,12 +297,12 @@ const deletePosition = (id) => {
                 </div>
                 
                 <table class="min-w-full divide-y divide-gray-200 border mt-4">
-                    <thead class="bg-gray-50">
+                    <thead class="bg-slate-800 text-white">
                         <tr>
-                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Kelas</th>
-                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Min Bobot</th>
-                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Max Bobot</th>
-                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">Aksi</th>
+                            <th class="px-4 py-2 text-left text-xs font-bold uppercase tracking-wider">Nama Kelas</th>
+                            <th class="px-4 py-2 text-left text-xs font-bold uppercase tracking-wider">Min Bobot</th>
+                            <th class="px-4 py-2 text-left text-xs font-bold uppercase tracking-wider">Max Bobot</th>
+                            <th class="px-4 py-2 text-left text-xs font-bold uppercase tracking-wider w-32">Aksi</th>
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
@@ -369,11 +369,11 @@ const deletePosition = (id) => {
                 </div>
                 
                 <table class="min-w-full divide-y divide-gray-200 border mt-4">
-                    <thead class="bg-gray-50">
+                    <thead class="bg-slate-800 text-white">
                         <tr>
-                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Jabatan</th>
-                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kategori</th>
-                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">Aksi</th>
+                            <th class="px-4 py-2 text-left text-xs font-bold uppercase tracking-wider">Nama Jabatan</th>
+                            <th class="px-4 py-2 text-left text-xs font-bold uppercase tracking-wider">Kategori</th>
+                            <th class="px-4 py-2 text-left text-xs font-bold uppercase tracking-wider w-32">Aksi</th>
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
@@ -410,7 +410,7 @@ const deletePosition = (id) => {
                     </div>
                     <div>
                         <InputLabel for="pos_category" value="Kategori" />
-                        <select id="pos_category" v-model="formPosition.category" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
+                        <select id="pos_category" v-model="formPosition.category" class="mt-1 block w-full border-gray-300 focus:border-pelindo-blue focus:ring-pelindo-blue rounded-md shadow-sm">
                             <option value="fungsional">Fungsional</option>
                             <option value="non-fungsional">Non-Fungsional</option>
                         </select>
