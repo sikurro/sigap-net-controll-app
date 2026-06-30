@@ -4,10 +4,10 @@
             ⚓
         </div>
         <div class="flex flex-col text-left leading-tight">
-            <span class="font-black text-2xl tracking-tighter bg-gradient-to-r from-pelindo-blue to-pelindo-cyan bg-clip-text text-transparent">
+            <span class="font-black text-2xl tracking-tighter text-white drop-shadow-md">
                 SIGAP
             </span>
-            <span class="text-[10px] font-bold tracking-widest text-slate-500 uppercase">
+            <span class="text-[10px] font-bold tracking-widest text-pelindo-cyan uppercase drop-shadow-sm">
                 PELINDO CONTROLL
             </span>
         </div>
