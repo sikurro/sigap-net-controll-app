@@ -224,14 +224,17 @@ const handleImportFile = (event) => {
         <template #header>
             <div class="flex justify-between items-center">
                 <h2 class="font-semibold text-xl text-gray-800 leading-tight">Master Alat & Job Plan</h2>
-                <PrimaryButton @click="openEquipmentCreate">➕ Tambah Jenis Alat</PrimaryButton>
+                <button @click="openEquipmentCreate" type="button" class="h-10 px-5 inline-flex items-center gap-2 bg-gradient-to-r from-pelindo-blue to-[#003B6F] border border-pelindo-cyan/20 hover:opacity-90 text-white text-xs font-bold rounded-xl shadow-md transition uppercase tracking-wider">
+                    <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    <span>Tambah Jenis Alat</span>
+                </button>
             </div>
         </template>
 
         <div class="py-12">
             <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
                 <!-- PANEL PENCARIAN & FITUR IMPORT/DOWNLOAD -->
-                <div class="mb-4 bg-white p-4 shadow-sm rounded-lg flex flex-col md:flex-row justify-between items-stretch md:items-center gap-4">
+                <div class="mb-6 bg-white p-4 shadow-sm rounded-2xl border border-slate-200/80 flex flex-col md:flex-row justify-between items-stretch md:items-center gap-4">
                     <div class="w-full md:w-1/3">
                         <TextInput 
                             type="text" 
@@ -240,7 +243,7 @@ const handleImportFile = (event) => {
                             v-model="searchQuery"
                         />
                     </div>
-                    <div class="flex flex-wrap items-center gap-3">
+                    <div class="flex flex-wrap items-center gap-2.5">
                         <input 
                             type="file" 
                             id="import-file-input" 
@@ -248,17 +251,24 @@ const handleImportFile = (event) => {
                             accept=".xlsx, .xls" 
                             @change="handleImportFile" 
                         />
-                        <SecondaryButton @click="triggerImport" :disabled="formImport.processing">
-                            📤 Import Excel
-                        </SecondaryButton>
                         <a 
                             :href="route('equipment-types.download-template')" 
-                            class="inline-flex items-center px-4 py-2 bg-white border border-gray-300 rounded-md font-semibold text-xs text-gray-700 uppercase tracking-widest shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-25 transition ease-in-out duration-150"
+                            class="h-10 px-4 inline-flex items-center gap-2 bg-white border border-slate-300 rounded-xl font-bold text-xs text-slate-700 uppercase tracking-wider shadow-sm hover:bg-pelindo-cyan/5 hover:border-pelindo-cyan hover:text-pelindo-blue transition duration-150"
                         >
-                            📥 Unduh Template
+                            <svg class="w-4 h-4 text-pelindo-blue shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                            <span>Unduh Template</span>
                         </a>
-                        <div class="text-sm text-gray-500">
-                            Menampilkan {{ filteredEquipmentTypes.length }} jenis alat.
+                        <button 
+                            @click="triggerImport" 
+                            :disabled="formImport.processing"
+                            type="button"
+                            class="h-10 px-4 inline-flex items-center gap-2 bg-white border border-slate-300 rounded-xl font-bold text-xs text-slate-700 uppercase tracking-wider shadow-sm hover:bg-pelindo-cyan/5 hover:border-pelindo-cyan hover:text-pelindo-blue transition duration-150 disabled:opacity-50"
+                        >
+                            <svg class="w-4 h-4 text-pelindo-cyan shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+                            <span>Import Excel</span>
+                        </button>
+                        <div class="text-xs font-semibold text-slate-500 bg-slate-100 px-3 py-2 rounded-xl border border-slate-200">
+                            Menampilkan {{ filteredEquipmentTypes.length }} jenis alat
                         </div>
                     </div>
                 </div>
@@ -309,9 +319,17 @@ const handleImportFile = (event) => {
                                                 </span>
                                             </div>
                                         </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-right space-x-2" @click.stop>
-                                            <SecondaryButton class="text-xs px-2 py-1" @click="openEquipmentEdit(eq)">Edit</SecondaryButton>
-                                            <DangerButton class="text-xs px-2 py-1" @click="deleteEquipment(eq.id)">Hapus</DangerButton>
+                                        <td class="px-6 py-4 whitespace-nowrap text-right" @click.stop>
+                                            <div class="inline-flex items-center justify-end gap-2">
+                                                <button @click="openEquipmentEdit(eq)" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 hover:bg-pelindo-blue text-pelindo-blue hover:text-white rounded-xl text-xs font-bold shadow-sm transition duration-150" title="Edit Alat">
+                                                    <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                                                    <span>Edit</span>
+                                                </button>
+                                                <button @click="deleteEquipment(eq.id)" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-red-50 hover:bg-red-600 text-red-600 hover:text-white rounded-xl text-xs font-bold shadow-sm transition duration-150" title="Hapus Alat">
+                                                    <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                                    <span>Delete</span>
+                                                </button>
+                                            </div>
                                         </td>
                                     </tr>
 
@@ -321,9 +339,10 @@ const handleImportFile = (event) => {
                                             <div class="p-6">
                                                 <div class="flex justify-between items-center mb-3">
                                                     <h4 class="font-bold text-gray-700">Daftar Job Plan - {{ eq.name }}</h4>
-                                                    <PrimaryButton class="text-xs py-1" @click="openJobPlanCreate(eq.id)">
-                                                        ➕ Tambah Job Plan
-                                                    </PrimaryButton>
+                                                    <button @click="openJobPlanCreate(eq.id)" type="button" class="px-3.5 py-1.5 inline-flex items-center gap-1.5 bg-gradient-to-r from-pelindo-blue to-[#003B6F] hover:opacity-90 text-white text-xs font-bold rounded-xl shadow-sm transition uppercase tracking-wider">
+                                                        <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                                                        <span>Tambah Job Plan</span>
+                                                    </button>
                                                 </div>
 
                                                 <!-- Tabel Job Plan -->
@@ -346,9 +365,17 @@ const handleImportFile = (event) => {
                                                                 <td class="px-4 py-2 text-sm text-center text-gray-600">{{ jp.duration_hours }} jam</td>
                                                                 <td class="px-4 py-2 text-sm text-center text-gray-600">{{ jp.frequency_per_year }} x</td>
                                                                 <td class="px-4 py-2 text-sm text-center font-bold text-pelindo-blue">{{ jp.total_hours_per_year }}</td>
-                                                                <td class="px-4 py-2 text-right space-x-3">
-                                                                    <button @click="openJobPlanEdit(jp)" class="text-blue-600 hover:text-blue-900 text-xs font-medium">Edit</button>
-                                                                    <button @click="deleteJobPlan(jp.id)" class="text-red-600 hover:text-red-900 text-xs font-medium">Hapus</button>
+                                                                <td class="px-4 py-2 text-right">
+                                                                    <div class="inline-flex items-center justify-end gap-1.5">
+                                                                        <button @click="openJobPlanEdit(jp)" class="inline-flex items-center gap-1 px-2.5 py-1 bg-blue-50 hover:bg-pelindo-blue text-pelindo-blue hover:text-white rounded-lg text-xs font-bold transition duration-150" title="Edit Job Plan">
+                                                                            <svg class="w-3 h-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                                                                            <span>Edit</span>
+                                                                        </button>
+                                                                        <button @click="deleteJobPlan(jp.id)" class="inline-flex items-center gap-1 px-2.5 py-1 bg-red-50 hover:bg-red-600 text-red-600 hover:text-white rounded-lg text-xs font-bold transition duration-150" title="Hapus Job Plan">
+                                                                            <svg class="w-3 h-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                                                            <span>Delete</span>
+                                                                        </button>
+                                                                    </div>
                                                                 </td>
                                                             </tr>
                                                         </tbody>

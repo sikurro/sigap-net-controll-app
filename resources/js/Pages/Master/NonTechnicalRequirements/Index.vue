@@ -211,9 +211,15 @@ const deletePosition = (id) => {
                             <h3 class="font-bold text-gray-800">Kelas Site</h3>
                             <p class="text-sm text-gray-500">Kelola master kolom</p>
                         </div>
-                        <div class="space-x-2">
-                            <SecondaryButton @click="showSiteClassListModal = true">📋 List</SecondaryButton>
-                            <PrimaryButton @click="openSiteClassCreate">➕ Baru</PrimaryButton>
+                        <div class="flex items-center gap-2">
+                            <button @click="showSiteClassListModal = true" type="button" class="h-9 px-3.5 inline-flex items-center gap-1.5 bg-white border border-slate-300 rounded-xl font-bold text-xs text-slate-700 shadow-sm hover:bg-pelindo-cyan/5 hover:border-pelindo-cyan hover:text-pelindo-blue transition">
+                                <svg class="w-3.5 h-3.5 text-pelindo-blue shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>
+                                <span>Daftar Kelas</span>
+                            </button>
+                            <button @click="openSiteClassCreate" type="button" class="h-9 px-3.5 inline-flex items-center gap-1.5 bg-gradient-to-r from-pelindo-blue to-[#003B6F] hover:opacity-90 text-white font-bold text-xs rounded-xl shadow-sm transition">
+                                <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                                <span>Tambah Kelas</span>
+                            </button>
                         </div>
                     </div>
 
@@ -223,9 +229,15 @@ const deletePosition = (id) => {
                             <h3 class="font-bold text-gray-800">Jabatan Non-Teknis</h3>
                             <p class="text-sm text-gray-500">Kelola master baris</p>
                         </div>
-                        <div class="space-x-2">
-                            <SecondaryButton @click="showPositionListModal = true">📋 List</SecondaryButton>
-                            <PrimaryButton @click="openPositionCreate">➕ Baru</PrimaryButton>
+                        <div class="flex items-center gap-2">
+                            <button @click="showPositionListModal = true" type="button" class="h-9 px-3.5 inline-flex items-center gap-1.5 bg-white border border-slate-300 rounded-xl font-bold text-xs text-slate-700 shadow-sm hover:bg-pelindo-cyan/5 hover:border-pelindo-cyan hover:text-pelindo-blue transition">
+                                <svg class="w-3.5 h-3.5 text-pelindo-blue shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>
+                                <span>Daftar Jabatan</span>
+                            </button>
+                            <button @click="openPositionCreate" type="button" class="h-9 px-3.5 inline-flex items-center gap-1.5 bg-gradient-to-r from-pelindo-blue to-[#003B6F] hover:opacity-90 text-white font-bold text-xs rounded-xl shadow-sm transition">
+                                <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                                <span>Tambah Jabatan</span>
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -293,7 +305,10 @@ const deletePosition = (id) => {
             <div class="p-6">
                 <div class="flex justify-between items-center mb-4">
                     <h2 class="text-lg font-medium text-gray-900">Daftar Kelas Site</h2>
-                    <PrimaryButton @click="openSiteClassCreate">Tambah Baru</PrimaryButton>
+                    <button @click="openSiteClassCreate" type="button" class="h-9 px-3.5 inline-flex items-center gap-1.5 bg-gradient-to-r from-pelindo-blue to-[#003B6F] hover:opacity-90 text-white font-bold text-xs rounded-xl shadow-sm transition">
+                        <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                        <span>Tambah Baru</span>
+                    </button>
                 </div>
                 
                 <table class="min-w-full divide-y divide-gray-200 border mt-4">
@@ -310,9 +325,17 @@ const deletePosition = (id) => {
                             <td class="px-4 py-2 whitespace-nowrap">{{ item.name }}</td>
                             <td class="px-4 py-2 whitespace-nowrap">{{ item.min_weight }}</td>
                             <td class="px-4 py-2 whitespace-nowrap">{{ item.max_weight !== null ? item.max_weight : '∞' }}</td>
-                            <td class="px-4 py-2 whitespace-nowrap space-x-2">
-                                <SecondaryButton class="text-xs px-2 py-1" @click="openSiteClassEdit(item)">Edit</SecondaryButton>
-                                <DangerButton class="text-xs px-2 py-1" @click="deleteSiteClass(item.id)">Hapus</DangerButton>
+                            <td class="px-4 py-2 whitespace-nowrap">
+                                <div class="inline-flex items-center gap-1.5">
+                                    <button @click="openSiteClassEdit(item)" class="inline-flex items-center gap-1 px-2.5 py-1 bg-blue-50 hover:bg-pelindo-blue text-pelindo-blue hover:text-white rounded-lg text-xs font-bold transition duration-150" title="Edit Kelas">
+                                        <svg class="w-3 h-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                                        <span>Edit</span>
+                                    </button>
+                                    <button @click="deleteSiteClass(item.id)" class="inline-flex items-center gap-1 px-2.5 py-1 bg-red-50 hover:bg-red-600 text-red-600 hover:text-white rounded-lg text-xs font-bold transition duration-150" title="Hapus Kelas">
+                                        <svg class="w-3 h-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                        <span>Delete</span>
+                                    </button>
+                                </div>
                             </td>
                         </tr>
                         <tr v-if="siteClasses.length === 0">
@@ -365,7 +388,10 @@ const deletePosition = (id) => {
             <div class="p-6">
                 <div class="flex justify-between items-center mb-4">
                     <h2 class="text-lg font-medium text-gray-900">Daftar Jabatan Non-Teknis</h2>
-                    <PrimaryButton @click="openPositionCreate">Tambah Baru</PrimaryButton>
+                    <button @click="openPositionCreate" type="button" class="h-9 px-3.5 inline-flex items-center gap-1.5 bg-gradient-to-r from-pelindo-blue to-[#003B6F] hover:opacity-90 text-white font-bold text-xs rounded-xl shadow-sm transition">
+                        <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                        <span>Tambah Baru</span>
+                    </button>
                 </div>
                 
                 <table class="min-w-full divide-y divide-gray-200 border mt-4">
@@ -380,9 +406,17 @@ const deletePosition = (id) => {
                         <tr v-for="item in positions" :key="item.id">
                             <td class="px-4 py-2 whitespace-nowrap">{{ item.title }}</td>
                             <td class="px-4 py-2 whitespace-nowrap capitalize">{{ item.category }}</td>
-                            <td class="px-4 py-2 whitespace-nowrap space-x-2">
-                                <SecondaryButton class="text-xs px-2 py-1" @click="openPositionEdit(item)">Edit</SecondaryButton>
-                                <DangerButton class="text-xs px-2 py-1" @click="deletePosition(item.id)">Hapus</DangerButton>
+                            <td class="px-4 py-2 whitespace-nowrap">
+                                <div class="inline-flex items-center gap-1.5">
+                                    <button @click="openPositionEdit(item)" class="inline-flex items-center gap-1 px-2.5 py-1 bg-blue-50 hover:bg-pelindo-blue text-pelindo-blue hover:text-white rounded-lg text-xs font-bold transition duration-150" title="Edit Jabatan">
+                                        <svg class="w-3 h-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                                        <span>Edit</span>
+                                    </button>
+                                    <button @click="deletePosition(item.id)" class="inline-flex items-center gap-1 px-2.5 py-1 bg-red-50 hover:bg-red-600 text-red-600 hover:text-white rounded-lg text-xs font-bold transition duration-150" title="Hapus Jabatan">
+                                        <svg class="w-3 h-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                        <span>Delete</span>
+                                    </button>
+                                </div>
                             </td>
                         </tr>
                         <tr v-if="positions.length === 0">
