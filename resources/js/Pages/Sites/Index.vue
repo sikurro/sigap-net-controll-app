@@ -141,21 +141,25 @@ const submitImport = () => {
                     <span class="block sm:inline" v-html="$page.props.flash.error"></span>
                 </div>
 
-                <div class="mb-4 flex justify-between items-center">
-                    <div>
-                        <a :href="route('sites.download-template')" class="inline-flex items-center px-4 py-2 bg-white border border-slate-300 rounded-xl font-semibold text-xs text-slate-700 uppercase tracking-widest shadow-sm hover:bg-pelindo-cyan/5 hover:border-pelindo-cyan focus:outline-none transition ease-in-out duration-150 mr-2">
-                            Download Template
+                <div class="bg-white p-3 rounded-2xl border border-slate-200/80 shadow-sm flex flex-wrap items-center justify-between gap-4 mb-6">
+                    <div class="flex flex-wrap items-center gap-2.5">
+                        <a :href="route('sites.download-template')" class="h-10 px-4 inline-flex items-center gap-2 bg-white border border-slate-300 rounded-xl font-bold text-xs text-slate-700 uppercase tracking-wider shadow-sm hover:bg-pelindo-cyan/5 hover:border-pelindo-cyan hover:text-pelindo-blue transition duration-150">
+                            <svg class="w-4 h-4 text-pelindo-blue shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                            <span>Download Template</span>
                         </a>
-                        <SecondaryButton @click="openImportModal" class="mr-2">
-                            Import Excel
-                        </SecondaryButton>
-                        <a :href="route('sites.export')" class="inline-flex items-center px-4 py-2 bg-white border border-slate-300 rounded-xl font-semibold text-xs text-slate-700 uppercase tracking-widest shadow-sm hover:bg-pelindo-cyan/5 hover:border-pelindo-cyan focus:outline-none transition ease-in-out duration-150">
-                            Export Excel
+                        <button @click="openImportModal" type="button" class="h-10 px-4 inline-flex items-center gap-2 bg-white border border-slate-300 rounded-xl font-bold text-xs text-slate-700 uppercase tracking-wider shadow-sm hover:bg-pelindo-cyan/5 hover:border-pelindo-cyan hover:text-pelindo-blue transition duration-150">
+                            <svg class="w-4 h-4 text-pelindo-cyan shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+                            <span>Import Excel</span>
+                        </button>
+                        <a :href="route('sites.export')" class="h-10 px-4 inline-flex items-center gap-2 bg-white border border-slate-300 rounded-xl font-bold text-xs text-slate-700 uppercase tracking-wider shadow-sm hover:bg-pelindo-cyan/5 hover:border-pelindo-cyan hover:text-pelindo-blue transition duration-150">
+                            <svg class="w-4 h-4 text-emerald-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                            <span>Export Excel</span>
                         </a>
                     </div>
-                    <PrimaryButton @click="openCreateModal">
-                        Tambah Site
-                    </PrimaryButton>
+                    <button @click="openCreateModal" type="button" class="h-10 px-5 inline-flex items-center gap-2 bg-gradient-to-r from-pelindo-blue to-[#003B6F] border border-pelindo-cyan/20 hover:opacity-90 text-white text-xs font-bold rounded-xl shadow-md transition uppercase tracking-wider">
+                        <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                        <span>Tambah Site</span>
+                    </button>
                 </div>
 
                 <div class="bg-white overflow-hidden shadow-sm rounded-2xl border border-slate-200/80 p-6">
@@ -196,9 +200,17 @@ const submitImport = () => {
                                         <td class="px-4 py-4 whitespace-nowrap text-sm text-center text-gray-500" @click="toggleRow(site.id)">{{ site.jumlah_alat }}</td>
                                         <td class="px-4 py-4 whitespace-nowrap text-sm text-center text-gray-900 font-semibold" @click="toggleRow(site.id)">{{ site.existing_technical_staff }} <span class="text-gray-400 font-normal">/</span> {{ site.technical_staff_needed }}</td>
                                         <td class="px-4 py-4 whitespace-nowrap text-sm text-center text-gray-900 font-semibold" @click="toggleRow(site.id)">{{ site.existing_non_technical_staff }} <span class="text-gray-400 font-normal">/</span> {{ site.non_technical_staff_needed }}</td>
-                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-center font-medium">
-                                            <button @click.stop="openEditModal(site)" class="text-pelindo-blue hover:text-[#003B6F] font-bold mr-3">Edit</button>
-                                            <button @click.stop="deleteSite(site.id)" class="text-red-600 hover:text-red-900">Delete</button>
+                                        <td class="px-4 py-4 whitespace-nowrap text-center font-medium">
+                                            <div class="inline-flex items-center justify-center gap-2">
+                                                <button @click.stop="openEditModal(site)" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 hover:bg-pelindo-blue text-pelindo-blue hover:text-white rounded-xl text-xs font-bold shadow-sm transition duration-150" title="Edit Site">
+                                                    <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                                                    <span>Edit</span>
+                                                </button>
+                                                <button @click.stop="deleteSite(site.id)" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-red-50 hover:bg-red-600 text-red-600 hover:text-white rounded-xl text-xs font-bold shadow-sm transition duration-150" title="Hapus Site">
+                                                    <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                                    <span>Delete</span>
+                                                </button>
+                                            </div>
                                         </td>
                                     </tr>
                                     <!-- Child Row (Equipments) -->
