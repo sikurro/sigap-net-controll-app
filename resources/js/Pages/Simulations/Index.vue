@@ -355,7 +355,7 @@ const formatNum = (num) => {
                                     </div>
                                     <div class="h-8 w-px bg-white/20 hidden sm:block"></div>
                                     <div class="text-center">
-                                        <span class="block text-[10px] uppercase tracking-wider text-slate-300 font-bold">Total Bobot Alat</span>
+                                        <span class="block text-[10px] uppercase tracking-wider text-slate-300 font-bold">Total Bobot Site</span>
                                         <span class="font-black text-base md:text-lg text-pelindo-cyan">⚖️ {{ totalSimulationWeight }}</span>
                                     </div>
                                 </div>
@@ -371,11 +371,13 @@ const formatNum = (num) => {
                 </div>
 
                 <!-- Hasil Simulasi -->
-                <div v-if="simulationResult" class="p-4 sm:p-8 bg-white border border-slate-200/80 shadow rounded-2xl">
-                    <header class="flex justify-between items-center mb-6">
-                        <h2 class="text-xl font-bold text-pelindo-blue">Hasil Kalkulasi Simulasi</h2>
-                        <PrimaryButton @click="saveSimulation">Simpan ke Database</PrimaryButton>
-                    </header>
+                <div v-if="simulationResult" id="simulation-result" class="mt-12">
+                    <div class="flex items-center justify-between mb-6">
+                        <h2 class="text-2xl font-black text-pelindo-blue tracking-tight">Hasil Kalkulasi Simulasi</h2>
+                        <PrimaryButton @click="saveSimulation" :class="{ 'opacity-25': isSaving }" :disabled="isSaving" class="!bg-pelindo-blue hover:!bg-[#003B6F]">
+                            Simpan ke Database
+                        </PrimaryButton>
+                    </div>
 
                     <div v-if="existingSiteData" class="mb-4 bg-yellow-100 text-yellow-800 p-3 rounded text-sm border border-yellow-200">
                         <strong>Perhatian:</strong> Site dengan nama <strong>{{ form.name }}</strong> sudah ada di database. 
@@ -399,26 +401,33 @@ const formatNum = (num) => {
                             </tr>
                             <tr>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Total Bobot</td>
-                                <td v-if="existingSiteData" class="px-6 py-4 whitespace-nowrap text-sm text-center text-gray-500">{{ existingSiteData.total_weight || 0 }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-center font-bold text-pelindo-blue">{{ simulationResult.total_weight }}</td>
+                                <td v-if="existingSiteData" class="px-6 py-4 whitespace-nowrap text-sm text-center text-gray-500">{{ formatNum(existingSiteData.total_weight || 0) }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-center font-bold text-pelindo-blue">{{ formatNum(simulationResult.total_weight) }}</td>
                             </tr>
                             <tr>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Total Jam Pemeliharaan (Tahun)</td>
-                                <td v-if="existingSiteData" class="px-6 py-4 whitespace-nowrap text-sm text-center text-gray-500">-</td>
+                                <td v-if="existingSiteData" class="px-6 py-4 whitespace-nowrap text-sm text-center text-gray-500">{{ formatNum(existingSiteData.total_maintenance_hours || 0) }} Jam</td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-center font-bold text-pelindo-blue">{{ formatNum(simulationResult.total_maintenance_hours) }} Jam</td>
                             </tr>
                             <tr>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 flex items-center justify-between">
-                                    <span>Standar Teknisi</span>
+                                    <span>Kebutuhan Teknisi</span>
                                     <button @click="showTechBreakdown = !showTechBreakdown" type="button" class="ml-2 text-xs bg-indigo-100 text-indigo-700 px-2.5 py-1 rounded-full hover:bg-indigo-200 font-semibold transition focus:outline-none">
                                         {{ showTechBreakdown ? '❌ Tutup' : '🔍 Bedah Formula' }}
                                     </button>
                                 </td>
-                                <td v-if="existingSiteData" class="px-6 py-4 whitespace-nowrap text-sm text-center text-gray-500">{{ formatNum(existingSiteData.technical_staff_needed) }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-center font-bold text-pelindo-blue">
-                                    {{ formatNum(simulationResult.technical_staff_needed) }}
-                                    <span v-if="existingSiteData && simulationResult.technical_staff_needed > existingSiteData.technical_staff_needed" class="text-xs text-red-500 ml-1">(+{{ formatNum(simulationResult.technical_staff_needed - existingSiteData.technical_staff_needed) }})</span>
-                                    <span v-if="existingSiteData && simulationResult.technical_staff_needed < existingSiteData.technical_staff_needed" class="text-xs text-green-500 ml-1">({{ formatNum(simulationResult.technical_staff_needed - existingSiteData.technical_staff_needed) }})</span>
+                                <td v-if="existingSiteData" class="px-6 py-4 whitespace-nowrap text-center">
+                                    <div class="flex flex-col items-center justify-center">
+                                        <span class="text-sm font-bold text-gray-900">{{ existingSiteData.existing_technical_staff || 0 }} Orang <span class="text-[11px] font-normal text-gray-500">(Aktual)</span></span>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-center">
+                                    <div class="font-bold text-pelindo-blue text-base">{{ formatNum(simulationResult.technical_staff_needed) }} Orang</div>
+                                    <div v-if="existingSiteData" class="text-xs mt-1">
+                                        <span class="text-gray-500">vs Aktual: </span>
+                                        <span v-if="simulationResult.technical_staff_needed > (existingSiteData.existing_technical_staff || 0)" class="text-amber-600 font-semibold">Kurang {{ formatNum(simulationResult.technical_staff_needed - (existingSiteData.existing_technical_staff || 0)) }}</span>
+                                        <span v-else class="text-emerald-600 font-semibold">Surplus {{ formatNum((existingSiteData.existing_technical_staff || 0) - simulationResult.technical_staff_needed) }}</span>
+                                    </div>
                                 </td>
                             </tr>
                             <tr v-if="showTechBreakdown && simulationResult.breakdown" class="bg-indigo-50/50">
@@ -466,16 +475,23 @@ const formatNum = (num) => {
                             </tr>
                             <tr>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 flex items-center justify-between">
-                                    <span>Standar Non-Teknisi</span>
+                                    <span>Kebutuhan Non-Teknisi</span>
                                     <button @click="showNonTechBreakdown = !showNonTechBreakdown" type="button" class="ml-2 text-xs bg-indigo-100 text-indigo-700 px-2.5 py-1 rounded-full hover:bg-indigo-200 font-semibold transition focus:outline-none">
                                         {{ showNonTechBreakdown ? '❌ Tutup' : '👥 Rincian Formasi' }}
                                     </button>
                                 </td>
-                                <td v-if="existingSiteData" class="px-6 py-4 whitespace-nowrap text-sm text-center text-gray-500">{{ existingSiteData.non_technical_staff_needed }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-center font-bold text-pelindo-blue">
-                                    {{ simulationResult.non_technical_staff_needed }}
-                                    <span v-if="existingSiteData && simulationResult.non_technical_staff_needed > existingSiteData.non_technical_staff_needed" class="text-xs text-red-500 ml-1">(+{{ simulationResult.non_technical_staff_needed - existingSiteData.non_technical_staff_needed }})</span>
-                                    <span v-if="existingSiteData && simulationResult.non_technical_staff_needed < existingSiteData.non_technical_staff_needed" class="text-xs text-green-500 ml-1">({{ simulationResult.non_technical_staff_needed - existingSiteData.non_technical_staff_needed }})</span>
+                                <td v-if="existingSiteData" class="px-6 py-4 whitespace-nowrap text-center">
+                                    <div class="flex flex-col items-center justify-center">
+                                        <span class="text-sm font-bold text-gray-900">{{ existingSiteData.existing_non_technical_staff || 0 }} Orang <span class="text-[11px] font-normal text-gray-500">(Aktual)</span></span>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-center">
+                                    <div class="font-bold text-pelindo-blue text-base">{{ simulationResult.non_technical_staff_needed }} Orang</div>
+                                    <div v-if="existingSiteData" class="text-xs mt-1">
+                                        <span class="text-gray-500">vs Aktual: </span>
+                                        <span v-if="simulationResult.non_technical_staff_needed > (existingSiteData.existing_non_technical_staff || 0)" class="text-amber-600 font-semibold">Kurang {{ simulationResult.non_technical_staff_needed - (existingSiteData.existing_non_technical_staff || 0) }}</span>
+                                        <span v-else class="text-emerald-600 font-semibold">Surplus {{ (existingSiteData.existing_non_technical_staff || 0) - simulationResult.non_technical_staff_needed }}</span>
+                                    </div>
                                 </td>
                             </tr>
                             <tr v-if="showNonTechBreakdown && simulationResult.breakdown" class="bg-indigo-50/50">
