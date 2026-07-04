@@ -20,7 +20,7 @@ const form = useForm({
     name: '',
     region: '',
     equipments: [
-        { equipment_type_id: '', name: '', code: '', quantity: 1, searchQuery: '', isOpen: false }
+        { equipment_type_id: '', name: '', code: '', quantity: 1, existing_quantity: 0, searchQuery: '', isOpen: false }
     ],
 });
 
@@ -30,8 +30,13 @@ const existingSiteData = ref(null);
 const showTechBreakdown = ref(false);
 const showNonTechBreakdown = ref(false);
 
+// Smart Site Search State
+const siteSearchQuery = ref('');
+const isSiteDropdownOpen = ref(false);
+const selectedExistingSite = ref(null);
+
 const addEquipmentRow = () => {
-    form.equipments.push({ equipment_type_id: '', name: '', code: '', quantity: 1, searchQuery: '', isOpen: false });
+    form.equipments.push({ equipment_type_id: '', name: '', code: '', quantity: 1, existing_quantity: 0, searchQuery: '', isOpen: false });
 };
 
 const removeEquipmentRow = (index) => {
@@ -149,11 +154,95 @@ const clearEquipmentType = (eq) => {
     eq.isOpen = false;
 };
 
-const fillRegionFromExisting = () => {
-    const matchedSite = props.existingSites.find(s => s.name.toLowerCase() === form.name.toLowerCase());
-    if (matchedSite && !form.region) {
-        form.region = matchedSite.region;
+const filteredExistingSites = computed(() => {
+    if (!siteSearchQuery.value || (selectedExistingSite.value && siteSearchQuery.value === selectedExistingSite.value.name)) {
+        return props.existingSites;
     }
+    const q = siteSearchQuery.value.toLowerCase();
+    return props.existingSites.filter(s => 
+        s.name.toLowerCase().includes(q) || 
+        (s.region && s.region.toLowerCase().includes(q))
+    );
+});
+
+const selectExistingSite = (site) => {
+    selectedExistingSite.value = site;
+    siteSearchQuery.value = site.name;
+    form.name = site.name;
+    form.region = site.region || '';
+    isSiteDropdownOpen.value = false;
+
+    // Overwrite form.equipments with existing site equipments
+    if (site.equipments && site.equipments.length > 0) {
+        form.equipments = site.equipments.map(eq => {
+            const type = props.equipmentTypes.find(t => t.id === eq.equipment_type_id);
+            return {
+                equipment_type_id: eq.equipment_type_id,
+                name: type ? type.name : '',
+                code: type ? (type.code || '-') : '-',
+                quantity: eq.quantity,
+                existing_quantity: eq.quantity,
+                searchQuery: type ? formatEquipmentLabel(type) : '',
+                isOpen: false
+            };
+        });
+    } else {
+        form.equipments = [
+            { equipment_type_id: '', name: '', code: '', quantity: 1, existing_quantity: 0, searchQuery: '', isOpen: false }
+        ];
+    }
+};
+
+const handleSiteSearchInput = () => {
+    isSiteDropdownOpen.value = true;
+    form.name = siteSearchQuery.value;
+    
+    const matched = props.existingSites.find(s => s.name.toLowerCase() === siteSearchQuery.value.trim().toLowerCase());
+    if (matched) {
+        selectedExistingSite.value = matched;
+        if (!form.region) form.region = matched.region || '';
+    } else {
+        if (selectedExistingSite.value !== null) {
+            form.equipments = [
+                { equipment_type_id: '', name: '', code: '', quantity: 1, existing_quantity: 0, searchQuery: '', isOpen: false }
+            ];
+            form.region = '';
+        }
+        selectedExistingSite.value = null;
+    }
+};
+
+const closeSiteDropdown = () => {
+    setTimeout(() => {
+        isSiteDropdownOpen.value = false;
+        const matched = props.existingSites.find(s => s.name.toLowerCase() === siteSearchQuery.value.trim().toLowerCase());
+        if (matched) {
+            selectedExistingSite.value = matched;
+            siteSearchQuery.value = matched.name;
+            form.name = matched.name;
+            if (!form.region) form.region = matched.region || '';
+        } else {
+            if (selectedExistingSite.value !== null) {
+                form.equipments = [
+                    { equipment_type_id: '', name: '', code: '', quantity: 1, existing_quantity: 0, searchQuery: '', isOpen: false }
+                ];
+                form.region = '';
+            }
+            selectedExistingSite.value = null;
+            form.name = siteSearchQuery.value;
+        }
+    }, 200);
+};
+
+const clearSiteInput = () => {
+    siteSearchQuery.value = '';
+    form.name = '';
+    form.region = '';
+    selectedExistingSite.value = null;
+    isSiteDropdownOpen.value = false;
+    form.equipments = [
+        { equipment_type_id: '', name: '', code: '', quantity: 1, existing_quantity: 0, searchQuery: '', isOpen: false }
+    ];
 };
 
 const calculateSimulation = async () => {
@@ -232,37 +321,89 @@ const formatNum = (num) => {
                         </header>
 
                         <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <InputLabel for="name" value="Nama Site" />
-                                <TextInput id="name" v-model="form.name" type="text" class="mt-1 block w-full" list="existing-sites-list" @blur="fillRegionFromExisting" />
-                                <datalist id="existing-sites-list">
-                                    <option v-for="site in existingSites" :key="site.id" :value="site.name"></option>
-                                </datalist>
+                            <div class="relative">
+                                <InputLabel for="name" value="Nama Site (Cari / Pilih atau Ketik Baru)" />
+                                <div class="relative mt-1">
+                                    <input 
+                                        id="name" 
+                                        type="text" 
+                                        v-model="siteSearchQuery" 
+                                        @focus="isSiteDropdownOpen = true" 
+                                        @blur="closeSiteDropdown" 
+                                        @input="handleSiteSearchInput"
+                                        @keydown.esc="isSiteDropdownOpen = false; closeSiteDropdown()"
+                                        placeholder="🔍 Ketik nama site eksisting atau ketik nama site baru..." 
+                                        class="block w-full text-sm border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm pr-14 bg-white font-semibold text-indigo-950"
+                                        autocomplete="off"
+                                    />
+                                    <div class="absolute inset-y-0 right-0 flex items-center pr-2 space-x-1">
+                                        <button v-if="siteSearchQuery || selectedExistingSite" type="button" @mousedown.prevent="clearSiteInput" class="text-gray-400 hover:text-red-500 p-1 rounded focus:outline-none" title="Hapus pilihan">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                                            </svg>
+                                        </button>
+                                        <button type="button" @mousedown.prevent="isSiteDropdownOpen = !isSiteDropdownOpen" class="text-gray-400 hover:text-gray-600 p-1 rounded focus:outline-none" title="Buka/Tutup Pilihan">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 transform transition-transform duration-200" :class="{ 'rotate-180': isSiteDropdownOpen }" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                    <div v-if="isSiteDropdownOpen" class="absolute z-50 mt-1 w-full bg-white shadow-xl max-h-60 rounded-xl py-2 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none sm:text-sm border border-slate-200">
+                                        <div v-if="filteredExistingSites.length === 0" class="py-3 px-4 text-gray-500 text-xs italic">
+                                            Site eksisting tidak ditemukan. Akan disimulasikan sebagai <strong class="text-indigo-600 font-bold">Site Baru</strong>.
+                                        </div>
+                                        <div 
+                                            v-for="site in filteredExistingSites" 
+                                            :key="site.id" 
+                                            @mousedown.prevent="selectExistingSite(site)" 
+                                            class="cursor-pointer select-none relative py-2.5 pl-4 pr-9 hover:bg-indigo-50/80 flex items-center justify-between border-b border-gray-100 last:border-none transition-colors"
+                                        >
+                                            <div class="truncate">
+                                                <span class="font-black text-indigo-950 mr-1.5">🏗️ {{ site.name }}</span>
+                                            </div>
+                                            <div class="flex items-center space-x-1.5 ml-2 whitespace-nowrap">
+                                                <span class="text-[11px] px-2.5 py-0.5 bg-blue-50 text-blue-700 rounded-full font-bold border border-blue-200/50">
+                                                    Wilayah: {{ site.region || '-' }}
+                                                </span>
+                                                <span class="text-[11px] px-2.5 py-0.5 bg-slate-100 text-slate-700 rounded-full font-bold border border-slate-200">
+                                                    Kelas: {{ site.site_class || '-' }}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Badge Status Site -->
+                                <div class="mt-2.5 flex items-center">
+                                    <span v-if="selectedExistingSite" class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-300 shadow-sm">
+                                        ✓ Site Eksisting Terpilih — Data Alat Berhasil Dimuat
+                                    </span>
+                                    <span v-else-if="siteSearchQuery.trim()" class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-800 border border-blue-300 shadow-sm">
+                                        + Simulasi Site Baru — Tanpa Perbandingan Eksisting
+                                    </span>
+                                </div>
                                 <InputError :message="form.errors.name" class="mt-2" />
                             </div>
                             <div>
                                 <InputLabel for="region" value="Wilayah" />
-                                <TextInput id="region" v-model="form.region" type="text" class="mt-1 block w-full" />
+                                <TextInput id="region" v-model="form.region" type="text" class="mt-1 block w-full" placeholder="Contoh: BALI NUSA TENGGARA / SULAWESI..." />
                                 <InputError :message="form.errors.region" class="mt-2" />
                             </div>
                         </div>
 
                         <div class="mt-6 border-t pt-4">
-                            <div class="flex justify-between items-center mb-4">
+                            <div class="mb-4">
                                 <h3 class="text-md font-medium text-gray-900">Daftar Alat (Simulasi)</h3>
-                                <PrimaryButton type="button" @click="addEquipmentRow" class="text-xs">
-                                    + Tambah Alat
-                                </PrimaryButton>
+                                <p class="text-xs text-gray-500">Kelola spesifikasi dan jumlah alat yang akan disimulasikan</p>
                             </div>
 
-                            <div v-for="(eq, index) in form.equipments" :key="index" class="bg-gray-50 p-4 mb-4 rounded border grid grid-cols-1 md:grid-cols-12 gap-4 items-center relative">
-                                <button v-if="form.equipments.length > 1" type="button" @click="removeEquipmentRow(index)" class="absolute top-3 right-3 text-red-500 hover:text-red-700 z-10" title="Hapus baris alat">
+                            <div v-for="(eq, index) in form.equipments" :key="index" class="bg-gray-50 p-4 mb-4 rounded-xl border border-gray-200 grid grid-cols-1 md:grid-cols-12 gap-4 items-center relative shadow-sm hover:border-indigo-200 transition-colors">
+                                <button v-if="form.equipments.length > 1" type="button" @click="removeEquipmentRow(index)" class="absolute top-3 right-3 text-red-500 hover:text-red-700 z-10 p-1 rounded-lg hover:bg-red-50 transition-colors" title="Hapus baris alat">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                                         <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
                                     </svg>
                                 </button>
 
-                                <div class="md:col-span-9 relative">
+                                <div class="md:col-span-6 relative">
                                     <InputLabel :for="'eq_type_'+index" value="Jenis Alat (Cari / Pilih)" />
                                     <div class="relative mt-1">
                                         <input 
@@ -274,7 +415,7 @@ const formatNum = (num) => {
                                             @input="handleSearchInput(eq)"
                                             @keydown.esc="eq.isOpen = false; closeDropdown(eq)"
                                             placeholder="🔍 Ketik kode atau nama jenis alat untuk mencari..." 
-                                            class="block w-full text-sm border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm pr-14 bg-white"
+                                            class="block w-full text-sm border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm pr-14 bg-white font-medium"
                                             autocomplete="off"
                                         />
                                         <div class="absolute inset-y-0 right-0 flex items-center pr-2 space-x-1">
@@ -289,7 +430,7 @@ const formatNum = (num) => {
                                                 </svg>
                                             </button>
                                         </div>
-                                        <div v-if="eq.isOpen" class="absolute z-50 mt-1 w-full bg-white shadow-lg max-h-60 rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none sm:text-sm border border-gray-200">
+                                        <div v-if="eq.isOpen" class="absolute z-50 mt-1 w-full bg-white shadow-xl max-h-60 rounded-xl py-2 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none sm:text-sm border border-slate-200">
                                             <div v-if="filterEquipmentTypes(eq).length === 0" class="py-2 px-3 text-gray-500 text-xs italic">
                                                 Jenis alat tidak ditemukan.
                                             </div>
@@ -300,8 +441,8 @@ const formatNum = (num) => {
                                                 class="cursor-pointer select-none relative py-2 pl-3 pr-9 hover:bg-indigo-50 flex items-center justify-between border-b border-gray-50 last:border-none transition-colors"
                                             >
                                                 <div class="truncate">
-                                                    <span class="font-bold text-indigo-900 mr-1.5">[{{ type.code || '-' }}]</span>
-                                                    <span class="text-gray-800">{{ type.name }}</span>
+                                                    <span class="font-black text-indigo-900 mr-1.5">[{{ type.code || '-' }}]</span>
+                                                    <span class="text-gray-800 font-medium">{{ type.name }}</span>
                                                 </div>
                                                 <div class="flex items-center space-x-1.5 ml-2 whitespace-nowrap">
                                                     <span class="text-xs px-2 py-0.5 bg-blue-50 text-blue-700 rounded-full font-medium">
@@ -316,18 +457,40 @@ const formatNum = (num) => {
                                     </div>
                                 </div>
 
-                                <div class="md:col-span-3 pr-6">
-                                    <InputLabel :for="'eq_qty_'+index" value="Jml Alat" />
-                                    <TextInput :id="'eq_qty_'+index" v-model="eq.quantity" type="number" min="1" class="mt-1 block w-full text-sm" />
-                                </div>
-
-                                <div v-if="eq.equipment_type_id && getSelectedType(eq)" class="md:col-span-12 mt-1 pt-2 border-t border-gray-200 flex flex-wrap items-center justify-between text-xs text-indigo-900 bg-indigo-50/70 px-3 py-1.5 rounded">
-                                    <span class="font-semibold">⚡ Subtotal Baris ini ({{ eq.quantity || 0 }} Unit):</span>
-                                    <div class="flex items-center space-x-4">
-                                        <span>⏱️ Total Jam: <strong class="text-indigo-700">{{ ((getSelectedType(eq).annual_hours || 0) * (eq.quantity || 0)).toFixed(2) }} Jam/Tahun</strong></span>
-                                        <span>⚖️ Total Bobot: <strong class="text-indigo-700">{{ (getSelectedType(eq).weight || 0) * (eq.quantity || 0) }}</strong></span>
+                                <div class="md:col-span-3">
+                                    <InputLabel value="Jml Alat Eksisting" />
+                                    <div class="mt-1 flex items-center justify-between bg-slate-200/70 border border-slate-300 rounded-md px-3 py-2 text-sm text-slate-700 shadow-inner font-bold select-none">
+                                        <span>{{ (eq.existing_quantity !== undefined && eq.existing_quantity !== null && eq.existing_quantity > 0) ? eq.existing_quantity + ' Unit' : '-' }}</span>
+                                        <span class="text-[10px] uppercase font-black bg-slate-300/80 text-slate-700 px-1.5 py-0.5 rounded">Eksisting</span>
                                     </div>
                                 </div>
+
+                                <div class="md:col-span-3 pr-8">
+                                    <div class="flex items-center justify-between">
+                                        <InputLabel :for="'eq_qty_'+index" value="Jml Alat Simulasi" />
+                                        <span v-if="eq.existing_quantity !== undefined && eq.existing_quantity !== null && eq.existing_quantity > 0" class="text-[11px] font-black tracking-tight">
+                                            <span v-if="eq.quantity > eq.existing_quantity" class="text-emerald-700 bg-emerald-100 border border-emerald-300 px-1.5 py-0.5 rounded shadow-sm">+{{ eq.quantity - eq.existing_quantity }} Unit</span>
+                                            <span v-else-if="eq.quantity < eq.existing_quantity" class="text-rose-700 bg-rose-100 border border-rose-300 px-1.5 py-0.5 rounded shadow-sm">-{{ eq.existing_quantity - eq.quantity }} Unit</span>
+                                            <span v-else class="text-slate-600 bg-slate-200 px-1.5 py-0.5 rounded">Tetap</span>
+                                        </span>
+                                    </div>
+                                    <TextInput :id="'eq_qty_'+index" v-model="eq.quantity" type="number" min="1" class="mt-1 block w-full text-sm font-black text-indigo-950 border-indigo-300 focus:border-indigo-600 focus:ring-indigo-600 shadow-sm" />
+                                </div>
+
+                                <div v-if="eq.equipment_type_id && getSelectedType(eq)" class="md:col-span-12 mt-1 pt-2 border-t border-gray-200 flex flex-wrap items-center justify-between text-xs text-indigo-950 bg-indigo-50/80 px-3.5 py-2 rounded-lg border border-indigo-100">
+                                    <span class="font-bold">⚡ Subtotal Baris ini ({{ eq.quantity || 0 }} Unit):</span>
+                                    <div class="flex items-center space-x-4">
+                                        <span>⏱️ Total Jam: <strong class="text-indigo-700 font-black">{{ ((getSelectedType(eq).annual_hours || 0) * (eq.quantity || 0)).toFixed(2) }} Jam/Tahun</strong></span>
+                                        <span>⚖️ Total Bobot: <strong class="text-indigo-700 font-black">{{ (getSelectedType(eq).weight || 0) * (eq.quantity || 0) }}</strong></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Tombol Tambah Alat (Dipindah ke bawah agar tidak perlu scroll ke atas) -->
+                            <div class="flex justify-end mb-6">
+                                <PrimaryButton type="button" @click="addEquipmentRow" class="text-xs sm:text-sm px-4 py-2.5 shadow-md hover:shadow-lg transition-all flex items-center space-x-1.5 font-bold">
+                                    <span>+ Tambah Alat</span>
+                                </PrimaryButton>
                             </div>
 
                             <!-- Banner Summary Grand Total -->
