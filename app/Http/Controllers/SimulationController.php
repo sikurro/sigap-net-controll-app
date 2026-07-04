@@ -24,7 +24,9 @@ class SimulationController extends Controller
                 $type->annual_hours = round($annualHours, 2);
                 return $type;
             }),
-            'existingSites' => Site::select('id', 'name', 'region', 'site_class', 'technical_staff_needed', 'non_technical_staff_needed')->get(),
+            'existingSites' => Site::with(['equipments' => function ($query) {
+                $query->select('id', 'site_id', 'equipment_type_id', 'quantity');
+            }])->select('id', 'name', 'region', 'site_class', 'technical_staff_needed', 'non_technical_staff_needed')->get(),
             'targetAvailability' => floatval(\App\Models\Setting::getValue('target_availability', 85)),
             'shiftProductiveHours' => $engine->getProductiveHours('Shift'),
         ]);
