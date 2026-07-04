@@ -52,8 +52,12 @@ class SimulationController extends Controller
             'simulation' => $simulationResult,
             'existing_site' => $existingSite ? [
                 'site_class' => $existingSite->site_class,
-                'technical_staff_needed' => $existingSite->technical_staff_needed,
-                'non_technical_staff_needed' => $existingSite->non_technical_staff_needed,
+                'total_weight' => floatval($existingSite->total_weight ?? 0),
+                'total_maintenance_hours' => floatval($existingSite->total_maintenance_hours ?? 0),
+                'existing_technical_staff' => intval($existingSite->existing_technical_staff ?? 0),
+                'technical_staff_needed' => floatval($existingSite->technical_staff_needed ?? 0),
+                'existing_non_technical_staff' => intval($existingSite->existing_non_technical_staff ?? 0),
+                'non_technical_staff_needed' => intval($existingSite->non_technical_staff_needed ?? 0),
             ] : null,
         ]);
     }
