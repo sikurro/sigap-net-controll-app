@@ -25,10 +25,12 @@ class JobPlanController extends Controller
         $validated = $request->validate([
             'equipment_type_id' => 'required|exists:equipment_types,id',
             'activity_name' => 'required|string|max:255',
+            'type' => 'nullable|string|in:DL,MB,TB',
             'duration_minutes' => 'required|numeric|min:0',
             'frequency_per_year' => 'required|numeric|min:0',
         ]);
         
+        $validated['type'] = $validated['type'] ?? 'MB';
         $validated['total_hours_per_year'] = ($validated['duration_minutes'] / 60) * $validated['frequency_per_year'];
 
         JobPlan::create($validated);
@@ -40,10 +42,12 @@ class JobPlanController extends Controller
         $validated = $request->validate([
             'equipment_type_id' => 'required|exists:equipment_types,id',
             'activity_name' => 'required|string|max:255',
+            'type' => 'nullable|string|in:DL,MB,TB',
             'duration_minutes' => 'required|numeric|min:0',
             'frequency_per_year' => 'required|numeric|min:0',
         ]);
 
+        $validated['type'] = $validated['type'] ?? 'MB';
         $validated['total_hours_per_year'] = ($validated['duration_minutes'] / 60) * $validated['frequency_per_year'];
 
         $jobPlan->update($validated);
