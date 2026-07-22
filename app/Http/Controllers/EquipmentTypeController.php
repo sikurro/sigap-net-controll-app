@@ -32,6 +32,7 @@ class EquipmentTypeController extends Controller
             'category_id' => 'required|exists:equipment_category_baselines,id',
             'job_plans' => 'nullable|array',
             'job_plans.*.activity_name' => 'required|string|max:255',
+            'job_plans.*.type' => 'nullable|string|in:DL,MB,TB',
             'job_plans.*.duration_minutes' => 'required|numeric|min:0',
             'job_plans.*.frequency_per_year' => 'required|numeric|min:0',
         ]);
@@ -51,6 +52,7 @@ class EquipmentTypeController extends Controller
                     $frequency = floatval($jp['frequency_per_year']);
                     $jobPlans[] = [
                         'activity_name' => $jp['activity_name'],
+                        'type' => !empty($jp['type']) ? strtoupper($jp['type']) : 'MB',
                         'duration_minutes' => $durationMin,
                         'frequency_per_year' => $frequency,
                         'total_hours_per_year' => ($durationMin / 60) * $frequency,
@@ -75,6 +77,7 @@ class EquipmentTypeController extends Controller
             'category_id' => 'required|exists:equipment_category_baselines,id',
             'job_plans' => 'nullable|array',
             'job_plans.*.activity_name' => 'required|string|max:255',
+            'job_plans.*.type' => 'nullable|string|in:DL,MB,TB',
             'job_plans.*.duration_minutes' => 'required|numeric|min:0',
             'job_plans.*.frequency_per_year' => 'required|numeric|min:0',
         ]);
@@ -97,6 +100,7 @@ class EquipmentTypeController extends Controller
                     $frequency = floatval($jp['frequency_per_year']);
                     $jobPlans[] = [
                         'activity_name' => $jp['activity_name'],
+                        'type' => !empty($jp['type']) ? strtoupper($jp['type']) : 'MB',
                         'duration_minutes' => $durationMin,
                         'frequency_per_year' => $frequency,
                         'total_hours_per_year' => ($durationMin / 60) * $frequency,
@@ -209,12 +213,15 @@ class EquipmentTypeController extends Controller
                     $activityName = $colA;
                     $durationMinutes = floatval($row[1] ?? 0);
                     $frequency = floatval($row[2] ?? 0); // Column C is Frekuensi / Tahun
+                    $rawType = strtoupper(trim($row[5] ?? ''));
+                    $type = in_array($rawType, ['DL', 'MB', 'TB']) ? $rawType : 'MB';
 
                     if ($durationMinutes > 0) {
                         $totalHours = ($durationMinutes / 60) * $frequency;
                         $currentEquipmentType->jobPlans()->updateOrCreate(
                             ['activity_name' => $activityName],
                             [
+                                'type' => $type,
                                 'duration_minutes' => $durationMinutes,
                                 'frequency_per_year' => $frequency,
                                 'total_hours_per_year' => $totalHours,
@@ -256,19 +263,22 @@ class EquipmentTypeController extends Controller
         $sheet->setCellValue('C3', 'Frekuensi / Tahun');
         $sheet->setCellValue('D3', 'Durasi (Jam)');
         $sheet->setCellValue('E3', 'Jam/tahun');
-        $sheet->getStyle('A3:E3')->applyFromArray($styleBold);
+        $sheet->setCellValue('F3', 'Tipe');
+        $sheet->getStyle('A3:F3')->applyFromArray($styleBold);
 
         $sheet->setCellValue('A4', 'Daily Inspection');
         $sheet->setCellValue('B4', 82.5);
         $sheet->setCellValue('C4', 365);
         $sheet->setCellValue('D4', '=B4/60');
         $sheet->setCellValue('E4', '=C4*D4');
+        $sheet->setCellValue('F4', 'DL');
 
         $sheet->setCellValue('A5', 'Service 250 & 750');
         $sheet->setCellValue('B5', 270);
         $sheet->setCellValue('C5', 36);
         $sheet->setCellValue('D5', '=B5/60');
         $sheet->setCellValue('E5', '=C5*D5');
+        $sheet->setCellValue('F5', 'MB');
 
         // Block 2
         $row = 7;
@@ -290,7 +300,8 @@ class EquipmentTypeController extends Controller
         $sheet->setCellValue("C{$row}", 'Frekuensi / Tahun');
         $sheet->setCellValue("D{$row}", 'Durasi (Jam)');
         $sheet->setCellValue("E{$row}", 'Jam/tahun');
-        $sheet->getStyle("A{$row}:E{$row}")->applyFromArray($styleBold);
+        $sheet->setCellValue("F{$row}", 'Tipe');
+        $sheet->getStyle("A{$row}:F{$row}")->applyFromArray($styleBold);
 
         $row++;
         $sheet->setCellValue("A{$row}", 'Daily Inspection');
@@ -298,6 +309,7 @@ class EquipmentTypeController extends Controller
         $sheet->setCellValue("C{$row}", 365);
         $sheet->setCellValue("D{$row}", '=B'.$row.'/60');
         $sheet->setCellValue("E{$row}", '=C'.$row.'*D'.$row);
+        $sheet->setCellValue("F{$row}", 'DL');
 
         $row++;
         $sheet->setCellValue("A{$row}", 'Service 250 & 750');
@@ -305,6 +317,7 @@ class EquipmentTypeController extends Controller
         $sheet->setCellValue("C{$row}", 36);
         $sheet->setCellValue("D{$row}", '=B'.$row.'/60');
         $sheet->setCellValue("E{$row}", '=C'.$row.'*D'.$row);
+        $sheet->setCellValue("F{$row}", 'MB');
 
         $row++;
         $sheet->setCellValue("A{$row}", 'Service 500');
@@ -312,9 +325,10 @@ class EquipmentTypeController extends Controller
         $sheet->setCellValue("C{$row}", 18);
         $sheet->setCellValue("D{$row}", '=B'.$row.'/60');
         $sheet->setCellValue("E{$row}", '=C'.$row.'*D'.$row);
+        $sheet->setCellValue("F{$row}", 'TB');
 
         // Auto size columns
-        foreach (range('A', 'E') as $col) {
+        foreach (range('A', 'F') as $col) {
             $sheet->getColumnDimension($col)->setAutoSize(true);
         }
 

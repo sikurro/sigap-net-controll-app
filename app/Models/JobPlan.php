@@ -12,6 +12,7 @@ class JobPlan extends Model
 
     protected $fillable = [
         'equipment_type_id',
+        'type',
         'activity_name',
         'duration_minutes',
         'frequency_per_year',

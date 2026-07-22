@@ -72,6 +72,7 @@ const openEquipmentEdit = (item) => {
     formEquipment.job_plans = item.job_plans ? item.job_plans.map(jp => ({
         id: jp.id,
         activity_name: jp.activity_name,
+        type: jp.type || 'MB',
         duration_minutes: jp.duration_minutes,
         frequency_per_year: jp.frequency_per_year,
     })) : [];
@@ -81,6 +82,7 @@ const openEquipmentEdit = (item) => {
 const addJobPlanRow = () => {
     formEquipment.job_plans.push({
         activity_name: '',
+        type: 'MB',
         duration_minutes: '',
         frequency_per_year: '',
     });
@@ -126,6 +128,7 @@ const formJobPlan = useForm({
     id: null,
     equipment_type_id: null,
     activity_name: '',
+    type: 'MB',
     duration_minutes: '',
     frequency_per_year: '',
 });
@@ -140,6 +143,7 @@ const openJobPlanCreate = (equipmentId) => {
     isEditingJobPlan.value = false;
     formJobPlan.reset();
     formJobPlan.equipment_type_id = equipmentId;
+    formJobPlan.type = 'MB';
     showJobPlanModal.value = true;
 };
 
@@ -148,6 +152,7 @@ const openJobPlanEdit = (item) => {
     formJobPlan.id = item.id;
     formJobPlan.equipment_type_id = item.equipment_type_id;
     formJobPlan.activity_name = item.activity_name;
+    formJobPlan.type = item.type || 'MB';
     formJobPlan.duration_minutes = item.duration_minutes;
     formJobPlan.frequency_per_year = item.frequency_per_year;
     showJobPlanModal.value = true;
@@ -351,6 +356,7 @@ const handleImportFile = (event) => {
                                                         <thead class="bg-slate-700 text-white">
                                                             <tr>
                                                                 <th class="px-4 py-2 text-left text-xs font-bold uppercase">Aktivitas</th>
+                                                                <th class="px-4 py-2 text-center text-xs font-bold uppercase">Tipe</th>
                                                                 <th class="px-4 py-2 text-center text-xs font-bold uppercase">Durasi (Menit)</th>
                                                                 <th class="px-4 py-2 text-center text-xs font-bold uppercase">Durasi (Jam)</th>
                                                                 <th class="px-4 py-2 text-center text-xs font-bold uppercase">Frekuensi/Thn</th>
@@ -361,6 +367,9 @@ const handleImportFile = (event) => {
                                                         <tbody class="divide-y divide-gray-100">
                                                             <tr v-for="jp in eq.job_plans" :key="jp.id" class="hover:bg-gray-50">
                                                                 <td class="px-4 py-2 text-sm font-medium text-gray-900">{{ jp.activity_name }}</td>
+                                                                <td class="px-4 py-2 text-sm text-center font-bold text-slate-700">
+                                                                    <span class="px-2 py-0.5 rounded text-xs font-bold bg-slate-100 border border-slate-200 text-slate-800">{{ jp.type || 'MB' }}</span>
+                                                                </td>
                                                                 <td class="px-4 py-2 text-sm text-center text-gray-600">{{ jp.duration_minutes }} mnt</td>
                                                                 <td class="px-4 py-2 text-sm text-center text-gray-600">{{ jp.duration_hours }} jam</td>
                                                                 <td class="px-4 py-2 text-sm text-center text-gray-600">{{ jp.frequency_per_year }} x</td>
@@ -462,6 +471,7 @@ const handleImportFile = (event) => {
                                 <thead class="bg-gray-100">
                                     <tr>
                                         <th class="px-3 py-2 text-left font-medium text-gray-600">Nama Aktivitas</th>
+                                        <th class="px-3 py-2 text-center font-medium text-gray-600 w-36">Tipe</th>
                                         <th class="px-3 py-2 text-center font-medium text-gray-600 w-24">Durasi (Mnt)</th>
                                         <th class="px-3 py-2 text-center font-medium text-gray-600 w-24">Durasi (Jam)</th>
                                         <th class="px-3 py-2 text-center font-medium text-gray-600 w-28">Frekuensi / Thn</th>
@@ -481,6 +491,16 @@ const handleImportFile = (event) => {
                                             />
                                             <div v-if="formEquipment.errors[`job_plans.${index}.activity_name`]" class="text-red-500 text-xs mt-1">
                                                 {{ formEquipment.errors[`job_plans.${index}.activity_name`] }}
+                                            </div>
+                                        </td>
+                                        <td class="p-2 align-top text-center">
+                                            <select v-model="jp.type" class="w-full text-xs py-1.5 border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm font-medium">
+                                                <option value="DL">DL - Daily</option>
+                                                <option value="MB">MB - Meter Base</option>
+                                                <option value="TB">TB - Time Base</option>
+                                            </select>
+                                            <div v-if="formEquipment.errors[`job_plans.${index}.type`]" class="text-red-500 text-xs mt-1">
+                                                {{ formEquipment.errors[`job_plans.${index}.type`] }}
                                             </div>
                                         </td>
                                         <td class="p-2 align-top text-center">
@@ -553,6 +573,15 @@ const handleImportFile = (event) => {
                         <InputLabel for="jp_activity" value="Nama Aktivitas (Service / Inspeksi)" />
                         <TextInput id="jp_activity" type="text" class="mt-1 block w-full" v-model="formJobPlan.activity_name" required />
                         <div v-if="formJobPlan.errors.activity_name" class="text-red-500 text-sm mt-1">{{ formJobPlan.errors.activity_name }}</div>
+                    </div>
+                    <div class="mb-4">
+                        <InputLabel for="jp_type" value="Tipe Job Plan" />
+                        <select id="jp_type" v-model="formJobPlan.type" class="mt-1 block w-full text-sm border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm font-medium">
+                            <option value="DL">DL - Daily</option>
+                            <option value="MB">MB - Meter Base</option>
+                            <option value="TB">TB - Time Base</option>
+                        </select>
+                        <div v-if="formJobPlan.errors.type" class="text-red-500 text-sm mt-1">{{ formJobPlan.errors.type }}</div>
                     </div>
                     <div class="grid grid-cols-2 gap-4 mb-4">
                         <div>
