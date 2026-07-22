@@ -33,6 +33,7 @@ class EquipmentTypeController extends Controller
             'job_plans' => 'nullable|array',
             'job_plans.*.activity_name' => 'required|string|max:255',
             'job_plans.*.type' => 'nullable|string|in:DL,MB,TB',
+            'job_plans.*.interval_meter' => 'nullable|numeric|min:1',
             'job_plans.*.duration_minutes' => 'required|numeric|min:0',
             'job_plans.*.frequency_per_year' => 'required|numeric|min:0',
         ]);
@@ -50,9 +51,11 @@ class EquipmentTypeController extends Controller
                 foreach ($validated['job_plans'] as $jp) {
                     $durationMin = floatval($jp['duration_minutes']);
                     $frequency = floatval($jp['frequency_per_year']);
+                    $type = !empty($jp['type']) ? strtoupper($jp['type']) : 'MB';
                     $jobPlans[] = [
                         'activity_name' => $jp['activity_name'],
-                        'type' => !empty($jp['type']) ? strtoupper($jp['type']) : 'MB',
+                        'type' => $type,
+                        'interval_meter' => ($type === 'MB' && isset($jp['interval_meter'])) ? floatval($jp['interval_meter']) : null,
                         'duration_minutes' => $durationMin,
                         'frequency_per_year' => $frequency,
                         'total_hours_per_year' => ($durationMin / 60) * $frequency,
@@ -78,6 +81,7 @@ class EquipmentTypeController extends Controller
             'job_plans' => 'nullable|array',
             'job_plans.*.activity_name' => 'required|string|max:255',
             'job_plans.*.type' => 'nullable|string|in:DL,MB,TB',
+            'job_plans.*.interval_meter' => 'nullable|numeric|min:1',
             'job_plans.*.duration_minutes' => 'required|numeric|min:0',
             'job_plans.*.frequency_per_year' => 'required|numeric|min:0',
         ]);
@@ -98,9 +102,11 @@ class EquipmentTypeController extends Controller
                 foreach ($validated['job_plans'] as $jp) {
                     $durationMin = floatval($jp['duration_minutes']);
                     $frequency = floatval($jp['frequency_per_year']);
+                    $type = !empty($jp['type']) ? strtoupper($jp['type']) : 'MB';
                     $jobPlans[] = [
                         'activity_name' => $jp['activity_name'],
-                        'type' => !empty($jp['type']) ? strtoupper($jp['type']) : 'MB',
+                        'type' => $type,
+                        'interval_meter' => ($type === 'MB' && isset($jp['interval_meter'])) ? floatval($jp['interval_meter']) : null,
                         'duration_minutes' => $durationMin,
                         'frequency_per_year' => $frequency,
                         'total_hours_per_year' => ($durationMin / 60) * $frequency,
@@ -215,6 +221,11 @@ class EquipmentTypeController extends Controller
                     $frequency = floatval($row[2] ?? 0); // Column C is Frekuensi / Tahun
                     $rawType = strtoupper(trim($row[5] ?? ''));
                     $type = in_array($rawType, ['DL', 'MB', 'TB']) ? $rawType : 'MB';
+                    
+                    $intervalMeter = null;
+                    if ($type === 'MB' && !empty($row[6])) {
+                        $intervalMeter = floatval($row[6]);
+                    }
 
                     if ($durationMinutes > 0) {
                         $totalHours = ($durationMinutes / 60) * $frequency;
@@ -222,6 +233,7 @@ class EquipmentTypeController extends Controller
                             ['activity_name' => $activityName],
                             [
                                 'type' => $type,
+                                'interval_meter' => $intervalMeter,
                                 'duration_minutes' => $durationMinutes,
                                 'frequency_per_year' => $frequency,
                                 'total_hours_per_year' => $totalHours,
@@ -264,7 +276,8 @@ class EquipmentTypeController extends Controller
         $sheet->setCellValue('D3', 'Durasi (Jam)');
         $sheet->setCellValue('E3', 'Jam/tahun');
         $sheet->setCellValue('F3', 'Tipe');
-        $sheet->getStyle('A3:F3')->applyFromArray($styleBold);
+        $sheet->setCellValue('G3', 'Interval (HM)');
+        $sheet->getStyle('A3:G3')->applyFromArray($styleBold);
 
         $sheet->setCellValue('A4', 'Daily Inspection');
         $sheet->setCellValue('B4', 82.5);
@@ -272,6 +285,7 @@ class EquipmentTypeController extends Controller
         $sheet->setCellValue('D4', '=B4/60');
         $sheet->setCellValue('E4', '=C4*D4');
         $sheet->setCellValue('F4', 'DL');
+        $sheet->setCellValue('G4', null);
 
         $sheet->setCellValue('A5', 'Service 250 & 750');
         $sheet->setCellValue('B5', 270);
@@ -279,6 +293,7 @@ class EquipmentTypeController extends Controller
         $sheet->setCellValue('D5', '=B5/60');
         $sheet->setCellValue('E5', '=C5*D5');
         $sheet->setCellValue('F5', 'MB');
+        $sheet->setCellValue('G5', 250);
 
         // Block 2
         $row = 7;
@@ -301,7 +316,8 @@ class EquipmentTypeController extends Controller
         $sheet->setCellValue("D{$row}", 'Durasi (Jam)');
         $sheet->setCellValue("E{$row}", 'Jam/tahun');
         $sheet->setCellValue("F{$row}", 'Tipe');
-        $sheet->getStyle("A{$row}:F{$row}")->applyFromArray($styleBold);
+        $sheet->setCellValue("G{$row}", 'Interval (HM)');
+        $sheet->getStyle("A{$row}:G{$row}")->applyFromArray($styleBold);
 
         $row++;
         $sheet->setCellValue("A{$row}", 'Daily Inspection');
@@ -310,6 +326,7 @@ class EquipmentTypeController extends Controller
         $sheet->setCellValue("D{$row}", '=B'.$row.'/60');
         $sheet->setCellValue("E{$row}", '=C'.$row.'*D'.$row);
         $sheet->setCellValue("F{$row}", 'DL');
+        $sheet->setCellValue("G{$row}", null);
 
         $row++;
         $sheet->setCellValue("A{$row}", 'Service 250 & 750');
@@ -318,6 +335,7 @@ class EquipmentTypeController extends Controller
         $sheet->setCellValue("D{$row}", '=B'.$row.'/60');
         $sheet->setCellValue("E{$row}", '=C'.$row.'*D'.$row);
         $sheet->setCellValue("F{$row}", 'MB');
+        $sheet->setCellValue("G{$row}", 250);
 
         $row++;
         $sheet->setCellValue("A{$row}", 'Service 500');
