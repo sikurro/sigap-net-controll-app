@@ -25,7 +25,7 @@ class SimulationController extends Controller
                 return $type;
             }),
             'existingSites' => Site::with(['equipments' => function ($query) {
-                $query->select('id', 'site_id', 'equipment_type_id', 'quantity');
+                $query->select('id', 'site_id', 'equipment_type_id', 'quantity', 'utilization_rate');
             }])->select('id', 'name', 'region', 'site_class', 'technical_staff_needed', 'non_technical_staff_needed')->get(),
             'targetAvailability' => floatval(\App\Models\Setting::getValue('target_availability', 85)),
             'shiftProductiveHours' => $engine->getProductiveHours('Shift'),
@@ -39,6 +39,7 @@ class SimulationController extends Controller
             'equipments' => 'array',
             'equipments.*.equipment_type_id' => 'required|exists:equipment_types,id',
             'equipments.*.quantity' => 'required|integer|min:1',
+            'equipments.*.utilization_rate' => 'nullable|numeric|min:0|max:100',
         ]);
 
         $equipments = $request->input('equipments', []);
@@ -101,6 +102,7 @@ class SimulationController extends Controller
                 'name' => $eq['name'] ?? '-',
                 'code' => $eq['code'] ?? '-',
                 'quantity' => $eq['quantity'],
+                'utilization_rate' => $eq['utilization_rate'] ?? 0,
             ]);
         }
 

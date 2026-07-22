@@ -36,7 +36,7 @@ const isSiteDropdownOpen = ref(false);
 const selectedExistingSite = ref(null);
 
 const addEquipmentRow = () => {
-    form.equipments.push({ equipment_type_id: '', name: '', code: '', quantity: 1, existing_quantity: 0, searchQuery: '', isOpen: false });
+    form.equipments.push({ equipment_type_id: '', name: '', code: '', quantity: 1, utilization_rate: 0, existing_quantity: 0, searchQuery: '', isOpen: false });
 };
 
 const removeEquipmentRow = (index) => {
@@ -181,6 +181,7 @@ const selectExistingSite = (site) => {
                 name: type ? type.name : '',
                 code: type ? (type.code || '-') : '-',
                 quantity: eq.quantity,
+                utilization_rate: eq.utilization_rate || 0,
                 existing_quantity: eq.quantity,
                 searchQuery: type ? formatEquipmentLabel(type) : '',
                 isOpen: false
@@ -188,7 +189,7 @@ const selectExistingSite = (site) => {
         });
     } else {
         form.equipments = [
-            { equipment_type_id: '', name: '', code: '', quantity: 1, existing_quantity: 0, searchQuery: '', isOpen: false }
+            { equipment_type_id: '', name: '', code: '', quantity: 1, utilization_rate: 0, existing_quantity: 0, searchQuery: '', isOpen: false }
         ];
     }
 };
@@ -204,7 +205,7 @@ const handleSiteSearchInput = () => {
     } else {
         if (selectedExistingSite.value !== null) {
             form.equipments = [
-                { equipment_type_id: '', name: '', code: '', quantity: 1, existing_quantity: 0, searchQuery: '', isOpen: false }
+                { equipment_type_id: '', name: '', code: '', quantity: 1, utilization_rate: 0, existing_quantity: 0, searchQuery: '', isOpen: false }
             ];
             form.region = '';
         }
@@ -224,7 +225,7 @@ const closeSiteDropdown = () => {
         } else {
             if (selectedExistingSite.value !== null) {
                 form.equipments = [
-                    { equipment_type_id: '', name: '', code: '', quantity: 1, existing_quantity: 0, searchQuery: '', isOpen: false }
+                    { equipment_type_id: '', name: '', code: '', quantity: 1, utilization_rate: 0, existing_quantity: 0, searchQuery: '', isOpen: false }
                 ];
                 form.region = '';
             }
@@ -241,7 +242,7 @@ const clearSiteInput = () => {
     selectedExistingSite.value = null;
     isSiteDropdownOpen.value = false;
     form.equipments = [
-        { equipment_type_id: '', name: '', code: '', quantity: 1, existing_quantity: 0, searchQuery: '', isOpen: false }
+        { equipment_type_id: '', name: '', code: '', quantity: 1, utilization_rate: 0, existing_quantity: 0, searchQuery: '', isOpen: false }
     ];
 };
 
@@ -403,7 +404,7 @@ const formatNum = (num) => {
                                     </svg>
                                 </button>
 
-                                <div class="md:col-span-6 relative">
+                                <div class="md:col-span-5 relative">
                                     <InputLabel :for="'eq_type_'+index" value="Jenis Alat (Cari / Pilih)" />
                                     <div class="relative mt-1">
                                         <input 
@@ -457,7 +458,7 @@ const formatNum = (num) => {
                                     </div>
                                 </div>
 
-                                <div class="md:col-span-3">
+                                <div class="md:col-span-2">
                                     <InputLabel value="Jml Alat Eksisting" />
                                     <div class="mt-1 flex items-center justify-between bg-slate-200/70 border border-slate-300 rounded-md px-3 py-2 text-sm text-slate-700 shadow-inner font-bold select-none">
                                         <span>{{ (eq.existing_quantity !== undefined && eq.existing_quantity !== null && eq.existing_quantity > 0) ? eq.existing_quantity + ' Unit' : '-' }}</span>
@@ -465,7 +466,7 @@ const formatNum = (num) => {
                                     </div>
                                 </div>
 
-                                <div class="md:col-span-3 pr-8">
+                                <div class="md:col-span-2">
                                     <div class="flex items-center justify-between">
                                         <InputLabel :for="'eq_qty_'+index" value="Jml Alat Simulasi" />
                                         <span v-if="eq.existing_quantity !== undefined && eq.existing_quantity !== null && eq.existing_quantity > 0" class="text-[11px] font-black tracking-tight">
@@ -475,6 +476,16 @@ const formatNum = (num) => {
                                         </span>
                                     </div>
                                     <TextInput :id="'eq_qty_'+index" v-model="eq.quantity" type="number" min="1" class="mt-1 block w-full text-sm font-black text-indigo-950 border-indigo-300 focus:border-indigo-600 focus:ring-indigo-600 shadow-sm" />
+                                </div>
+                                
+                                <div class="md:col-span-3 pr-8">
+                                    <InputLabel :for="'eq_util_'+index" value="Utilisasi (%)" />
+                                    <div class="relative mt-1">
+                                        <TextInput :id="'eq_util_'+index" v-model="eq.utilization_rate" type="number" step="0.01" min="0" max="100" class="block w-full text-sm font-black text-indigo-950 border-indigo-300 focus:border-indigo-600 focus:ring-indigo-600 shadow-sm pr-7" />
+                                        <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                            <span class="text-gray-500 sm:text-sm">%</span>
+                                        </div>
+                                    </div>
                                 </div>
 
                                 <div v-if="eq.equipment_type_id && getSelectedType(eq)" class="md:col-span-12 mt-1 pt-2 border-t border-gray-200 flex flex-wrap items-center justify-between text-xs text-indigo-950 bg-indigo-50/80 px-3.5 py-2 rounded-lg border border-indigo-100">
@@ -619,6 +630,11 @@ const formatNum = (num) => {
                                                         </div>
                                                         <div>
                                                             <span class="block font-semibold text-gray-800">2. Pilar Preventive Tambahan (Job Plan):</span>
+                                                            <div class="text-[11px] mb-0.5 text-gray-600">
+                                                                Total Alat se-Site: <strong>{{ formatNum(simulationResult.breakdown.total_maintenance_hours) }} Jam</strong>
+                                                                <span class="text-gray-500 ml-1">(DL: {{ formatNum(simulationResult.breakdown.total_dl_hours || 0) }}, TB: {{ formatNum(simulationResult.breakdown.total_tb_hours || 0) }}, MB: {{ formatNum(simulationResult.breakdown.total_mb_hours || 0) }})</span><br>
+                                                                Dikurangi Jam Pilar 1: <strong class="text-rose-600">-{{ formatNum(simulationResult.breakdown.highest_weight_single_unit_hours) }} Jam</strong>
+                                                            </div>
                                                             <span>{{ formatNum(simulationResult.breakdown.additional_hours) }} Jam ÷ {{ formatNum(simulationResult.breakdown.productive_hours) }} Jam/Thn = <strong>{{ formatNum(simulationResult.breakdown.additional_tech) }} Orang</strong></span>
                                                         </div>
                                                         <div v-if="simulationResult.breakdown.breakdown_tech !== undefined">
