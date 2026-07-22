@@ -86,6 +86,7 @@ const openEquipmentEdit = (item) => {
         id: jp.id,
         activity_name: jp.activity_name,
         type: jp.type || 'MB',
+        interval_meter: jp.interval_meter,
         duration_minutes: jp.duration_minutes,
         frequency_per_year: jp.frequency_per_year,
     })) : [];
@@ -96,6 +97,7 @@ const addJobPlanRow = () => {
     formEquipment.job_plans.push({
         activity_name: '',
         type: 'MB',
+        interval_meter: '',
         duration_minutes: '',
         frequency_per_year: '',
     });
@@ -142,6 +144,7 @@ const formJobPlan = useForm({
     equipment_type_id: null,
     activity_name: '',
     type: 'MB',
+    interval_meter: '',
     duration_minutes: '',
     frequency_per_year: '',
 });
@@ -166,6 +169,7 @@ const openJobPlanEdit = (item) => {
     formJobPlan.equipment_type_id = item.equipment_type_id;
     formJobPlan.activity_name = item.activity_name;
     formJobPlan.type = item.type || 'MB';
+    formJobPlan.interval_meter = item.interval_meter;
     formJobPlan.duration_minutes = item.duration_minutes;
     formJobPlan.frequency_per_year = item.frequency_per_year;
     showJobPlanModal.value = true;
@@ -381,7 +385,10 @@ const handleImportFile = (event) => {
                                                             <tr v-for="jp in eq.job_plans" :key="jp.id" class="hover:bg-gray-50">
                                                                 <td class="px-4 py-2 text-sm font-medium text-gray-900">{{ jp.activity_name }}</td>
                                                                 <td class="px-4 py-2 text-sm text-center font-bold">
-                                                                    <span :class="getJobPlanTypeBadgeClass(jp.type)" class="px-2.5 py-0.5 rounded text-xs font-extrabold border shadow-xs inline-block min-w-8 text-center">{{ jp.type || 'MB' }}</span>
+                                                                    <span :class="getJobPlanTypeBadgeClass(jp.type)" class="px-2.5 py-0.5 rounded text-xs font-extrabold border shadow-xs inline-block min-w-8 text-center">
+                                                                        {{ jp.type || 'MB' }}
+                                                                        <span v-if="jp.type === 'MB' && jp.interval_meter" class="ml-1">({{ jp.interval_meter }} HM)</span>
+                                                                    </span>
                                                                 </td>
                                                                 <td class="px-4 py-2 text-sm text-center text-gray-600">{{ jp.duration_minutes }} mnt</td>
                                                                 <td class="px-4 py-2 text-sm text-center text-gray-600">{{ jp.duration_hours }} jam</td>
@@ -484,7 +491,8 @@ const handleImportFile = (event) => {
                                 <thead class="bg-gray-100">
                                     <tr>
                                         <th class="px-3 py-2 text-left font-medium text-gray-600">Nama Aktivitas</th>
-                                        <th class="px-3 py-2 text-center font-medium text-gray-600 w-36">Tipe</th>
+                                        <th class="px-3 py-2 text-center font-medium text-gray-600 w-32">Tipe</th>
+                                        <th class="px-3 py-2 text-center font-medium text-gray-600 w-24">Interval (HM)</th>
                                         <th class="px-3 py-2 text-center font-medium text-gray-600 w-24">Durasi (Mnt)</th>
                                         <th class="px-3 py-2 text-center font-medium text-gray-600 w-24">Durasi (Jam)</th>
                                         <th class="px-3 py-2 text-center font-medium text-gray-600 w-28">Frekuensi / Thn</th>
@@ -514,6 +522,21 @@ const handleImportFile = (event) => {
                                             </select>
                                             <div v-if="formEquipment.errors[`job_plans.${index}.type`]" class="text-red-500 text-xs mt-1">
                                                 {{ formEquipment.errors[`job_plans.${index}.type`] }}
+                                            </div>
+                                        </td>
+                                        <td class="p-2 align-top text-center">
+                                            <TextInput 
+                                                v-if="jp.type === 'MB'"
+                                                type="number" 
+                                                step="1" 
+                                                class="w-full text-sm text-center py-1 bg-amber-50" 
+                                                placeholder="HM"
+                                                v-model="jp.interval_meter" 
+                                                required 
+                                            />
+                                            <span v-else class="text-xs text-gray-400 italic block mt-2">-</span>
+                                            <div v-if="formEquipment.errors[`job_plans.${index}.interval_meter`]" class="text-red-500 text-xs mt-1">
+                                                {{ formEquipment.errors[`job_plans.${index}.interval_meter`] }}
                                             </div>
                                         </td>
                                         <td class="p-2 align-top text-center">
@@ -587,14 +610,21 @@ const handleImportFile = (event) => {
                         <TextInput id="jp_activity" type="text" class="mt-1 block w-full" v-model="formJobPlan.activity_name" required />
                         <div v-if="formJobPlan.errors.activity_name" class="text-red-500 text-sm mt-1">{{ formJobPlan.errors.activity_name }}</div>
                     </div>
-                    <div class="mb-4">
-                        <InputLabel for="jp_type" value="Tipe Job Plan" />
-                        <select id="jp_type" v-model="formJobPlan.type" class="mt-1 block w-full text-sm border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm font-medium">
-                            <option value="DL">DL - Daily</option>
-                            <option value="MB">MB - Meter Base</option>
-                            <option value="TB">TB - Time Base</option>
-                        </select>
-                        <div v-if="formJobPlan.errors.type" class="text-red-500 text-sm mt-1">{{ formJobPlan.errors.type }}</div>
+                    <div class="grid grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <InputLabel for="jp_type" value="Tipe Job Plan" />
+                            <select id="jp_type" v-model="formJobPlan.type" class="mt-1 block w-full text-sm border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm font-medium">
+                                <option value="DL">DL - Daily</option>
+                                <option value="MB">MB - Meter Base</option>
+                                <option value="TB">TB - Time Base</option>
+                            </select>
+                            <div v-if="formJobPlan.errors.type" class="text-red-500 text-sm mt-1">{{ formJobPlan.errors.type }}</div>
+                        </div>
+                        <div v-if="formJobPlan.type === 'MB'">
+                            <InputLabel for="jp_interval" value="Interval Meter (HM)" />
+                            <TextInput id="jp_interval" type="number" step="1" class="mt-1 block w-full bg-amber-50" v-model="formJobPlan.interval_meter" required />
+                            <div v-if="formJobPlan.errors.interval_meter" class="text-red-500 text-sm mt-1">{{ formJobPlan.errors.interval_meter }}</div>
+                        </div>
                     </div>
                     <div class="grid grid-cols-2 gap-4 mb-4">
                         <div>
