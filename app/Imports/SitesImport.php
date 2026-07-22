@@ -76,9 +76,13 @@ class SitesImport implements ToCollection
             }
 
             if ($eqType) {
+                $rawUtil = trim($row[2] ?? 0);
+                $rawUtil = str_replace('%', '', $rawUtil);
+                $utilRate = max(0, floatval($rawUtil));
                 $currentSite['equipments'][] = [
                     'equipment_type_id' => $eqType->id,
                     'quantity' => max(1, intval($row[1] ?? 1)),
+                    'utilization_rate' => $utilRate,
                 ];
             } else {
                 // Not found, record error
@@ -117,7 +121,10 @@ class SitesImport implements ToCollection
                 $importedEqIds[] = $eqData['equipment_type_id'];
                 $site->equipments()->updateOrCreate(
                     ['equipment_type_id' => $eqData['equipment_type_id']],
-                    ['quantity' => $eqData['quantity']]
+                    [
+                        'quantity' => $eqData['quantity'],
+                        'utilization_rate' => $eqData['utilization_rate'],
+                    ]
                 );
             }
 

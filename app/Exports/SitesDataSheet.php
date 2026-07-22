@@ -30,10 +30,10 @@ class SitesDataSheet implements FromCollection, WithTitle
             $flatData->push(['Wilayah', 'I']);
             $flatData->push(['Teknisi Eksisting', 10]);
             $flatData->push(['Non-Teknisi Eksisting', 5]);
-            $flatData->push(['Jenis Alat', 'Jumlah Alat']);
+            $flatData->push(['Jenis Alat', 'Jumlah Alat', 'Utilisasi per Tahun']);
 
             foreach ($equipmentTypes as $eq) {
-                $flatData->push([$eq->name, 1]);
+                $flatData->push([$eq->name, 1, 0]);
             }
 
             return $flatData;
@@ -44,15 +44,15 @@ class SitesDataSheet implements FromCollection, WithTitle
             $flatData->push(['Wilayah', $site->region]);
             $flatData->push(['Teknisi Eksisting', $site->existing_technical_staff]);
             $flatData->push(['Non-Teknisi Eksisting', $site->existing_non_technical_staff]);
-            $flatData->push(['Jenis Alat', 'Jumlah Alat']);
+            $flatData->push(['Jenis Alat', 'Jumlah Alat', 'Utilisasi per Tahun']);
             
             foreach ($site->equipments as $eq) {
                 $eqType = $eq->equipmentType ? $eq->equipmentType->name : '';
-                $flatData->push([$eqType, $eq->quantity]);
+                $flatData->push([$eqType, $eq->quantity, $eq->utilization_rate ?? 0]);
             }
             
             // Add an empty row for separation
-            $flatData->push(['', '']);
+            $flatData->push(['', '', '']);
         }
 
         return $flatData;

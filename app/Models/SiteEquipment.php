@@ -15,10 +15,12 @@ class SiteEquipment extends Model
         'site_id',
         'equipment_type_id',
         'quantity',
+        'utilization_rate',
     ];
 
     protected $casts = [
         'quantity' => 'integer',
+        'utilization_rate' => 'float',
     ];
 
     public function site()
