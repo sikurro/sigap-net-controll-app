@@ -93,6 +93,67 @@ class SdmCalculationEngine
     }
 
     /**
+     * Calculate maintenance hours for a single unit of equipment based on Job Plan types
+     */
+    protected function calculateSingleUnitMaintenanceHours(\App\Models\EquipmentType $equipmentType, float $utilizationRate): float
+    {
+        $totalHours = 0;
+        
+        // Split job plans by type
+        $mbJobPlans = [];
+        foreach ($equipmentType->jobPlans as $jobPlan) {
+            $type = $jobPlan->type ?? 'MB'; // Default to MB if null for backward compatibility
+            
+            if ($type === 'DL' || $type === 'TB') {
+                // Static frequency
+                $hoursPerOccurrence = $jobPlan->duration_minutes / 60;
+                $totalHours += $hoursPerOccurrence * $jobPlan->frequency_per_year;
+            } else {
+                // MB - collect for hierarchy processing
+                if ($jobPlan->interval_meter > 0) {
+                    $mbJobPlans[] = $jobPlan;
+                }
+            }
+        }
+        
+        // Process MB Job Plans hierarchy
+        if (!empty($mbJobPlans)) {
+            // Sort MB plans descending by interval_meter
+            usort($mbJobPlans, function($a, $b) {
+                return $b->interval_meter <=> $a->interval_meter;
+            });
+            
+            // Actual operating hours per year
+            $jamOperasiAktual = ($utilizationRate / 100) * 8760;
+            
+            $frequencies = []; // store actual frequencies by interval
+            
+            foreach ($mbJobPlans as $jobPlan) {
+                $interval = $jobPlan->interval_meter;
+                
+                // Raw frequency
+                $rawFrequency = floor($jamOperasiAktual / $interval);
+                
+                // Subtract occurrences of higher intervals that are multiples of this interval
+                $penguguran = 0;
+                foreach ($frequencies as $higherInterval => $higherActualFreq) {
+                    if ($higherInterval > $interval && $higherInterval % $interval == 0) {
+                        $penguguran += $higherActualFreq;
+                    }
+                }
+                
+                $actualFrequency = max(0, $rawFrequency - $penguguran);
+                $frequencies[$interval] = $actualFrequency; // Store for future subtractions
+                
+                $hoursPerOccurrence = $jobPlan->duration_minutes / 60;
+                $totalHours += $hoursPerOccurrence * $actualFrequency;
+            }
+        }
+        
+        return $totalHours;
+    }
+
+    /**
      * Calculate total hours from raw equipment array
      */
     protected function calculateTotalHoursFromRaw(array $equipments): float
@@ -110,11 +171,9 @@ class SdmCalculationEngine
                 continue;
             }
 
-            foreach ($equipmentType->jobPlans as $jobPlan) {
-                $hoursPerOccurrence = $jobPlan->duration_minutes / 60;
-                $hoursPerYear = $hoursPerOccurrence * $jobPlan->frequency_per_year;
-                $totalHours += $hoursPerYear * $qty;
-            }
+            $utilizationRate = floatval($eq['utilization_rate'] ?? 0);
+            $hoursPerUnit = $this->calculateSingleUnitMaintenanceHours($equipmentType, $utilizationRate);
+            $totalHours += $hoursPerUnit * $qty;
         }
 
         return round($totalHours, 2);
@@ -370,12 +429,8 @@ class SdmCalculationEngine
                 $highestBaselineCategory = $catName;
             }
 
-            $jobPlansHours = 0;
-            foreach ($equipmentType->jobPlans as $jobPlan) {
-                $hoursPerOccurrence = $jobPlan->duration_minutes / 60;
-                $hoursPerYear = $hoursPerOccurrence * $jobPlan->frequency_per_year;
-                $jobPlansHours += $hoursPerYear;
-            }
+            $utilizationRate = floatval($eq['utilization_rate'] ?? 0);
+            $jobPlansHours = $this->calculateSingleUnitMaintenanceHours($equipmentType, $utilizationRate);
 
             if ($equipmentType->weight > $highestWeight) {
                 $highestWeight = $equipmentType->weight;
