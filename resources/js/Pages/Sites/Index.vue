@@ -86,6 +86,7 @@ const openEditModal = (site) => {
         id: eq.id,
         equipment_type_id: eq.equipment_type_id,
         quantity: eq.quantity,
+        utilization_rate: eq.utilization_rate ?? 0,
     }));
     showModal.value = true;
 };
@@ -100,6 +101,7 @@ const addEquipmentRow = () => {
         id: null,
         equipment_type_id: '',
         quantity: 1,
+        utilization_rate: 0,
     });
 };
 
@@ -271,6 +273,7 @@ const submitImport = () => {
                                                         <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Jenis Alat</th>
                                                         <th class="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase">Bobot</th>
                                                         <th class="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase">Jumlah Alat</th>
+                                                        <th class="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase">Utilisasi / Thn</th>
                                                         <th class="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase">Total Bobot</th>
                                                     </tr>
                                                 </thead>
@@ -280,6 +283,7 @@ const submitImport = () => {
                                                         <td class="px-3 py-2 whitespace-nowrap text-sm text-gray-500">{{ eq.equipment_type_name }}</td>
                                                         <td class="px-3 py-2 whitespace-nowrap text-sm text-center text-gray-500">{{ eq.weight }}</td>
                                                         <td class="px-3 py-2 whitespace-nowrap text-sm text-center text-gray-500">{{ eq.quantity }}</td>
+                                                        <td class="px-3 py-2 whitespace-nowrap text-sm text-center font-semibold text-indigo-900">{{ eq.utilization_rate || 0 }}%</td>
                                                         <td class="px-3 py-2 whitespace-nowrap text-sm text-center text-gray-900 font-semibold">{{ eq.weight * eq.quantity }}</td>
                                                     </tr>
                                                 </tbody>
@@ -384,7 +388,10 @@ const submitImport = () => {
                                             <span class="font-black text-indigo-900 mr-1">[{{ eq.code || '-' }}]</span>
                                             <span class="text-slate-700 font-medium">{{ eq.equipment_type_name || 'Alat tidak diketahui' }}</span>
                                         </div>
-                                        <span class="shrink-0 font-bold bg-white px-2 py-0.5 rounded border border-slate-200 text-indigo-950 shadow-sm">{{ eq.quantity }} Unit</span>
+                                        <div class="flex items-center gap-1.5 shrink-0">
+                                            <span class="font-bold bg-white px-2 py-0.5 rounded border border-slate-200 text-indigo-950 shadow-sm">{{ eq.quantity }} Unit</span>
+                                            <span class="font-bold bg-indigo-50 px-2 py-0.5 rounded border border-indigo-100 text-indigo-900 shadow-sm" title="Utilisasi per Tahun">{{ eq.utilization_rate || 0 }}%</span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -452,14 +459,14 @@ const submitImport = () => {
                         </PrimaryButton>
                     </div>
 
-                    <div v-for="(eq, index) in form.equipments" :key="index" class="bg-gray-50 p-4 mb-4 rounded border grid grid-cols-1 md:grid-cols-3 gap-4 items-start relative pr-10">
+                    <div v-for="(eq, index) in form.equipments" :key="index" class="bg-gray-50 p-4 mb-4 rounded border grid grid-cols-1 md:grid-cols-12 gap-4 items-start relative pr-10">
                         <button type="button" @click="removeEquipmentRow(index)" class="absolute top-2 right-2 text-red-500 hover:text-red-700">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                                 <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
                             </svg>
                         </button>
 
-                        <div class="md:col-span-2">
+                        <div class="md:col-span-6">
                             <InputLabel :for="'eq_type_'+index" value="Jenis Alat" />
                             <select :id="'eq_type_'+index" v-model="eq.equipment_type_id" class="mt-1 block w-full text-sm border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
                                 <option value="" disabled>Pilih Jenis</option>
@@ -470,10 +477,16 @@ const submitImport = () => {
                             <InputError :message="form.errors[`equipments.${index}.equipment_type_id`]" class="mt-1" />
                         </div>
 
-                        <div>
+                        <div class="md:col-span-3">
                             <InputLabel :for="'eq_qty_'+index" value="Jumlah" />
                             <TextInput :id="'eq_qty_'+index" v-model="eq.quantity" type="number" min="1" class="mt-1 block w-full text-sm" />
                             <InputError :message="form.errors[`equipments.${index}.quantity`]" class="mt-1" />
+                        </div>
+
+                        <div class="md:col-span-3">
+                            <InputLabel :for="'eq_util_'+index" value="Utilisasi / Thn (%)" />
+                            <TextInput :id="'eq_util_'+index" v-model="eq.utilization_rate" type="number" min="0" max="100" step="0.01" placeholder="0" class="mt-1 block w-full text-sm" />
+                            <InputError :message="form.errors[`equipments.${index}.utilization_rate`]" class="mt-1" />
                         </div>
                     </div>
                     <div v-if="form.equipments.length === 0" class="text-sm text-gray-500 italic text-center py-4">

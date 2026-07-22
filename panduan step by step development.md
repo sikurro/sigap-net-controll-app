@@ -9,5 +9,7 @@ pedoman development
 4. verifikasi sebelum commit
 5. commit dengan pesan yang jelas (format commit: feat/fix: deskripsi singkat perubahan (closes #nomor_issue))
 6. push branch baru ke github
-7. buat pull request
+7. buat pull request menggunakan github cli `gh pr create`, nanti saya bantu eksekusi via terminal
+    - title: nama fitur atau perbaikan bug yang singkat dan jelas
+    - body: deskripsi singkat fitur atau perbaikan bug
 8. tunggu review dan konfirmasi

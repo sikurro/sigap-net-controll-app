@@ -37,6 +37,7 @@ class SiteController extends Controller
                         'code' => $eq->equipmentType ? $eq->equipmentType->code : '-',
                         'weight' => $eq->equipmentType ? $eq->equipmentType->weight : 0,
                         'quantity' => $eq->quantity,
+                        'utilization_rate' => $eq->utilization_rate ?? 0,
                     ];
                 }),
             ];
@@ -61,6 +62,7 @@ class SiteController extends Controller
             'equipments' => 'nullable|array',
             'equipments.*.equipment_type_id' => 'required|exists:equipment_types,id',
             'equipments.*.quantity' => 'required|integer|min:1',
+            'equipments.*.utilization_rate' => 'nullable|numeric|min:0|max:100',
         ], [
             'equipments.*.equipment_type_id.required' => 'Jenis alat wajib dipilih.',
             'equipments.*.quantity.min' => 'Jumlah minimal 1.',
@@ -76,7 +78,14 @@ class SiteController extends Controller
             ]);
 
             if (!empty($validated['equipments'])) {
-                $site->equipments()->createMany($validated['equipments']);
+                $equipmentsData = array_map(function ($eq) {
+                    return [
+                        'equipment_type_id' => $eq['equipment_type_id'],
+                        'quantity' => $eq['quantity'],
+                        'utilization_rate' => $eq['utilization_rate'] ?? 0,
+                    ];
+                }, $validated['equipments']);
+                $site->equipments()->createMany($equipmentsData);
             }
         });
         
@@ -97,6 +106,7 @@ class SiteController extends Controller
             'equipments.*.id' => 'nullable|exists:site_equipments,id',
             'equipments.*.equipment_type_id' => 'required|exists:equipment_types,id',
             'equipments.*.quantity' => 'required|integer|min:1',
+            'equipments.*.utilization_rate' => 'nullable|numeric|min:0|max:100',
         ]);
 
         DB::transaction(function () use ($validated, $site) {
@@ -111,16 +121,19 @@ class SiteController extends Controller
             $existingIds = [];
             if (!empty($validated['equipments'])) {
                 foreach ($validated['equipments'] as $eqData) {
+                    $utilRate = $eqData['utilization_rate'] ?? 0;
                     if (isset($eqData['id']) && $eqData['id']) {
                         $site->equipments()->where('id', $eqData['id'])->update([
                             'equipment_type_id' => $eqData['equipment_type_id'],
                             'quantity' => $eqData['quantity'],
+                            'utilization_rate' => $utilRate,
                         ]);
                         $existingIds[] = $eqData['id'];
                     } else {
                         $newEq = $site->equipments()->create([
                             'equipment_type_id' => $eqData['equipment_type_id'],
                             'quantity' => $eqData['quantity'],
+                            'utilization_rate' => $utilRate,
                         ]);
                         $existingIds[] = $newEq->id;
                     }
