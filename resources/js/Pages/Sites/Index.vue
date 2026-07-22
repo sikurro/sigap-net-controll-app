@@ -1,7 +1,7 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, useForm } from '@inertiajs/vue3';
-import { ref } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 import Modal from '@/Components/Modal.vue';
 import InputError from '@/Components/InputError.vue';
 import InputLabel from '@/Components/InputLabel.vue';
@@ -16,6 +16,8 @@ const props = defineProps({
 });
 
 const expandedRows = ref([]);
+const viewMode = ref('list');
+const expandedCards = ref([]);
 
 const toggleRow = (id) => {
     if (expandedRows.value.includes(id)) {
@@ -24,6 +26,25 @@ const toggleRow = (id) => {
         expandedRows.value.push(id);
     }
 };
+
+const toggleCardAccordion = (id) => {
+    if (expandedCards.value.includes(id)) {
+        expandedCards.value = expandedCards.value.filter(cardId => cardId !== id);
+    } else {
+        expandedCards.value.push(id);
+    }
+};
+
+onMounted(() => {
+    const savedMode = localStorage.getItem('sigap_site_view_mode');
+    if (savedMode === 'list' || savedMode === 'card') {
+        viewMode.value = savedMode;
+    }
+});
+
+watch(viewMode, (newMode) => {
+    localStorage.setItem('sigap_site_view_mode', newMode);
+});
 
 const showModal = ref(false);
 const showImportModal = ref(false);
@@ -156,13 +177,39 @@ const submitImport = () => {
                             <span>Export Excel</span>
                         </a>
                     </div>
-                    <button @click="openCreateModal" type="button" class="h-10 px-5 inline-flex items-center gap-2 bg-gradient-to-r from-pelindo-blue to-[#003B6F] border border-pelindo-cyan/20 hover:opacity-90 text-white text-xs font-bold rounded-xl shadow-md transition uppercase tracking-wider">
-                        <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-                        <span>Tambah Site</span>
-                    </button>
+                    <div class="flex items-center gap-3">
+                        <!-- View Mode Switcher -->
+                        <div class="inline-flex bg-slate-100 p-1 rounded-xl border border-slate-200 shadow-inner">
+                            <button 
+                                @click="viewMode = 'list'" 
+                                type="button"
+                                :class="viewMode === 'list' ? 'bg-white text-pelindo-blue shadow-sm font-bold' : 'text-slate-500 hover:text-slate-800 font-medium'"
+                                class="px-3 py-1.5 rounded-lg text-xs flex items-center gap-1.5 transition-all"
+                                title="Tampilan Tabel (List)"
+                            >
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>
+                                <span class="hidden sm:inline">List</span>
+                            </button>
+                            <button 
+                                @click="viewMode = 'card'" 
+                                type="button"
+                                :class="viewMode === 'card' ? 'bg-white text-pelindo-blue shadow-sm font-bold' : 'text-slate-500 hover:text-slate-800 font-medium'"
+                                class="px-3 py-1.5 rounded-lg text-xs flex items-center gap-1.5 transition-all"
+                                title="Tampilan Kartu (Grid)"
+                            >
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+                                <span class="hidden sm:inline">Card</span>
+                            </button>
+                        </div>
+
+                        <button @click="openCreateModal" type="button" class="h-10 px-5 inline-flex items-center gap-2 bg-gradient-to-r from-pelindo-blue to-[#003B6F] border border-pelindo-cyan/20 hover:opacity-90 text-white text-xs font-bold rounded-xl shadow-md transition uppercase tracking-wider">
+                            <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                            <span>Tambah Site</span>
+                        </button>
+                    </div>
                 </div>
 
-                <div class="bg-white overflow-hidden shadow-sm rounded-2xl border border-slate-200/80 p-6">
+                <div v-if="viewMode === 'list'" class="bg-white overflow-hidden shadow-sm rounded-2xl border border-slate-200/80 p-6">
                     <div class="overflow-x-auto">
                         <table class="min-w-full divide-y divide-gray-200">
                             <thead class="bg-slate-800 text-white">
@@ -245,6 +292,116 @@ const submitImport = () => {
                                 </tr>
                             </tbody>
                         </table>
+                    </div>
+                </div>
+
+                <!-- Card View -->
+                <div v-else-if="viewMode === 'card'" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div v-if="sites.length === 0" class="col-span-full bg-white p-8 rounded-2xl border border-slate-200/80 text-center text-gray-500">
+                        Tidak ada data site.
+                    </div>
+                    <div v-for="site in sites" :key="site.id" class="bg-white rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-md transition-all duration-200 flex flex-col justify-between overflow-hidden">
+                        
+                        <!-- Bagian Atas Kartu (Header & Body) -->
+                        <div class="p-5">
+                            <!-- Header Kartu -->
+                            <div class="flex items-start justify-between gap-2 mb-4">
+                                <div>
+                                    <h3 class="font-black text-indigo-950 text-base leading-snug flex items-center gap-1.5">
+                                        <span>🏗️</span>
+                                        <span>{{ site.name }}</span>
+                                    </h3>
+                                    <p class="text-xs text-slate-500 font-medium mt-0.5">{{ site.region || 'Wilayah tidak set' }}</p>
+                                </div>
+                                <div class="flex flex-col items-end gap-1 shrink-0">
+                                    <span class="px-2.5 py-1 bg-gradient-to-r from-pelindo-blue to-indigo-900 text-white font-black text-[11px] rounded-lg shadow-sm uppercase tracking-wider">
+                                        Kelas {{ site.site_class || '-' }}
+                                    </span>
+                                    <span :class="site.work_scheme === 'Shift' ? 'bg-blue-50 text-blue-700 border-blue-200' : 'bg-slate-100 text-slate-700 border-slate-200'" class="px-2 py-0.5 rounded text-[10px] font-bold border">
+                                        {{ site.work_scheme || 'Non-Shift' }}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <!-- Body Kartu: Mini Stat Grids (4 Kotak) -->
+                            <div class="grid grid-cols-2 gap-2.5 my-4">
+                                <!-- Total Bobot -->
+                                <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100 flex flex-col justify-between">
+                                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Total Bobot</span>
+                                    <span class="text-lg font-black text-pelindo-blue mt-1">{{ site.total_weight || 0 }}</span>
+                                </div>
+                                <!-- Jumlah Alat -->
+                                <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100 flex flex-col justify-between">
+                                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Jumlah Alat</span>
+                                    <span class="text-lg font-black text-indigo-950 mt-1">{{ site.jumlah_alat || 0 }} <span class="text-xs font-normal text-slate-500">Unit</span></span>
+                                </div>
+                                <!-- Teknisi -->
+                                <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100 flex flex-col justify-between">
+                                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Teknisi (Eks/Butuh)</span>
+                                    <div class="mt-1 flex items-baseline gap-1">
+                                        <span :class="site.existing_technical_staff < site.technical_staff_needed ? 'text-rose-600 font-black' : 'text-slate-800 font-bold'" class="text-sm">
+                                            {{ site.existing_technical_staff || 0 }}
+                                        </span>
+                                        <span class="text-xs text-slate-400">/</span>
+                                        <span class="text-xs font-bold text-slate-600">{{ site.technical_staff_needed || 0 }}</span>
+                                    </div>
+                                </div>
+                                <!-- Non-Teknisi -->
+                                <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100 flex flex-col justify-between">
+                                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Non-Teknisi</span>
+                                    <div class="mt-1 flex items-baseline gap-1">
+                                        <span :class="site.existing_non_technical_staff < site.non_technical_staff_needed ? 'text-rose-600 font-black' : 'text-slate-800 font-bold'" class="text-sm">
+                                            {{ site.existing_non_technical_staff || 0 }}
+                                        </span>
+                                        <span class="text-xs text-slate-400">/</span>
+                                        <span class="text-xs font-bold text-slate-600">{{ site.non_technical_staff_needed || 0 }}</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Accordion Toggle Rincian Alat -->
+                            <div class="mt-4 pt-3 border-t border-slate-100">
+                                <button 
+                                    @click="toggleCardAccordion(site.id)" 
+                                    type="button" 
+                                    class="w-full py-1.5 px-3 bg-indigo-50/60 hover:bg-indigo-100/80 text-indigo-900 rounded-lg text-xs font-bold flex items-center justify-between transition-colors"
+                                >
+                                    <span>👁️ Rincian Alat ({{ site.equipments ? site.equipments.length : 0 }} Jenis)</span>
+                                    <svg class="w-4 h-4 transform transition-transform duration-200" :class="{ 'rotate-180': expandedCards.includes(site.id) }" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                                </button>
+
+                                <!-- Daftar Alat (Muncul saat accordion dibuka) -->
+                                <div v-if="expandedCards.includes(site.id)" class="mt-2.5 space-y-1.5 max-h-48 overflow-y-auto pr-1">
+                                    <div v-if="!site.equipments || site.equipments.length === 0" class="text-center py-2 text-xs italic text-slate-400">
+                                        Tidak ada data alat.
+                                    </div>
+                                    <div 
+                                        v-for="eq in site.equipments" 
+                                        :key="eq.id" 
+                                        class="flex items-center justify-between text-xs py-1.5 px-2.5 bg-slate-50 rounded border border-slate-100"
+                                    >
+                                        <div class="truncate pr-2">
+                                            <span class="font-black text-indigo-900 mr-1">[{{ eq.code || '-' }}]</span>
+                                            <span class="text-slate-700 font-medium">{{ eq.equipment_type_name || 'Alat tidak diketahui' }}</span>
+                                        </div>
+                                        <span class="shrink-0 font-bold bg-white px-2 py-0.5 rounded border border-slate-200 text-indigo-950 shadow-sm">{{ eq.quantity }} Unit</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Bagian Bawah Kartu (Footer & Aksi) -->
+                        <div class="px-5 py-3 bg-slate-50/80 border-t border-slate-100 flex items-center justify-end gap-2">
+                            <button @click="openEditModal(site)" type="button" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 hover:bg-pelindo-blue text-pelindo-blue hover:text-white rounded-xl text-xs font-bold shadow-sm transition duration-150" title="Edit Site">
+                                <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                                <span>Edit</span>
+                            </button>
+                            <button @click="deleteSite(site.id)" type="button" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-red-50 hover:bg-red-600 text-red-600 hover:text-white rounded-xl text-xs font-bold shadow-sm transition duration-150" title="Hapus Site">
+                                <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                <span>Hapus</span>
+                            </button>
+                        </div>
+
                     </div>
                 </div>
             </div>
