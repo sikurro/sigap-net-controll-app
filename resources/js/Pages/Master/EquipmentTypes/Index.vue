@@ -42,6 +42,19 @@ const getTotalHours = (jobPlans) => {
     return jobPlans.reduce((sum, jp) => sum + parseFloat(jp.total_hours_per_year || 0), 0);
 };
 
+const getJobPlanTypeBadgeClass = (type) => {
+    switch (type) {
+        case 'DL':
+            return 'bg-sky-50 text-sky-700 border-sky-200';
+        case 'MB':
+            return 'bg-amber-50 text-amber-700 border-amber-200';
+        case 'TB':
+            return 'bg-emerald-50 text-emerald-700 border-emerald-200';
+        default:
+            return 'bg-slate-100 text-slate-700 border-slate-200';
+    }
+};
+
 // -- EQUIPMENT TYPE LOGIC --
 const showEquipmentModal = ref(false);
 const isEditingEquipment = ref(false);
@@ -367,8 +380,8 @@ const handleImportFile = (event) => {
                                                         <tbody class="divide-y divide-gray-100">
                                                             <tr v-for="jp in eq.job_plans" :key="jp.id" class="hover:bg-gray-50">
                                                                 <td class="px-4 py-2 text-sm font-medium text-gray-900">{{ jp.activity_name }}</td>
-                                                                <td class="px-4 py-2 text-sm text-center font-bold text-slate-700">
-                                                                    <span class="px-2 py-0.5 rounded text-xs font-bold bg-slate-100 border border-slate-200 text-slate-800">{{ jp.type || 'MB' }}</span>
+                                                                <td class="px-4 py-2 text-sm text-center font-bold">
+                                                                    <span :class="getJobPlanTypeBadgeClass(jp.type)" class="px-2.5 py-0.5 rounded text-xs font-extrabold border shadow-xs inline-block min-w-8 text-center">{{ jp.type || 'MB' }}</span>
                                                                 </td>
                                                                 <td class="px-4 py-2 text-sm text-center text-gray-600">{{ jp.duration_minutes }} mnt</td>
                                                                 <td class="px-4 py-2 text-sm text-center text-gray-600">{{ jp.duration_hours }} jam</td>
