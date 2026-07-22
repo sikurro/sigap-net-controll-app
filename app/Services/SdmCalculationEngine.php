@@ -95,23 +95,31 @@ class SdmCalculationEngine
     /**
      * Calculate maintenance hours for a single unit of equipment based on Job Plan types
      */
-    protected function calculateSingleUnitMaintenanceHours(\App\Models\EquipmentType $equipmentType, float $utilizationRate): float
+    protected function calculateSingleUnitMaintenanceHours(\App\Models\EquipmentType $equipmentType, float $utilizationRate): array
     {
-        $totalHours = 0;
+        $dlHours = 0;
+        $tbHours = 0;
+        $mbHours = 0;
         
         // Split job plans by type
         $mbJobPlans = [];
         foreach ($equipmentType->jobPlans as $jobPlan) {
             $type = $jobPlan->type ?? 'MB'; // Default to MB if null for backward compatibility
             
-            if ($type === 'DL' || $type === 'TB') {
-                // Static frequency
-                $hoursPerOccurrence = $jobPlan->duration_minutes / 60;
-                $totalHours += $hoursPerOccurrence * $jobPlan->frequency_per_year;
-            } else {
+            if ($type === 'MB' && $jobPlan->interval_meter > 0) {
                 // MB - collect for hierarchy processing
-                if ($jobPlan->interval_meter > 0) {
-                    $mbJobPlans[] = $jobPlan;
+                $mbJobPlans[] = $jobPlan;
+            } else {
+                // Static frequency for DL, TB, or MB fallback
+                $hoursPerOccurrence = $jobPlan->duration_minutes / 60;
+                $annualHours = $hoursPerOccurrence * $jobPlan->frequency_per_year;
+                
+                if ($type === 'DL') {
+                    $dlHours += $annualHours;
+                } elseif ($type === 'TB') {
+                    $tbHours += $annualHours;
+                } else {
+                    $mbHours += $annualHours;
                 }
             }
         }
@@ -146,11 +154,18 @@ class SdmCalculationEngine
                 $frequencies[$interval] = $actualFrequency; // Store for future subtractions
                 
                 $hoursPerOccurrence = $jobPlan->duration_minutes / 60;
-                $totalHours += $hoursPerOccurrence * $actualFrequency;
+                $mbHours += $hoursPerOccurrence * $actualFrequency;
             }
         }
         
-        return $totalHours;
+        $totalHours = $dlHours + $tbHours + $mbHours;
+        
+        return [
+            'total' => $totalHours,
+            'dl' => $dlHours,
+            'tb' => $tbHours,
+            'mb' => $mbHours,
+        ];
     }
 
     /**
@@ -172,8 +187,8 @@ class SdmCalculationEngine
             }
 
             $utilizationRate = floatval($eq['utilization_rate'] ?? 0);
-            $hoursPerUnit = $this->calculateSingleUnitMaintenanceHours($equipmentType, $utilizationRate);
-            $totalHours += $hoursPerUnit * $qty;
+            $hoursData = $this->calculateSingleUnitMaintenanceHours($equipmentType, $utilizationRate);
+            $totalHours += $hoursData['total'] * $qty;
         }
 
         return round($totalHours, 2);
@@ -407,6 +422,10 @@ class SdmCalculationEngine
         $highestBaselineCategory = '-';
         $highestWeight = -1;
         $highestWeightSingleUnitHours = 0;
+        
+        $totalDlHours = 0;
+        $totalTbHours = 0;
+        $totalMbHours = 0;
 
         foreach ($rawEquipments as $eq) {
             $qty = $eq['quantity'] ?? 0;
@@ -430,7 +449,12 @@ class SdmCalculationEngine
             }
 
             $utilizationRate = floatval($eq['utilization_rate'] ?? 0);
-            $jobPlansHours = $this->calculateSingleUnitMaintenanceHours($equipmentType, $utilizationRate);
+            $hoursData = $this->calculateSingleUnitMaintenanceHours($equipmentType, $utilizationRate);
+            $jobPlansHours = $hoursData['total'];
+            
+            $totalDlHours += $hoursData['dl'] * $qty;
+            $totalTbHours += $hoursData['tb'] * $qty;
+            $totalMbHours += $hoursData['mb'] * $qty;
 
             if ($equipmentType->weight > $highestWeight) {
                 $highestWeight = $equipmentType->weight;
@@ -497,6 +521,9 @@ class SdmCalculationEngine
             'breakdown_tech' => $breakdownTech,
             'total_technical_staff' => round($highestBaseline + $additionalTech + $breakdownTech, 2),
             'non_technical_positions' => $nonTechPositions,
+            'total_dl_hours' => round($totalDlHours, 2),
+            'total_tb_hours' => round($totalTbHours, 2),
+            'total_mb_hours' => round($totalMbHours, 2),
         ];
     }
 }
