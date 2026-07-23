@@ -31,6 +31,7 @@ class SdmCalculationEngine
             $rawEquipments[] = [
                 'equipment_type_id' => $siteEquipment->equipment_type_id,
                 'quantity' => $siteEquipment->quantity,
+                'utilization_rate' => $siteEquipment->utilization_rate,
             ];
         }
 
@@ -65,11 +66,9 @@ class SdmCalculationEngine
                 continue;
             }
 
-            foreach ($equipmentType->jobPlans as $jobPlan) {
-                $hoursPerOccurrence = $jobPlan->duration_minutes / 60;
-                $hoursPerYear = $hoursPerOccurrence * $jobPlan->frequency_per_year;
-                $totalHours += $hoursPerYear * $siteEquipment->quantity;
-            }
+            $utilizationRate = floatval($siteEquipment->utilization_rate ?? 0);
+            $hoursData = $this->calculateSingleUnitMaintenanceHours($equipmentType, $utilizationRate);
+            $totalHours += $hoursData['total'] * $siteEquipment->quantity;
         }
 
         return round($totalHours, 2);
