@@ -25,10 +25,9 @@ const form = useForm({
 });
 
 const isCalculating = ref(false);
+const isSaving = ref(false);
 const simulationResult = ref(null);
 const existingSiteData = ref(null);
-const showTechBreakdown = ref(false);
-const showNonTechBreakdown = ref(false);
 
 // Smart Site Search State
 const siteSearchQuery = ref('');
@@ -314,9 +313,6 @@ const calculateSimulation = async () => {
     // Clear previous results
     simulationResult.value = null;
     existingSiteData.value = null;
-    showTechBreakdown.value = false;
-    showNonTechBreakdown.value = false;
-    
     // Validate minimal fields manually or let server do it
     if (!form.name || form.equipments.length === 0) {
         alert("Nama Site dan minimal satu alat harus diisi.");
@@ -349,9 +345,13 @@ const saveSimulation = () => {
 
     const confirmed = confirm("Apakah Anda yakin ingin menyimpan hasil simulasi ini ke database?");
     if (confirmed) {
+        isSaving.value = true;
         form.post(route('simulasi.store'), {
             onSuccess: () => {
                 // redirected to sites index automatically
+            },
+            onFinish: () => {
+                isSaving.value = false;
             }
         });
     }
@@ -623,41 +623,38 @@ const saveSimulation = () => {
                     <table class="min-w-full divide-y divide-gray-200 bg-white rounded-xl overflow-hidden shadow-sm border border-slate-200">
                         <thead class="bg-slate-800 text-white">
                             <tr>
-                                <th class="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider">Parameter</th>
-                                <th v-if="existingSiteData" class="px-6 py-3 text-center text-xs font-bold uppercase tracking-wider">Kondisi Eksisting</th>
-                                <th class="px-6 py-3 text-center text-xs font-bold uppercase tracking-wider">Hasil Simulasi</th>
+                                <th class="px-6 py-3 text-left text-sm font-bold uppercase tracking-wider">Parameter</th>
+                                <th v-if="existingSiteData" class="px-6 py-3 text-center text-sm font-bold uppercase tracking-wider">Kondisi Eksisting</th>
+                                <th class="px-6 py-3 text-center text-sm font-bold uppercase tracking-wider">Hasil Simulasi</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-100">
                             <tr>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Kelas Site</td>
-                                <td v-if="existingSiteData" class="px-6 py-4 whitespace-nowrap text-sm text-center text-gray-500">{{ existingSiteData.site_class }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-center font-bold text-pelindo-blue">{{ simulationResult.site_class }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-base font-semibold text-gray-900">Kelas Site</td>
+                                <td v-if="existingSiteData" class="px-6 py-4 whitespace-nowrap text-base text-center text-gray-500">{{ existingSiteData.site_class }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-base text-center font-bold text-pelindo-blue">{{ simulationResult.site_class }}</td>
                             </tr>
                             <tr>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Total Bobot</td>
-                                <td v-if="existingSiteData" class="px-6 py-4 whitespace-nowrap text-sm text-center text-gray-500">{{ $formatNumber(existingSiteData.total_weight || 0) }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-center font-bold text-pelindo-blue">{{ $formatNumber(simulationResult.total_weight) }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-base font-semibold text-gray-900">Total Bobot</td>
+                                <td v-if="existingSiteData" class="px-6 py-4 whitespace-nowrap text-base text-center text-gray-500">{{ $formatNumber(existingSiteData.total_weight || 0) }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-base text-center font-bold text-pelindo-blue">{{ $formatNumber(simulationResult.total_weight) }}</td>
                             </tr>
                             <tr>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Total Jam Pemeliharaan (Tahun)</td>
-                                <td v-if="existingSiteData" class="px-6 py-4 whitespace-nowrap text-sm text-center text-gray-500">{{ $formatNumber(existingSiteData.total_maintenance_hours || 0) }} Jam</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-center font-bold text-pelindo-blue">{{ $formatNumber(simulationResult.total_maintenance_hours) }} Jam</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-base font-semibold text-gray-900">Total Jam Pemeliharaan (Tahun)</td>
+                                <td v-if="existingSiteData" class="px-6 py-4 whitespace-nowrap text-base text-center text-gray-500">{{ $formatNumber(existingSiteData.total_maintenance_hours || 0) }} Jam</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-base text-center font-bold text-pelindo-blue">{{ $formatNumber(simulationResult.total_maintenance_hours) }} Jam</td>
                             </tr>
                             <tr>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 flex items-center justify-between">
-                                    <span>Kebutuhan Teknisi</span>
-                                    <button @click="showTechBreakdown = !showTechBreakdown" type="button" class="ml-2 text-xs bg-indigo-100 text-indigo-700 px-2.5 py-1 rounded-full hover:bg-indigo-200 font-semibold transition focus:outline-none">
-                                        {{ showTechBreakdown ? '❌ Tutup' : '🔍 Bedah Formula' }}
-                                    </button>
+                                <td class="px-6 py-4 whitespace-nowrap text-base font-semibold text-gray-900">
+                                    Kebutuhan Teknisi
                                 </td>
                                 <td v-if="existingSiteData" class="px-6 py-4 whitespace-nowrap text-center">
                                     <div class="flex flex-col items-center justify-center">
-                                        <span class="text-sm font-bold text-gray-900">{{ $formatNumber(existingSiteData.existing_technical_staff || 0) }} Orang <span class="text-[11px] font-normal text-gray-500">(Aktual)</span></span>
+                                        <span class="text-base font-bold text-gray-900">{{ $formatNumber(existingSiteData.existing_technical_staff || 0) }} Orang <span class="text-xs font-normal text-gray-500">(Aktual)</span></span>
                                     </div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-center">
-                                    <div class="font-bold text-pelindo-blue text-base">{{ $formatNumber(simulationResult.technical_staff_needed) }} Orang</div>
+                                    <div class="font-bold text-pelindo-blue text-lg">{{ $formatNumber(simulationResult.technical_staff_needed) }} Orang</div>
                                     <div v-if="existingSiteData" class="text-xs mt-1">
                                         <span class="text-gray-500">vs Aktual: </span>
                                         <span v-if="simulationResult.technical_staff_needed > (existingSiteData.existing_technical_staff || 0)" class="text-amber-600 font-semibold">Kurang {{ $formatNumber(simulationResult.technical_staff_needed - (existingSiteData.existing_technical_staff || 0)) }}</span>
@@ -665,68 +662,107 @@ const saveSimulation = () => {
                                     </div>
                                 </td>
                             </tr>
-                            <tr v-if="showTechBreakdown && simulationResult.breakdown" class="bg-indigo-50/50">
-                                <td :colspan="existingSiteData ? 3 : 2" class="px-6 py-4">
-                                    <div class="bg-white p-4 rounded-lg border border-indigo-200 shadow-sm text-xs text-gray-700">
-                                        <h4 class="font-bold text-indigo-900 text-sm mb-3 flex items-center gap-1.5">
-                                            <span>📊 Transparansi Perhitungan Standar Teknisi</span>
-                                        </h4>
-                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                            <div class="bg-indigo-50/50 p-3 rounded border border-indigo-100">
-                                                <span class="font-bold text-indigo-800 block mb-2 border-b border-indigo-200 pb-1">💡 Parameter Acuan Sistem</span>
-                                                <ul class="space-y-1.5">
-                                                    <li class="flex justify-between"><span>Skema Kerja:</span> <strong class="text-gray-900">{{ simulationResult.breakdown.work_scheme }}</strong></li>
-                                                    <li class="flex justify-between"><span>Kapasitas Pembagi (Man Hours):</span> <strong class="text-indigo-600">{{ $formatNumber(simulationResult.breakdown.productive_hours) }} Jam/Thn <span class="text-[10px] font-normal text-gray-500 block sm:inline">(Global Settings)</span></strong></li>
-                                                    <li class="flex justify-between"><span>Patokan Baseline Tertinggi:</span> <strong class="text-gray-900">{{ $formatNumber(simulationResult.breakdown.highest_baseline) }} Orang <span class="text-[10px] font-normal text-gray-500 block sm:inline">({{ simulationResult.breakdown.highest_baseline_category }})</span></strong></li>
-                                                    <li class="flex justify-between"><span>Total Jam Pemeliharaan:</span> <strong class="text-gray-900">{{ $formatNumber(simulationResult.breakdown.total_maintenance_hours) }} Jam/Thn</strong></li>
-                                                </ul>
+                            <tr v-if="simulationResult.breakdown" class="bg-slate-50 border-t-0">
+                                <td :colspan="existingSiteData ? 3 : 2" class="px-0 py-0 pb-6 border-b border-gray-200">
+                                    <!-- Rincian Formula Kartu (Executive Dashboard Style) -->
+                                    <div class="mx-6 mt-4 p-5 bg-white rounded-xl border border-slate-200 shadow-sm relative">
+                                        <!-- Header Badges -->
+                                        <div class="flex flex-wrap items-center gap-3 mb-6 pb-4 border-b border-slate-100">
+                                            <div class="flex items-center space-x-2 text-xs font-bold text-slate-800">
+                                                <svg class="w-4 h-4 text-pelindo-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
+                                                <span>PARAMETER ACUAN SISTEM:</span>
                                             </div>
-                                            <div class="bg-indigo-50/50 p-3 rounded border border-indigo-100 flex flex-col justify-between">
-                                                <div>
-                                                    <span class="font-bold text-indigo-800 block mb-2 border-b border-indigo-200 pb-1">🔢 Rincian 3 Pilar Kebutuhan Teknisi</span>
-                                                    <div class="space-y-2 text-gray-600">
-                                                        <div>
-                                                            <span class="block font-semibold text-gray-800">1. Pilar Baseline Kategori Tertinggi:</span>
-                                                            <span><strong>{{ $formatNumber(simulationResult.breakdown.highest_baseline) }} Orang</strong> <span class="text-[10px]">({{ simulationResult.breakdown.highest_baseline_category }})</span></span>
-                                                        </div>
-                                                        <div>
-                                                            <span class="block font-semibold text-gray-800">2. Pilar Preventive Tambahan (Job Plan):</span>
-                                                            <div class="text-[11px] mb-0.5 text-gray-600">
-                                                                Total Alat se-Site: <strong>{{ $formatNumber(simulationResult.breakdown.total_maintenance_hours) }} Jam</strong>
-                                                                <span class="text-gray-500 ml-1">(DL: {{ $formatNumber(simulationResult.breakdown.total_dl_hours || 0) }}, TB: {{ $formatNumber(simulationResult.breakdown.total_tb_hours || 0) }}, MB: {{ $formatNumber(simulationResult.breakdown.total_mb_hours || 0) }})</span><br>
-                                                                Dikurangi Jam Pilar 1: <strong class="text-rose-600">-{{ $formatNumber(simulationResult.breakdown.highest_weight_single_unit_hours) }} Jam</strong>
-                                                            </div>
-                                                            <span>{{ $formatNumber(simulationResult.breakdown.additional_hours) }} Jam ÷ {{ $formatNumber(simulationResult.breakdown.productive_hours) }} Jam/Thn = <strong>{{ $formatNumber(simulationResult.breakdown.additional_tech) }} Orang</strong></span>
-                                                        </div>
-                                                        <div v-if="simulationResult.breakdown.breakdown_tech !== undefined">
-                                                            <span class="block font-semibold text-rose-700">3. Pilar Breakdown Shift ({{ simulationResult.breakdown.breakdown_rate_percent }}% Avail):</span>
-                                                            <span>{{ $formatNumber(simulationResult.breakdown.total_breakdown_hours) }} Jam ÷ {{ $formatNumber(simulationResult.breakdown.shift_productive_hours) }} Jam/Thn = <strong class="text-rose-600">{{ $formatNumber(simulationResult.breakdown.breakdown_tech) }} Orang</strong></span>
-                                                        </div>
+                                            <span class="px-3 py-1 bg-slate-100 text-slate-700 rounded-md text-[11px] font-bold border border-slate-200">Skema: {{ simulationResult.breakdown.work_scheme }}</span>
+                                            <span class="px-3 py-1 bg-slate-100 text-slate-700 rounded-md text-[11px] font-bold border border-slate-200">Kapasitas Pembagi: {{ $formatNumber(simulationResult.breakdown.productive_hours) }} Jam/Thn</span>
+                                            <span class="px-3 py-1 bg-slate-100 text-slate-700 rounded-md text-[11px] font-bold border border-slate-200">Patokan Tertinggi: {{ simulationResult.breakdown.highest_baseline_category }}</span>
+                                        </div>
+
+                                        <!-- 3 Pillars Formula Grid -->
+                                        <div class="flex flex-col lg:flex-row items-center gap-4 lg:gap-2 justify-center mb-6">
+                                            
+                                            <!-- Card 1: Baseline -->
+                                            <div class="flex-1 w-full bg-blue-50/50 rounded-xl p-4 border border-blue-100 shadow-sm relative group transition-all hover:bg-blue-50 hover:border-blue-200 hover:shadow-md">
+                                                <div class="text-[10px] font-black uppercase tracking-wider text-blue-500 mb-1">Pilar 1: Baseline Kategori Tertinggi</div>
+                                                <div class="flex items-end gap-2 mb-1">
+                                                    <span class="text-3xl font-black text-blue-900 leading-none">{{ $formatNumber(simulationResult.breakdown.highest_baseline) }}</span>
+                                                    <span class="text-sm font-bold text-blue-700 mb-0.5">Orang</span>
+                                                </div>
+                                                <div class="text-xs text-blue-600/80 font-medium line-clamp-1" :title="'Berdasarkan patokan ' + simulationResult.breakdown.highest_baseline_category">
+                                                    (Patokan {{ simulationResult.breakdown.highest_baseline_category }})
+                                                </div>
+                                            </div>
+
+                                            <div class="text-xl font-black text-slate-300 mx-1 hidden lg:block">+</div>
+
+                                            <!-- Card 2: Preventive -->
+                                            <div class="flex-1 w-full bg-emerald-50/50 rounded-xl p-4 border border-emerald-100 shadow-sm relative group transition-all hover:bg-emerald-50 hover:border-emerald-200 hover:shadow-md cursor-help">
+                                                <div class="text-[10px] font-black uppercase tracking-wider text-emerald-500 mb-1">Pilar 2: Preventive Tambahan</div>
+                                                <div class="flex items-end gap-2 mb-1">
+                                                    <span class="text-3xl font-black text-emerald-900 leading-none">{{ $formatNumber(simulationResult.breakdown.additional_tech) }}</span>
+                                                    <span class="text-sm font-bold text-emerald-700 mb-0.5">Orang</span>
+                                                </div>
+                                                <div class="text-xs text-emerald-600/80 font-medium line-clamp-1 border-b border-dashed border-emerald-300 inline-block">
+                                                    (Rincian jam diabaikan/potongan)
+                                                </div>
+                                                
+                                                <!-- Tooltip on hover -->
+                                                <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 bg-slate-800 text-white text-xs rounded-lg p-3 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none shadow-xl z-50">
+                                                    <div class="font-bold mb-1 border-b border-slate-600 pb-1">Detail Kalkulasi Preventive:</div>
+                                                    <div class="flex justify-between mb-0.5"><span>Total Jam Site:</span> <span class="font-bold">{{ $formatNumber(simulationResult.breakdown.total_maintenance_hours) }} Jam</span></div>
+                                                    <div class="flex justify-between mb-0.5 text-rose-300"><span>Dikurangi Jam Pilar 1:</span> <span class="font-bold">-{{ $formatNumber(simulationResult.breakdown.highest_weight_single_unit_hours) }} Jam</span></div>
+                                                    <div class="flex justify-between mb-0.5 text-emerald-300"><span>Sisa Jam Netto:</span> <span class="font-bold">{{ $formatNumber(simulationResult.breakdown.additional_hours) }} Jam</span></div>
+                                                    <div class="mt-1 pt-1 border-t border-slate-600 text-[10px] text-slate-300 text-center">
+                                                        {{ $formatNumber(simulationResult.breakdown.additional_hours) }} Jam ÷ Kapasitas ({{ $formatNumber(simulationResult.breakdown.productive_hours) }})
+                                                    </div>
+                                                    <div class="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-slate-800 rotate-45"></div>
+                                                </div>
+                                            </div>
+
+                                            <!-- Conditional Pilar 3 if exists (Shift) -->
+                                            <template v-if="simulationResult.breakdown.breakdown_tech !== undefined">
+                                                <div class="text-xl font-black text-slate-300 mx-1 hidden lg:block">+</div>
+                                                <!-- Card 3: Breakdown -->
+                                                <div class="flex-1 w-full bg-rose-50/50 rounded-xl p-4 border border-rose-100 shadow-sm relative group transition-all hover:bg-rose-50 hover:border-rose-200 hover:shadow-md">
+                                                    <div class="text-[10px] font-black uppercase tracking-wider text-rose-500 mb-1">Pilar 3: Breakdown Shift ({{ simulationResult.breakdown.breakdown_rate_percent }}% Avail)</div>
+                                                    <div class="flex items-end gap-2 mb-1">
+                                                        <span class="text-3xl font-black text-rose-900 leading-none">{{ $formatNumber(simulationResult.breakdown.breakdown_tech) }}</span>
+                                                        <span class="text-sm font-bold text-rose-700 mb-0.5">Orang</span>
+                                                    </div>
+                                                    <div class="text-[10px] text-rose-600/80 font-medium line-clamp-1 mt-1">
+                                                        ({{ $formatNumber(simulationResult.breakdown.total_breakdown_hours) }} Jam ÷ {{ $formatNumber(simulationResult.breakdown.shift_productive_hours) }} Kapasitas Shift)
                                                     </div>
                                                 </div>
-                                                <div class="mt-3 pt-2 border-t border-indigo-200 flex justify-between items-center text-sm font-bold text-indigo-900">
-                                                    <span>Total Standar Teknisi:</span>
-                                                    <span>{{ $formatNumber(simulationResult.breakdown.highest_baseline) }} + {{ $formatNumber(simulationResult.breakdown.additional_tech) }} <span v-if="simulationResult.breakdown.breakdown_tech !== undefined">+ {{ $formatNumber(simulationResult.breakdown.breakdown_tech) }}</span> = <strong class="text-indigo-700 text-base">{{ $formatNumber(simulationResult.technical_staff_needed) }} Orang</strong></span>
-                                                </div>
+                                            </template>
+                                        </div>
+
+                                        <!-- Grand Total Footer -->
+                                        <div class="bg-gradient-to-r from-pelindo-blue to-[#003B6F] text-white rounded-xl px-5 py-4 flex flex-col sm:flex-row justify-between items-center shadow-md">
+                                            <span class="font-bold tracking-wide text-sm text-pelindo-cyan mb-2 sm:mb-0">TOTAL STANDAR TEKNISI =</span>
+                                            <div class="flex items-center gap-3">
+                                                <span class="text-xs text-slate-300 opacity-80 mt-1">
+                                                    {{ $formatNumber(simulationResult.breakdown.highest_baseline) }} 
+                                                    + {{ $formatNumber(simulationResult.breakdown.additional_tech) }}
+                                                    <span v-if="simulationResult.breakdown.breakdown_tech !== undefined"> + {{ $formatNumber(simulationResult.breakdown.breakdown_tech) }}</span>
+                                                    =
+                                                </span>
+                                                <span class="text-2xl font-black">{{ $formatNumber(simulationResult.technical_staff_needed) }} Orang</span>
                                             </div>
                                         </div>
+
                                     </div>
                                 </td>
                             </tr>
                             <tr>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 flex items-center justify-between">
-                                    <span>Kebutuhan Non-Teknisi</span>
-                                    <button @click="showNonTechBreakdown = !showNonTechBreakdown" type="button" class="ml-2 text-xs bg-indigo-100 text-indigo-700 px-2.5 py-1 rounded-full hover:bg-indigo-200 font-semibold transition focus:outline-none">
-                                        {{ showNonTechBreakdown ? '❌ Tutup' : '👥 Rincian Formasi' }}
-                                    </button>
+                                <td class="px-6 py-4 whitespace-nowrap text-base font-semibold text-gray-900">
+                                    Kebutuhan Non-Teknisi
                                 </td>
                                 <td v-if="existingSiteData" class="px-6 py-4 whitespace-nowrap text-center">
                                     <div class="flex flex-col items-center justify-center">
-                                        <span class="text-sm font-bold text-gray-900">{{ $formatNumber(existingSiteData.existing_non_technical_staff || 0) }} Orang <span class="text-[11px] font-normal text-gray-500">(Aktual)</span></span>
+                                        <span class="text-base font-bold text-gray-900">{{ $formatNumber(existingSiteData.existing_non_technical_staff || 0) }} Orang <span class="text-xs font-normal text-gray-500">(Aktual)</span></span>
                                     </div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-center">
-                                    <div class="font-bold text-pelindo-blue text-base">{{ $formatNumber(simulationResult.non_technical_staff_needed) }} Orang</div>
+                                    <div class="font-bold text-pelindo-blue text-lg">{{ $formatNumber(simulationResult.non_technical_staff_needed) }} Orang</div>
                                     <div v-if="existingSiteData" class="text-xs mt-1">
                                         <span class="text-gray-500">vs Aktual: </span>
                                         <span v-if="simulationResult.non_technical_staff_needed > (existingSiteData.existing_non_technical_staff || 0)" class="text-amber-600 font-semibold">Kurang {{ $formatNumber(simulationResult.non_technical_staff_needed - (existingSiteData.existing_non_technical_staff || 0)) }}</span>
@@ -734,20 +770,31 @@ const saveSimulation = () => {
                                     </div>
                                 </td>
                             </tr>
-                            <tr v-if="showNonTechBreakdown && simulationResult.breakdown" class="bg-indigo-50/50">
-                                <td :colspan="existingSiteData ? 3 : 2" class="px-6 py-4">
-                                    <div class="bg-white p-4 rounded-lg border border-indigo-200 shadow-sm text-xs text-gray-700">
-                                        <h4 class="font-bold text-indigo-900 text-sm mb-3 flex items-center gap-1.5">
-                                            <span>👥 Rincian Formasi Staf Non-Teknis (Kelas Site: {{ simulationResult.site_class }})</span>
-                                        </h4>
-                                        <div v-if="simulationResult.breakdown.non_technical_positions && simulationResult.breakdown.non_technical_positions.length > 0" class="flex flex-wrap gap-2">
-                                            <div v-for="(pos, idx) in simulationResult.breakdown.non_technical_positions" :key="idx" class="bg-indigo-50 border border-indigo-200 rounded-md px-3 py-2 flex items-center gap-2">
-                                                <span class="font-semibold text-indigo-900">{{ pos.title }}</span>
-                                                <span class="bg-indigo-600 text-white font-bold px-2 py-0.5 rounded text-[11px]">{{ $formatNumber(pos.quantity) }} Orang</span>
-                                                <span class="text-[10px] text-gray-500 uppercase">({{ pos.category }})</span>
+                            <tr v-if="simulationResult.breakdown" class="bg-slate-50 border-t-0">
+                                <td :colspan="existingSiteData ? 3 : 2" class="px-0 py-0 pb-6">
+                                    <div class="mx-6 mt-4 p-5 bg-white rounded-xl border border-slate-200 shadow-sm relative overflow-hidden">
+                                        <div class="flex items-center space-x-2 text-sm font-bold text-slate-800 mb-4 pb-2 border-b border-slate-100">
+                                            <span>👥 FORMASI STAF NON-TEKNIS (Kelas Site: {{ simulationResult.site_class }})</span>
+                                        </div>
+                                        <div v-if="simulationResult.breakdown.non_technical_positions && simulationResult.breakdown.non_technical_positions.length > 0" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                                            <div v-for="(pos, idx) in simulationResult.breakdown.non_technical_positions" :key="idx" 
+                                                class="bg-white border rounded-lg p-3 flex flex-col justify-between transition-shadow hover:shadow-md"
+                                                :class="pos.category.toLowerCase().includes('non-fungsional') ? 'border-slate-200' : 'border-indigo-200 bg-indigo-50/30'"
+                                            >
+                                                <div class="flex items-start justify-between mb-2 gap-2">
+                                                    <span class="text-xs font-bold leading-tight" :class="pos.category.toLowerCase().includes('non-fungsional') ? 'text-slate-700' : 'text-indigo-900'">{{ pos.title }}</span>
+                                                    <span class="text-lg opacity-60">{{ pos.category.toLowerCase().includes('non-fungsional') ? '👤' : '👔' }}</span>
+                                                </div>
+                                                <div class="flex items-center justify-between mt-auto">
+                                                    <span class="text-[9px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded" :class="pos.category.toLowerCase().includes('non-fungsional') ? 'bg-slate-100 text-slate-500' : 'bg-indigo-100 text-indigo-600'">{{ pos.category }}</span>
+                                                    <div class="flex items-end gap-1">
+                                                        <span class="text-xl font-black leading-none" :class="pos.category.toLowerCase().includes('non-fungsional') ? 'text-slate-800' : 'text-indigo-700'">{{ $formatNumber(pos.quantity) }}</span>
+                                                        <span class="text-[10px] font-bold text-slate-400 mb-0.5">Org</span>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
-                                        <div v-else class="text-gray-500 italic">
+                                        <div v-else class="text-gray-500 italic text-sm text-center py-4">
                                             Tidak ada kebutuhan staf non-teknis standar untuk kelas site ini.
                                         </div>
                                     </div>
