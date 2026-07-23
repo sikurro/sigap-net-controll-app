@@ -26,6 +26,7 @@ const form = useForm({
 
 const isCalculating = ref(false);
 const isSaving = ref(false);
+const isFormVisible = ref(true);
 const simulationResult = ref(null);
 const existingSiteData = ref(null);
 
@@ -329,6 +330,7 @@ const calculateSimulation = async () => {
         
         simulationResult.value = response.data.simulation;
         existingSiteData.value = response.data.existing_site;
+        isFormVisible.value = false;
     } catch (error) {
         if (error.response && error.response.data.errors) {
             alert("Terjadi kesalahan validasi. Cek kelengkapan form.");
@@ -374,12 +376,21 @@ const saveSimulation = () => {
                 <!-- Input Form -->
                 <div class="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
                     <section>
-                        <header>
-                            <h2 class="text-lg font-medium text-gray-900">Form Simulasi Site</h2>
-                            <p class="mt-1 text-sm text-gray-600">
-                                Masukkan nama site dan rincian alat yang akan disimulasikan. Data tidak akan tersimpan ke database sebelum Anda memilih untuk menyimpannya.
-                            </p>
+                        <header class="flex justify-between items-start sm:items-center">
+                            <div>
+                                <h2 class="text-lg font-medium text-gray-900">Form Simulasi Site</h2>
+                                <p class="mt-1 text-sm text-gray-600">
+                                    Masukkan nama site dan rincian alat yang akan disimulasikan. Data tidak akan tersimpan ke database sebelum Anda memilih untuk menyimpannya.
+                                </p>
+                            </div>
+                            <button @click="isFormVisible = !isFormVisible" type="button" class="mt-2 sm:mt-0 flex items-center justify-center text-pelindo-blue hover:text-[#003B6F] transition-colors bg-blue-50 p-2 rounded-full border border-blue-100 hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pelindo-blue" :title="isFormVisible ? 'Sembunyikan Form' : 'Tampilkan Form'">
+                                <svg v-if="isFormVisible" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" /></svg>
+                                <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                            </button>
                         </header>
+
+                        <transition name="slide">
+                            <div v-show="isFormVisible">
 
                         <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div class="relative">
@@ -602,6 +613,8 @@ const saveSimulation = () => {
                                 Jalankan Kalkulasi Simulasi
                             </PrimaryButton>
                         </div>
+                        </div>
+                        </transition>
                     </section>
                 </div>
 
@@ -614,10 +627,20 @@ const saveSimulation = () => {
                         </PrimaryButton>
                     </div>
 
-                    <div v-if="existingSiteData" class="mb-4 bg-yellow-100 text-yellow-800 p-3 rounded text-sm border border-yellow-200">
-                        <strong>Perhatian:</strong> Site dengan nama <strong>{{ form.name }}</strong> sudah ada di database. 
-                        Tabel di bawah akan membandingkan kondisi saat ini (Eksisting) dengan hasil jika skenario form di atas direalisasikan. 
-                        Menekan tombol "Simpan" akan me-replace data alat di site eksisting tersebut.
+                    <div v-if="existingSiteData" class="mb-6 bg-amber-50 rounded-xl p-4 border border-amber-200/60 shadow-sm flex items-start space-x-3">
+                        <div class="flex-shrink-0 mt-0.5">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-amber-500" viewBox="0 0 20 20" fill="currentColor">
+                              <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="text-sm font-bold text-amber-800">Perhatian: Site Eksisting Ditemukan</h3>
+                            <p class="mt-1 text-sm text-amber-700 leading-relaxed">
+                                Site dengan nama <strong class="text-amber-900">{{ form.name }}</strong> sudah ada di database. 
+                                Tabel di bawah ini membandingkan kondisi eksisting dengan hasil skenario simulasi Anda. 
+                                Menekan tombol <strong class="text-amber-900">"Simpan ke Database"</strong> akan <span class="underline decoration-amber-300">mengganti (replace)</span> seluruh data alat di site tersebut.
+                            </p>
+                        </div>
                     </div>
 
                     <table class="min-w-full divide-y divide-gray-200 bg-white rounded-xl overflow-hidden shadow-sm border border-slate-200">
@@ -809,3 +832,25 @@ const saveSimulation = () => {
         </div>
     </AuthenticatedLayout>
 </template>
+
+<style scoped>
+.slide-enter-active,
+.slide-leave-active {
+  transition: all 0.4s ease-in-out;
+  overflow: hidden;
+}
+
+.slide-enter-from,
+.slide-leave-to {
+  opacity: 0;
+  max-height: 0;
+  transform: translateY(-10px);
+}
+
+.slide-enter-to,
+.slide-leave-from {
+  opacity: 1;
+  max-height: 2500px;
+  transform: translateY(0);
+}
+</style>
