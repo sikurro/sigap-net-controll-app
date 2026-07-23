@@ -47,7 +47,9 @@ const removeEquipmentRow = (index) => {
 
 const formatEquipmentLabel = (type) => {
     const formatNum = (val) => new Intl.NumberFormat('id-ID', { minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(val);
-    return `[${type.code || '-'}] ${type.name} (Bobot: ${formatNum(type.weight)} | ⏱️ ${formatNum(type.annual_hours || 0)} Jam/Thn)`;
+    const hasMB = type.job_plans && type.job_plans.some(jp => jp.type === 'MB' && jp.interval_meter > 0);
+    const jamLabel = hasMB ? 'Est. ' + formatNum(type.annual_hours || 0) : formatNum(type.annual_hours || 0);
+    return `[${type.code || '-'}] ${type.name} (Bobot: ${formatNum(type.weight)} | ⏱️ ${jamLabel} Jam/Thn)`;
 };
 
 const getSelectedType = (eq) => {
@@ -55,16 +57,77 @@ const getSelectedType = (eq) => {
     return props.equipmentTypes.find(t => t.id === eq.equipment_type_id) || null;
 };
 
+const calculateDynamicHours = (type, utilizationRate) => {
+    if (!type || !type.job_plans) return type?.annual_hours || 0;
+    
+    // If utilization <= 0 or empty, fallback to static baseline
+    if (!utilizationRate || parseFloat(utilizationRate) <= 0) {
+        return type.annual_hours || 0;
+    }
+    
+    let staticHours = 0;
+    let mbPlans = [];
+    
+    type.job_plans.forEach(jp => {
+        const jpType = jp.type || 'MB';
+        if (jpType === 'MB' && parseFloat(jp.interval_meter) > 0) {
+            mbPlans.push(jp);
+        } else {
+            const hoursPerOcc = (parseFloat(jp.duration_minutes) || 0) / 60;
+            const freq = parseFloat(jp.frequency_per_year) || 0;
+            staticHours += hoursPerOcc * freq;
+        }
+    });
+    
+    let mbHours = 0;
+    if (mbPlans.length > 0) {
+        // Sort descending by interval
+        mbPlans.sort((a, b) => parseFloat(b.interval_meter) - parseFloat(a.interval_meter));
+        
+        const jamOperasiAktual = (parseFloat(utilizationRate) / 100) * 8760;
+        let frequencies = {};
+        
+        mbPlans.forEach(jp => {
+            const interval = parseFloat(jp.interval_meter);
+            let rawFreq = Math.floor(jamOperasiAktual / interval);
+            
+            let penguguran = 0;
+            for (const higherInterval in frequencies) {
+                if (parseFloat(higherInterval) > interval && parseFloat(higherInterval) % interval === 0) {
+                    penguguran += frequencies[higherInterval];
+                }
+            }
+            
+            let actualFreq = Math.max(0, rawFreq - penguguran);
+            frequencies[interval] = actualFreq;
+            
+            const hoursPerOcc = (parseFloat(jp.duration_minutes) || 0) / 60;
+            mbHours += hoursPerOcc * actualFreq;
+        });
+    }
+    
+    return staticHours + mbHours;
+};
+
 const totalSimulationHours = computed(() => {
     let total = 0;
     form.equipments.forEach(eq => {
         const type = getSelectedType(eq);
         if (type && eq.quantity > 0) {
-            total += (type.annual_hours || 0) * eq.quantity;
+            const perUnitHours = calculateDynamicHours(type, eq.utilization_rate);
+            total += perUnitHours * eq.quantity;
         }
     });
     return total.toFixed(2);
 });
+
+const getEquipmentRowTotalHours = (eq) => {
+    const type = getSelectedType(eq);
+    if (type && eq.quantity > 0) {
+        return calculateDynamicHours(type, eq.utilization_rate) * eq.quantity;
+    }
+    return 0;
+};
 
 const totalSimulationEquipmentUnits = computed(() => {
     let total = 0;
@@ -488,7 +551,8 @@ const saveSimulation = () => {
                                 <div v-if="eq.equipment_type_id && getSelectedType(eq)" class="md:col-span-12 mt-1 pt-2 border-t border-gray-200 flex flex-wrap items-center justify-between text-xs text-indigo-950 bg-indigo-50/80 px-3.5 py-2 rounded-lg border border-indigo-100">
                                     <span class="font-bold">⚡ Subtotal Baris ini ({{ eq.quantity || 0 }} Unit):</span>
                                     <div class="flex items-center space-x-4">
-                                        <span>⏱️ Total Jam: <strong class="text-indigo-700 font-black">{{ $formatNumber((getSelectedType(eq).annual_hours || 0) * (eq.quantity || 0)) }} Jam/Tahun</strong></span>
+                                        <span v-if="parseFloat(eq.utilization_rate) > 0">⏱️ Jam Aktual (Simulasi): <strong class="text-indigo-700 font-black">{{ $formatNumber(getEquipmentRowTotalHours(eq)) }} Jam/Tahun</strong></span>
+                                        <span v-else>⏱️ Est. Jam (Baseline): <strong class="text-indigo-700 font-black">{{ $formatNumber(getEquipmentRowTotalHours(eq)) }} Jam/Tahun</strong></span>
                                         <span>⚖️ Total Bobot: <strong class="text-indigo-700 font-black">{{ $formatNumber((getSelectedType(eq).weight || 0) * (eq.quantity || 0)) }}</strong></span>
                                     </div>
                                 </div>

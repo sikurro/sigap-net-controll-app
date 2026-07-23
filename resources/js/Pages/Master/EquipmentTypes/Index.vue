@@ -336,8 +336,8 @@ const handleImportFile = (event) => {
                                                 <span class="bg-pelindo-blue/10 text-pelindo-blue border border-pelindo-blue/20 text-xs px-2.5 py-1 rounded-full font-semibold">
                                                     {{ eq.job_plans ? eq.job_plans.length : 0 }} Job Plan
                                                 </span>
-                                                <span class="bg-emerald-100 text-emerald-800 border border-emerald-200 text-xs px-2.5 py-1 rounded-full font-semibold">
-                                                    {{ $formatNumber(getTotalHours(eq.job_plans)) }} Jam/Thn
+                                                <span class="bg-emerald-100 text-emerald-800 border border-emerald-200 text-xs px-2.5 py-1 rounded-full font-semibold" title="Total ini mungkin berupa baseline jika memiliki tipe MB">
+                                                    Est: {{ $formatNumber(getTotalHours(eq.job_plans)) }} Jam/Thn
                                                 </span>
                                             </div>
                                         </td>
@@ -376,8 +376,8 @@ const handleImportFile = (event) => {
                                                                 <th class="px-4 py-2 text-center text-xs font-bold uppercase">Tipe</th>
                                                                 <th class="px-4 py-2 text-center text-xs font-bold uppercase">Durasi (Menit)</th>
                                                                 <th class="px-4 py-2 text-center text-xs font-bold uppercase">Durasi (Jam)</th>
-                                                                <th class="px-4 py-2 text-center text-xs font-bold uppercase">Frekuensi/Thn</th>
-                                                                <th class="px-4 py-2 text-center text-xs font-bold uppercase">Total Jam/Thn</th>
+                                                                <th class="px-4 py-2 text-center text-xs font-bold uppercase">Asumsi Frek/Thn</th>
+                                                                <th class="px-4 py-2 text-center text-xs font-bold uppercase">Est. Total Jam/Thn</th>
                                                                 <th class="px-4 py-2 text-right text-xs font-bold uppercase w-32">Aksi</th>
                                                             </tr>
                                                         </thead>
@@ -409,6 +409,10 @@ const handleImportFile = (event) => {
                                                             </tr>
                                                         </tbody>
                                                     </table>
+                                                    
+                                                    <div v-if="eq.job_plans.some(jp => jp.type === 'MB' || jp.type == null)" class="px-4 py-2 bg-amber-50 border-t border-amber-100 text-xs text-amber-700">
+                                                        <strong>ℹ️ Catatan:</strong> Untuk tipe Job Plan <strong>MB (Meter Base)</strong>, nilai Frekuensi dan Est. Total Jam adalah asumsi standar (baseline). Nilai aktual akan dihitung ulang secara dinamis pada menu Simulasi sesuai persentase Utilisasi.
+                                                    </div>
                                                 </div>
                                                 
                                                 <!-- Empty State Job Plan -->
@@ -495,8 +499,8 @@ const handleImportFile = (event) => {
                                         <th class="px-3 py-2 text-center font-medium text-gray-600 w-24">Interval (HM)</th>
                                         <th class="px-3 py-2 text-center font-medium text-gray-600 w-24">Durasi (Mnt)</th>
                                         <th class="px-3 py-2 text-center font-medium text-gray-600 w-24">Durasi (Jam)</th>
-                                        <th class="px-3 py-2 text-center font-medium text-gray-600 w-28">Frekuensi / Thn</th>
-                                        <th class="px-3 py-2 text-center font-medium text-gray-600 w-28">Total Jam / Thn</th>
+                                        <th class="px-3 py-2 text-center font-medium text-gray-600 w-28">Asumsi Frek / Thn</th>
+                                        <th class="px-3 py-2 text-center font-medium text-gray-600 w-28">Est. Total Jam / Thn</th>
                                         <th class="px-3 py-2 text-center font-medium text-gray-600 w-12">Aksi</th>
                                     </tr>
                                 </thead>
@@ -585,6 +589,11 @@ const handleImportFile = (event) => {
                         <div v-else class="text-center p-6 bg-gray-50 rounded-lg border border-dashed border-gray-300 text-gray-500 text-sm">
                             Belum ada Job Plan yang ditambahkan. Silakan klik <strong>+ Tambah Baris Job Plan</strong>.
                         </div>
+
+                        <div v-if="formEquipment.job_plans.length > 0" class="mt-3 px-4 py-3 bg-blue-50 border border-blue-100 rounded-lg text-xs text-blue-800">
+                            <strong>ℹ️ Informasi:</strong> Untuk tipe Job Plan <strong>MB (Meter Base)</strong>, inputan Asumsi Frek / Thn berfungsi sebagai <em>baseline/budgeting</em> jika alat belum beroperasi. Saat Simulasi, nilai frekuensi akan dihitung ulang secara otomatis berdasarkan tingkat Utilisasi (%).
+                        </div>
+
                         <div v-if="formEquipment.errors.job_plans" class="text-red-500 text-sm mt-1">
                             {{ formEquipment.errors.job_plans }}
                         </div>

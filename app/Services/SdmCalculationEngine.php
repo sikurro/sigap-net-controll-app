@@ -106,10 +106,17 @@ class SdmCalculationEngine
             $type = $jobPlan->type ?? 'MB'; // Default to MB if null for backward compatibility
             
             if ($type === 'MB' && $jobPlan->interval_meter > 0) {
-                // MB - collect for hierarchy processing
-                $mbJobPlans[] = $jobPlan;
+                if ($utilizationRate > 0) {
+                    // MB - collect for hierarchy processing dynamically
+                    $mbJobPlans[] = $jobPlan;
+                } else {
+                    // Fallback to static frequency if utilization is 0 or empty
+                    $hoursPerOccurrence = $jobPlan->duration_minutes / 60;
+                    $annualHours = $hoursPerOccurrence * $jobPlan->frequency_per_year;
+                    $mbHours += $annualHours;
+                }
             } else {
-                // Static frequency for DL, TB, or MB fallback
+                // Static frequency for DL, TB, or MB fallback (if interval is 0)
                 $hoursPerOccurrence = $jobPlan->duration_minutes / 60;
                 $annualHours = $hoursPerOccurrence * $jobPlan->frequency_per_year;
                 
