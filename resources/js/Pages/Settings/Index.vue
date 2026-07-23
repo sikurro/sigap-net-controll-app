@@ -105,6 +105,10 @@ const getProductiveHours = (data) => Math.round(Math.max(1, getAvailableHours(da
 const submit = () => {
     form.put(route('settings.update'), {
         preserveScroll: true,
+        onError: (errors) => {
+            console.error('Validation Errors:', errors);
+            alert('Gagal menyimpan pengaturan! Silakan periksa kembali format input Anda.\\n\\n' + Object.values(errors).join('\\n'));
+        }
     });
 };
 </script>
