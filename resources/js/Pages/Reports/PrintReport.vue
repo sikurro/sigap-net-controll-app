@@ -61,17 +61,17 @@ const triggerPrint = () => {
                 <div class="grid grid-cols-3 gap-4 text-center">
                     <div class="border-r border-slate-200 pr-4">
                         <span class="text-xs text-slate-500 block">Total Terminal Evaluasi</span>
-                        <span class="text-2xl font-extrabold text-slate-800">{{ summary.totalSites }} <small class="text-xs font-normal">Site</small></span>
+                        <span class="text-2xl font-extrabold text-slate-800">{{ $formatNumber(summary.totalSites) }} <small class="text-xs font-normal">Site</small></span>
                     </div>
                     <div class="border-r border-slate-200 pr-4">
                         <span class="text-xs text-slate-500 block">Total Teknisi (Eksisting / Kebutuhan)</span>
-                        <span class="text-2xl font-extrabold text-slate-800">{{ summary.techExisting }}</span>
-                        <span class="text-sm font-semibold text-slate-500"> / {{ summary.techNeeded }} <small class="text-xs font-normal">Orang</small></span>
+                        <span class="text-2xl font-extrabold text-slate-800">{{ $formatNumber(summary.techExisting) }}</span>
+                        <span class="text-sm font-semibold text-slate-500"> / {{ $formatNumber(summary.techNeeded) }} <small class="text-xs font-normal">Orang</small></span>
                     </div>
                     <div>
                         <span class="text-xs text-slate-500 block">Total Staf Non-Teknis (Eksisting / Kebutuhan)</span>
-                        <span class="text-2xl font-extrabold text-slate-800">{{ summary.nonTechExisting }}</span>
-                        <span class="text-sm font-semibold text-slate-500"> / {{ summary.nonTechNeeded }} <small class="text-xs font-normal">Orang</small></span>
+                        <span class="text-2xl font-extrabold text-slate-800">{{ $formatNumber(summary.nonTechExisting) }}</span>
+                        <span class="text-sm font-semibold text-slate-500"> / {{ $formatNumber(summary.nonTechNeeded) }} <small class="text-xs font-normal">Orang</small></span>
                     </div>
                 </div>
             </div>
@@ -98,23 +98,23 @@ const triggerPrint = () => {
                                 <tbody class="divide-y divide-slate-200">
                                     <tr>
                                         <th class="py-1.5 px-2 bg-slate-50 font-medium">Pilar 1: Kesiagaaan Baseline ({{ item.breakdown.highest_baseline_category }})</th>
-                                        <td class="py-1.5 px-2 font-bold text-right">{{ item.breakdown.highest_baseline }} Orang</td>
+                                        <td class="py-1.5 px-2 font-bold text-right">{{ $formatNumber(item.breakdown.highest_baseline) }} Orang</td>
                                     </tr>
                                     <tr>
                                         <th class="py-1.5 px-2 bg-slate-50 font-medium">Pilar 2: Jam Beban Pemeliharaan Rutin</th>
-                                        <td class="py-1.5 px-2 font-bold text-right">{{ item.breakdown.additional_tech }} Orang <span class="text-[10px] font-normal text-slate-400">({{ item.breakdown.total_maintenance_hours }} Jam)</span></td>
+                                        <td class="py-1.5 px-2 font-bold text-right">{{ $formatNumber(item.breakdown.additional_tech) }} Orang <span class="text-[10px] font-normal text-slate-400">({{ $formatNumber(item.breakdown.total_maintenance_hours) }} Jam)</span></td>
                                     </tr>
                                     <tr>
                                         <th class="py-1.5 px-2 bg-slate-50 font-medium">Pilar 3: Cadangan Penanganan Gangguan</th>
-                                        <td class="py-1.5 px-2 font-bold text-right">{{ item.breakdown.breakdown_tech }} Orang <span class="text-[10px] font-normal text-slate-400">({{ item.breakdown.total_breakdown_hours }} Jam)</span></td>
+                                        <td class="py-1.5 px-2 font-bold text-right">{{ $formatNumber(item.breakdown.breakdown_tech) }} Orang <span class="text-[10px] font-normal text-slate-400">({{ $formatNumber(item.breakdown.total_breakdown_hours) }} Jam)</span></td>
                                     </tr>
                                     <tr class="bg-blue-50/50 font-extrabold border-t-2 border-slate-300">
                                         <th class="py-2 px-2 text-slate-900">Total Rekomendasi Kebutuhan Teknisi</th>
-                                        <td class="py-2 px-2 text-right text-blue-700 text-sm">{{ Math.round(item.tech_needed * 100) / 100 }} Orang</td>
+                                        <td class="py-2 px-2 text-right text-blue-700 text-sm">{{ $formatNumber(item.tech_needed) }} Orang</td>
                                     </tr>
                                     <tr>
                                         <th class="py-1.5 px-2 text-slate-600">Personel Eksisting Saat Ini</th>
-                                        <td class="py-1.5 px-2 text-right font-bold">{{ item.tech_existing }} Orang</td>
+                                        <td class="py-1.5 px-2 text-right font-bold">{{ $formatNumber(item.tech_existing) }} Orang</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -133,18 +133,18 @@ const triggerPrint = () => {
                                 <tbody class="divide-y divide-slate-200">
                                     <tr v-for="pos in item.breakdown.non_technical_positions" :key="pos.title">
                                         <td class="py-1 px-2">{{ pos.title }}</td>
-                                        <td class="py-1 px-2 font-bold text-right">{{ pos.quantity }} Orang</td>
+                                        <td class="py-1 px-2 font-bold text-right">{{ $formatNumber(pos.quantity) }} Orang</td>
                                     </tr>
                                     <tr v-if="!item.breakdown.non_technical_positions || item.breakdown.non_technical_positions.length === 0">
                                         <td colspan="2" class="py-2 px-2 text-center italic text-slate-400">Belum ada matriks untuk kelas ini.</td>
                                     </tr>
                                     <tr class="bg-amber-50/50 font-extrabold border-t-2 border-slate-300">
                                         <th class="py-2 px-2 text-slate-900">Total Rekomendasi Non-Teknis</th>
-                                        <td class="py-2 px-2 text-right text-amber-700 text-sm">{{ item.non_tech_needed }} Orang</td>
+                                        <td class="py-2 px-2 text-right text-amber-700 text-sm">{{ $formatNumber(item.non_tech_needed) }} Orang</td>
                                     </tr>
                                     <tr>
                                         <th class="py-1.5 px-2 text-slate-600">Staf Eksisting Saat Ini</th>
-                                        <td class="py-1.5 px-2 text-right font-bold">{{ item.non_tech_existing }} Orang</td>
+                                        <td class="py-1.5 px-2 text-right font-bold">{{ $formatNumber(item.non_tech_existing) }} Orang</td>
                                     </tr>
                                 </tbody>
                             </table>

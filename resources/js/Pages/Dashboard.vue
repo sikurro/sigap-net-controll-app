@@ -55,7 +55,7 @@ const comparisonOptions = computed(() => ({
     fill: { opacity: 1 },
     colors: ['#00549A', '#00A3E0', '#0284c7', '#F97316', '#ea580c'],
     tooltip: {
-        y: { formatter: (val) => `${val}` }
+        y: { formatter: (val) => `${new Intl.NumberFormat('id-ID', { minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(val)}` }
     }
 }));
 
@@ -76,7 +76,7 @@ const compositionOptions = computed(() => ({
                     total: {
                         show: true,
                         label: 'Total Rekomendasi',
-                        formatter: () => `${Math.round(props.summary.techNeeded + props.summary.nonTechNeeded)} Orang`
+                        formatter: () => `${new Intl.NumberFormat('id-ID', { minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(Math.round(props.summary.techNeeded + props.summary.nonTechNeeded))} Orang`
                     }
                 }
             }
@@ -104,6 +104,13 @@ const maintenanceOptions = computed(() => ({
     colors: ['#00549A', '#F97316'],
     legend: { position: 'top', horizontalAlign: 'left' },
     fill: { opacity: 1 },
+    dataLabels: {
+        enabled: true,
+        formatter: (val) => new Intl.NumberFormat('id-ID', { minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(val)
+    },
+    tooltip: {
+        y: { formatter: (val) => `${new Intl.NumberFormat('id-ID', { minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(val)} Jam` }
+    }
 }));
 </script>
 
@@ -184,7 +191,7 @@ const maintenanceOptions = computed(() => ({
                             </div>
                         </div>
                         <div class="mt-4 flex items-baseline gap-2">
-                            <span class="text-3xl font-extrabold text-slate-800">{{ summary.totalEquipments }}</span>
+                            <span class="text-3xl font-extrabold text-slate-800">{{ $formatNumber(summary.totalEquipments) }}</span>
                             <span class="text-xs font-medium text-slate-500">Unit Alat Berat</span>
                         </div>
                         <div class="mt-3 pt-3 border-t border-slate-100">
@@ -202,14 +209,14 @@ const maintenanceOptions = computed(() => ({
                             </div>
                         </div>
                         <div class="mt-4 flex items-baseline gap-2">
-                            <span class="text-3xl font-extrabold text-slate-800">{{ summary.techExisting }}</span>
-                            <span class="text-sm font-semibold text-slate-400">/ {{ summary.techNeeded }}</span>
+                            <span class="text-3xl font-extrabold text-slate-800">{{ $formatNumber(summary.techExisting) }}</span>
+                            <span class="text-sm font-semibold text-slate-400">/ {{ $formatNumber(summary.techNeeded) }}</span>
                             <span class="text-xs font-medium text-slate-500">Orang</span>
                         </div>
                         <div class="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between">
                             <span class="text-xs text-slate-500">Status Gap:</span>
                             <span v-if="summary.techExisting < summary.techNeeded" class="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-rose-100 text-rose-700">
-                                Kurang {{ Math.ceil(summary.techNeeded - summary.techExisting) }} Orang
+                                Kurang {{ $formatNumber(Math.ceil(summary.techNeeded - summary.techExisting)) }} Orang
                             </span>
                             <span v-else class="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-emerald-100 text-emerald-700">
                                 Surplus / Terpenuhi
@@ -227,14 +234,14 @@ const maintenanceOptions = computed(() => ({
                             </div>
                         </div>
                         <div class="mt-4 flex items-baseline gap-2">
-                            <span class="text-3xl font-extrabold text-slate-800">{{ summary.nonTechExisting }}</span>
-                            <span class="text-sm font-semibold text-slate-400">/ {{ summary.nonTechNeeded }}</span>
+                            <span class="text-3xl font-extrabold text-slate-800">{{ $formatNumber(summary.nonTechExisting) }}</span>
+                            <span class="text-sm font-semibold text-slate-400">/ {{ $formatNumber(summary.nonTechNeeded) }}</span>
                             <span class="text-xs font-medium text-slate-500">Orang</span>
                         </div>
                         <div class="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between">
                             <span class="text-xs text-slate-500">Status Gap:</span>
                             <span v-if="summary.nonTechExisting < summary.nonTechNeeded" class="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-rose-100 text-rose-700">
-                                Kurang {{ summary.nonTechNeeded - summary.nonTechExisting }} Orang
+                                Kurang {{ $formatNumber(summary.nonTechNeeded - summary.nonTechExisting) }} Orang
                             </span>
                             <span v-else class="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-emerald-100 text-emerald-700">
                                 Surplus / Terpenuhi
@@ -312,16 +319,16 @@ const maintenanceOptions = computed(() => ({
                                             {{ site.site_class }}
                                         </span>
                                     </td>
-                                    <td class="py-3 px-4 text-center font-bold text-slate-700">{{ site.equip_count }}</td>
+                                    <td class="py-3 px-4 text-center font-bold text-slate-700">{{ $formatNumber(site.equip_count) }}</td>
                                     <td class="py-3 px-4 text-center">
-                                        <span class="font-bold text-slate-800">{{ site.tech_existing }}</span>
+                                        <span class="font-bold text-slate-800">{{ $formatNumber(site.tech_existing) }}</span>
                                         <span class="text-slate-400 mx-1">/</span>
-                                        <span class="font-semibold text-blue-600">{{ Math.round(site.tech_needed * 100) / 100 }}</span>
+                                        <span class="font-semibold text-blue-600">{{ $formatNumber(site.tech_needed) }}</span>
                                     </td>
                                     <td class="py-3 px-4 text-center">
-                                        <span class="font-bold text-slate-800">{{ site.non_tech_existing }}</span>
+                                        <span class="font-bold text-slate-800">{{ $formatNumber(site.non_tech_existing) }}</span>
                                         <span class="text-slate-400 mx-1">/</span>
-                                        <span class="font-semibold text-blue-600">{{ site.non_tech_needed }}</span>
+                                        <span class="font-semibold text-blue-600">{{ $formatNumber(site.non_tech_needed) }}</span>
                                     </td>
                                     <td class="py-3 px-4 text-center">
                                         <span v-if="site.health_color === 'green'" class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800">

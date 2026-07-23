@@ -46,7 +46,8 @@ const removeEquipmentRow = (index) => {
 };
 
 const formatEquipmentLabel = (type) => {
-    return `[${type.code || '-'}] ${type.name} (Bobot: ${type.weight} | ⏱️ ${type.annual_hours || 0} Jam/Thn)`;
+    const formatNum = (val) => new Intl.NumberFormat('id-ID', { minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(val);
+    return `[${type.code || '-'}] ${type.name} (Bobot: ${formatNum(type.weight)} | ⏱️ ${formatNum(type.annual_hours || 0)} Jam/Thn)`;
 };
 
 const getSelectedType = (eq) => {
@@ -294,10 +295,6 @@ const saveSimulation = () => {
 };
 
 // Computed to format numbers
-const formatNum = (num) => {
-    return Number.isInteger(num) ? num : parseFloat(num).toFixed(2);
-};
-
 </script>
 
 <template>
@@ -447,10 +444,10 @@ const formatNum = (num) => {
                                                 </div>
                                                 <div class="flex items-center space-x-1.5 ml-2 whitespace-nowrap">
                                                     <span class="text-xs px-2 py-0.5 bg-blue-50 text-blue-700 rounded-full font-medium">
-                                                        ⏱️ {{ type.annual_hours || 0 }} Jam/Thn
+                                                        ⏱️ {{ $formatNumber(type.annual_hours || 0) }} Jam/Thn
                                                     </span>
                                                     <span class="text-xs px-2 py-0.5 bg-gray-100 text-gray-600 rounded-full font-medium">
-                                                        ⚖️ Bobot: {{ type.weight }}
+                                                        ⚖️ Bobot: {{ $formatNumber(type.weight) }}
                                                     </span>
                                                 </div>
                                             </div>
@@ -491,8 +488,8 @@ const formatNum = (num) => {
                                 <div v-if="eq.equipment_type_id && getSelectedType(eq)" class="md:col-span-12 mt-1 pt-2 border-t border-gray-200 flex flex-wrap items-center justify-between text-xs text-indigo-950 bg-indigo-50/80 px-3.5 py-2 rounded-lg border border-indigo-100">
                                     <span class="font-bold">⚡ Subtotal Baris ini ({{ eq.quantity || 0 }} Unit):</span>
                                     <div class="flex items-center space-x-4">
-                                        <span>⏱️ Total Jam: <strong class="text-indigo-700 font-black">{{ ((getSelectedType(eq).annual_hours || 0) * (eq.quantity || 0)).toFixed(2) }} Jam/Tahun</strong></span>
-                                        <span>⚖️ Total Bobot: <strong class="text-indigo-700 font-black">{{ (getSelectedType(eq).weight || 0) * (eq.quantity || 0) }}</strong></span>
+                                        <span>⏱️ Total Jam: <strong class="text-indigo-700 font-black">{{ $formatNumber((getSelectedType(eq).annual_hours || 0) * (eq.quantity || 0)) }} Jam/Tahun</strong></span>
+                                        <span>⚖️ Total Bobot: <strong class="text-indigo-700 font-black">{{ $formatNumber((getSelectedType(eq).weight || 0) * (eq.quantity || 0)) }}</strong></span>
                                     </div>
                                 </div>
                             </div>
@@ -520,17 +517,17 @@ const formatNum = (num) => {
                                 <div class="flex flex-wrap items-center gap-4 bg-black/20 px-4 py-2 rounded-xl border border-white/10 w-full md:w-auto justify-around md:justify-end">
                                     <div class="text-center">
                                         <span class="block text-[10px] uppercase tracking-wider text-slate-300 font-bold">Jam Preventive (Job Plan)</span>
-                                        <span class="font-black text-base md:text-lg text-pelindo-cyan">⏱️ {{ totalSimulationHours }} Jam</span>
+                                        <span class="font-black text-base md:text-lg text-pelindo-cyan">⏱️ {{ $formatNumber(totalSimulationHours) }} Jam</span>
                                     </div>
                                     <div class="h-8 w-px bg-white/20 hidden sm:block"></div>
                                     <div class="text-center" :title="'Alokasi breakdown ' + (100 - (props.targetAvailability || 85)) + '% dari target availability'">
-                                        <span class="block text-[10px] uppercase tracking-wider text-rose-300 font-bold">Jam Breakdown ({{ 100 - (props.targetAvailability || 85) }}%)</span>
-                                        <span class="font-black text-base md:text-lg text-pelindo-cyan">🚨 {{ totalSimulationBreakdownHours }} Jam</span>
+                                        <span class="block text-[10px] uppercase tracking-wider text-rose-300 font-bold">Jam Breakdown ({{ $formatNumber(100 - (props.targetAvailability || 85)) }}%)</span>
+                                        <span class="font-black text-base md:text-lg text-pelindo-cyan">🚨 {{ $formatNumber(totalSimulationBreakdownHours) }} Jam</span>
                                     </div>
                                     <div class="h-8 w-px bg-white/20 hidden sm:block"></div>
                                     <div class="text-center">
                                         <span class="block text-[10px] uppercase tracking-wider text-slate-300 font-bold">Total Bobot Site</span>
-                                        <span class="font-black text-base md:text-lg text-pelindo-cyan">⚖️ {{ totalSimulationWeight }}</span>
+                                        <span class="font-black text-base md:text-lg text-pelindo-cyan">⚖️ {{ $formatNumber(totalSimulationWeight) }}</span>
                                     </div>
                                 </div>
                             </div>
@@ -575,13 +572,13 @@ const formatNum = (num) => {
                             </tr>
                             <tr>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Total Bobot</td>
-                                <td v-if="existingSiteData" class="px-6 py-4 whitespace-nowrap text-sm text-center text-gray-500">{{ formatNum(existingSiteData.total_weight || 0) }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-center font-bold text-pelindo-blue">{{ formatNum(simulationResult.total_weight) }}</td>
+                                <td v-if="existingSiteData" class="px-6 py-4 whitespace-nowrap text-sm text-center text-gray-500">{{ $formatNumber(existingSiteData.total_weight || 0) }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-center font-bold text-pelindo-blue">{{ $formatNumber(simulationResult.total_weight) }}</td>
                             </tr>
                             <tr>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Total Jam Pemeliharaan (Tahun)</td>
-                                <td v-if="existingSiteData" class="px-6 py-4 whitespace-nowrap text-sm text-center text-gray-500">{{ formatNum(existingSiteData.total_maintenance_hours || 0) }} Jam</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-center font-bold text-pelindo-blue">{{ formatNum(simulationResult.total_maintenance_hours) }} Jam</td>
+                                <td v-if="existingSiteData" class="px-6 py-4 whitespace-nowrap text-sm text-center text-gray-500">{{ $formatNumber(existingSiteData.total_maintenance_hours || 0) }} Jam</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-center font-bold text-pelindo-blue">{{ $formatNumber(simulationResult.total_maintenance_hours) }} Jam</td>
                             </tr>
                             <tr>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 flex items-center justify-between">
@@ -592,15 +589,15 @@ const formatNum = (num) => {
                                 </td>
                                 <td v-if="existingSiteData" class="px-6 py-4 whitespace-nowrap text-center">
                                     <div class="flex flex-col items-center justify-center">
-                                        <span class="text-sm font-bold text-gray-900">{{ existingSiteData.existing_technical_staff || 0 }} Orang <span class="text-[11px] font-normal text-gray-500">(Aktual)</span></span>
+                                        <span class="text-sm font-bold text-gray-900">{{ $formatNumber(existingSiteData.existing_technical_staff || 0) }} Orang <span class="text-[11px] font-normal text-gray-500">(Aktual)</span></span>
                                     </div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-center">
-                                    <div class="font-bold text-pelindo-blue text-base">{{ formatNum(simulationResult.technical_staff_needed) }} Orang</div>
+                                    <div class="font-bold text-pelindo-blue text-base">{{ $formatNumber(simulationResult.technical_staff_needed) }} Orang</div>
                                     <div v-if="existingSiteData" class="text-xs mt-1">
                                         <span class="text-gray-500">vs Aktual: </span>
-                                        <span v-if="simulationResult.technical_staff_needed > (existingSiteData.existing_technical_staff || 0)" class="text-amber-600 font-semibold">Kurang {{ formatNum(simulationResult.technical_staff_needed - (existingSiteData.existing_technical_staff || 0)) }}</span>
-                                        <span v-else class="text-emerald-600 font-semibold">Surplus {{ formatNum((existingSiteData.existing_technical_staff || 0) - simulationResult.technical_staff_needed) }}</span>
+                                        <span v-if="simulationResult.technical_staff_needed > (existingSiteData.existing_technical_staff || 0)" class="text-amber-600 font-semibold">Kurang {{ $formatNumber(simulationResult.technical_staff_needed - (existingSiteData.existing_technical_staff || 0)) }}</span>
+                                        <span v-else class="text-emerald-600 font-semibold">Surplus {{ $formatNumber((existingSiteData.existing_technical_staff || 0) - simulationResult.technical_staff_needed) }}</span>
                                     </div>
                                 </td>
                             </tr>
@@ -615,9 +612,9 @@ const formatNum = (num) => {
                                                 <span class="font-bold text-indigo-800 block mb-2 border-b border-indigo-200 pb-1">💡 Parameter Acuan Sistem</span>
                                                 <ul class="space-y-1.5">
                                                     <li class="flex justify-between"><span>Skema Kerja:</span> <strong class="text-gray-900">{{ simulationResult.breakdown.work_scheme }}</strong></li>
-                                                    <li class="flex justify-between"><span>Kapasitas Pembagi (Man Hours):</span> <strong class="text-indigo-600">{{ formatNum(simulationResult.breakdown.productive_hours) }} Jam/Thn <span class="text-[10px] font-normal text-gray-500 block sm:inline">(Global Settings)</span></strong></li>
-                                                    <li class="flex justify-between"><span>Patokan Baseline Tertinggi:</span> <strong class="text-gray-900">{{ formatNum(simulationResult.breakdown.highest_baseline) }} Orang <span class="text-[10px] font-normal text-gray-500 block sm:inline">({{ simulationResult.breakdown.highest_baseline_category }})</span></strong></li>
-                                                    <li class="flex justify-between"><span>Total Jam Pemeliharaan:</span> <strong class="text-gray-900">{{ formatNum(simulationResult.breakdown.total_maintenance_hours) }} Jam/Thn</strong></li>
+                                                    <li class="flex justify-between"><span>Kapasitas Pembagi (Man Hours):</span> <strong class="text-indigo-600">{{ $formatNumber(simulationResult.breakdown.productive_hours) }} Jam/Thn <span class="text-[10px] font-normal text-gray-500 block sm:inline">(Global Settings)</span></strong></li>
+                                                    <li class="flex justify-between"><span>Patokan Baseline Tertinggi:</span> <strong class="text-gray-900">{{ $formatNumber(simulationResult.breakdown.highest_baseline) }} Orang <span class="text-[10px] font-normal text-gray-500 block sm:inline">({{ simulationResult.breakdown.highest_baseline_category }})</span></strong></li>
+                                                    <li class="flex justify-between"><span>Total Jam Pemeliharaan:</span> <strong class="text-gray-900">{{ $formatNumber(simulationResult.breakdown.total_maintenance_hours) }} Jam/Thn</strong></li>
                                                 </ul>
                                             </div>
                                             <div class="bg-indigo-50/50 p-3 rounded border border-indigo-100 flex flex-col justify-between">
@@ -626,26 +623,26 @@ const formatNum = (num) => {
                                                     <div class="space-y-2 text-gray-600">
                                                         <div>
                                                             <span class="block font-semibold text-gray-800">1. Pilar Baseline Kategori Tertinggi:</span>
-                                                            <span><strong>{{ formatNum(simulationResult.breakdown.highest_baseline) }} Orang</strong> <span class="text-[10px]">({{ simulationResult.breakdown.highest_baseline_category }})</span></span>
+                                                            <span><strong>{{ $formatNumber(simulationResult.breakdown.highest_baseline) }} Orang</strong> <span class="text-[10px]">({{ simulationResult.breakdown.highest_baseline_category }})</span></span>
                                                         </div>
                                                         <div>
                                                             <span class="block font-semibold text-gray-800">2. Pilar Preventive Tambahan (Job Plan):</span>
                                                             <div class="text-[11px] mb-0.5 text-gray-600">
-                                                                Total Alat se-Site: <strong>{{ formatNum(simulationResult.breakdown.total_maintenance_hours) }} Jam</strong>
-                                                                <span class="text-gray-500 ml-1">(DL: {{ formatNum(simulationResult.breakdown.total_dl_hours || 0) }}, TB: {{ formatNum(simulationResult.breakdown.total_tb_hours || 0) }}, MB: {{ formatNum(simulationResult.breakdown.total_mb_hours || 0) }})</span><br>
-                                                                Dikurangi Jam Pilar 1: <strong class="text-rose-600">-{{ formatNum(simulationResult.breakdown.highest_weight_single_unit_hours) }} Jam</strong>
+                                                                Total Alat se-Site: <strong>{{ $formatNumber(simulationResult.breakdown.total_maintenance_hours) }} Jam</strong>
+                                                                <span class="text-gray-500 ml-1">(DL: {{ $formatNumber(simulationResult.breakdown.total_dl_hours || 0) }}, TB: {{ $formatNumber(simulationResult.breakdown.total_tb_hours || 0) }}, MB: {{ $formatNumber(simulationResult.breakdown.total_mb_hours || 0) }})</span><br>
+                                                                Dikurangi Jam Pilar 1: <strong class="text-rose-600">-{{ $formatNumber(simulationResult.breakdown.highest_weight_single_unit_hours) }} Jam</strong>
                                                             </div>
-                                                            <span>{{ formatNum(simulationResult.breakdown.additional_hours) }} Jam ÷ {{ formatNum(simulationResult.breakdown.productive_hours) }} Jam/Thn = <strong>{{ formatNum(simulationResult.breakdown.additional_tech) }} Orang</strong></span>
+                                                            <span>{{ $formatNumber(simulationResult.breakdown.additional_hours) }} Jam ÷ {{ $formatNumber(simulationResult.breakdown.productive_hours) }} Jam/Thn = <strong>{{ $formatNumber(simulationResult.breakdown.additional_tech) }} Orang</strong></span>
                                                         </div>
                                                         <div v-if="simulationResult.breakdown.breakdown_tech !== undefined">
                                                             <span class="block font-semibold text-rose-700">3. Pilar Breakdown Shift ({{ simulationResult.breakdown.breakdown_rate_percent }}% Avail):</span>
-                                                            <span>{{ formatNum(simulationResult.breakdown.total_breakdown_hours) }} Jam ÷ {{ formatNum(simulationResult.breakdown.shift_productive_hours) }} Jam/Thn = <strong class="text-rose-600">{{ formatNum(simulationResult.breakdown.breakdown_tech) }} Orang</strong></span>
+                                                            <span>{{ $formatNumber(simulationResult.breakdown.total_breakdown_hours) }} Jam ÷ {{ $formatNumber(simulationResult.breakdown.shift_productive_hours) }} Jam/Thn = <strong class="text-rose-600">{{ $formatNumber(simulationResult.breakdown.breakdown_tech) }} Orang</strong></span>
                                                         </div>
                                                     </div>
                                                 </div>
                                                 <div class="mt-3 pt-2 border-t border-indigo-200 flex justify-between items-center text-sm font-bold text-indigo-900">
                                                     <span>Total Standar Teknisi:</span>
-                                                    <span>{{ formatNum(simulationResult.breakdown.highest_baseline) }} + {{ formatNum(simulationResult.breakdown.additional_tech) }} <span v-if="simulationResult.breakdown.breakdown_tech !== undefined">+ {{ formatNum(simulationResult.breakdown.breakdown_tech) }}</span> = <strong class="text-indigo-700 text-base">{{ formatNum(simulationResult.technical_staff_needed) }} Orang</strong></span>
+                                                    <span>{{ $formatNumber(simulationResult.breakdown.highest_baseline) }} + {{ $formatNumber(simulationResult.breakdown.additional_tech) }} <span v-if="simulationResult.breakdown.breakdown_tech !== undefined">+ {{ $formatNumber(simulationResult.breakdown.breakdown_tech) }}</span> = <strong class="text-indigo-700 text-base">{{ $formatNumber(simulationResult.technical_staff_needed) }} Orang</strong></span>
                                                 </div>
                                             </div>
                                         </div>
@@ -661,15 +658,15 @@ const formatNum = (num) => {
                                 </td>
                                 <td v-if="existingSiteData" class="px-6 py-4 whitespace-nowrap text-center">
                                     <div class="flex flex-col items-center justify-center">
-                                        <span class="text-sm font-bold text-gray-900">{{ existingSiteData.existing_non_technical_staff || 0 }} Orang <span class="text-[11px] font-normal text-gray-500">(Aktual)</span></span>
+                                        <span class="text-sm font-bold text-gray-900">{{ $formatNumber(existingSiteData.existing_non_technical_staff || 0) }} Orang <span class="text-[11px] font-normal text-gray-500">(Aktual)</span></span>
                                     </div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-center">
-                                    <div class="font-bold text-pelindo-blue text-base">{{ simulationResult.non_technical_staff_needed }} Orang</div>
+                                    <div class="font-bold text-pelindo-blue text-base">{{ $formatNumber(simulationResult.non_technical_staff_needed) }} Orang</div>
                                     <div v-if="existingSiteData" class="text-xs mt-1">
                                         <span class="text-gray-500">vs Aktual: </span>
-                                        <span v-if="simulationResult.non_technical_staff_needed > (existingSiteData.existing_non_technical_staff || 0)" class="text-amber-600 font-semibold">Kurang {{ simulationResult.non_technical_staff_needed - (existingSiteData.existing_non_technical_staff || 0) }}</span>
-                                        <span v-else class="text-emerald-600 font-semibold">Surplus {{ (existingSiteData.existing_non_technical_staff || 0) - simulationResult.non_technical_staff_needed }}</span>
+                                        <span v-if="simulationResult.non_technical_staff_needed > (existingSiteData.existing_non_technical_staff || 0)" class="text-amber-600 font-semibold">Kurang {{ $formatNumber(simulationResult.non_technical_staff_needed - (existingSiteData.existing_non_technical_staff || 0)) }}</span>
+                                        <span v-else class="text-emerald-600 font-semibold">Surplus {{ $formatNumber((existingSiteData.existing_non_technical_staff || 0) - simulationResult.non_technical_staff_needed) }}</span>
                                     </div>
                                 </td>
                             </tr>
@@ -682,7 +679,7 @@ const formatNum = (num) => {
                                         <div v-if="simulationResult.breakdown.non_technical_positions && simulationResult.breakdown.non_technical_positions.length > 0" class="flex flex-wrap gap-2">
                                             <div v-for="(pos, idx) in simulationResult.breakdown.non_technical_positions" :key="idx" class="bg-indigo-50 border border-indigo-200 rounded-md px-3 py-2 flex items-center gap-2">
                                                 <span class="font-semibold text-indigo-900">{{ pos.title }}</span>
-                                                <span class="bg-indigo-600 text-white font-bold px-2 py-0.5 rounded text-[11px]">{{ pos.quantity }} Orang</span>
+                                                <span class="bg-indigo-600 text-white font-bold px-2 py-0.5 rounded text-[11px]">{{ $formatNumber(pos.quantity) }} Orang</span>
                                                 <span class="text-[10px] text-gray-500 uppercase">({{ pos.category }})</span>
                                             </div>
                                         </div>

@@ -330,14 +330,14 @@ const handleImportFile = (event) => {
                                                 {{ eq.category_baseline ? eq.category_baseline.category : '-' }}
                                             </span>
                                         </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-center font-bold text-gray-700">{{ eq.weight }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-center font-bold text-gray-700">{{ $formatNumber(eq.weight) }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             <div class="flex space-x-2">
                                                 <span class="bg-pelindo-blue/10 text-pelindo-blue border border-pelindo-blue/20 text-xs px-2.5 py-1 rounded-full font-semibold">
                                                     {{ eq.job_plans ? eq.job_plans.length : 0 }} Job Plan
                                                 </span>
                                                 <span class="bg-emerald-100 text-emerald-800 border border-emerald-200 text-xs px-2.5 py-1 rounded-full font-semibold">
-                                                    {{ getTotalHours(eq.job_plans) }} Jam/Thn
+                                                    {{ $formatNumber(getTotalHours(eq.job_plans)) }} Jam/Thn
                                                 </span>
                                             </div>
                                         </td>
@@ -387,13 +387,13 @@ const handleImportFile = (event) => {
                                                                 <td class="px-4 py-2 text-sm text-center font-bold">
                                                                     <span :class="getJobPlanTypeBadgeClass(jp.type)" class="px-2.5 py-0.5 rounded text-xs font-extrabold border shadow-xs inline-block min-w-8 text-center">
                                                                         {{ jp.type || 'MB' }}
-                                                                        <span v-if="jp.type === 'MB' && jp.interval_meter" class="ml-1">({{ jp.interval_meter }} HM)</span>
+                                                                        <span v-if="jp.type === 'MB' && jp.interval_meter" class="ml-1">({{ $formatNumber(jp.interval_meter) }} HM)</span>
                                                                     </span>
                                                                 </td>
-                                                                <td class="px-4 py-2 text-sm text-center text-gray-600">{{ jp.duration_minutes }} mnt</td>
-                                                                <td class="px-4 py-2 text-sm text-center text-gray-600">{{ jp.duration_hours }} jam</td>
-                                                                <td class="px-4 py-2 text-sm text-center text-gray-600">{{ jp.frequency_per_year }} x</td>
-                                                                <td class="px-4 py-2 text-sm text-center font-bold text-pelindo-blue">{{ jp.total_hours_per_year }}</td>
+                                                                <td class="px-4 py-2 text-sm text-center text-gray-600">{{ $formatNumber(jp.duration_minutes) }} mnt</td>
+                                                                <td class="px-4 py-2 text-sm text-center text-gray-600">{{ $formatNumber(jp.duration_hours) }} jam</td>
+                                                                <td class="px-4 py-2 text-sm text-center text-gray-600">{{ $formatNumber(jp.frequency_per_year) }} x</td>
+                                                                <td class="px-4 py-2 text-sm text-center font-bold text-pelindo-blue">{{ $formatNumber(jp.total_hours_per_year) }}</td>
                                                                 <td class="px-4 py-2 text-right">
                                                                     <div class="inline-flex items-center justify-end gap-1.5">
                                                                         <button @click="openJobPlanEdit(jp)" class="inline-flex items-center gap-1 px-2.5 py-1 bg-blue-50 hover:bg-pelindo-blue text-pelindo-blue hover:text-white rounded-lg text-xs font-bold transition duration-150" title="Edit Job Plan">
@@ -437,7 +437,7 @@ const handleImportFile = (event) => {
         </div>
 
         <!-- ======================= MODAL JENIS ALAT ======================= -->
-        <Modal :show="showEquipmentModal" @close="showEquipmentModal = false" maxWidth="2xl">
+        <Modal :show="showEquipmentModal" @close="showEquipmentModal = false" maxWidth="4xl">
             <div class="p-6">
                 <h2 class="text-lg font-medium text-gray-900 mb-4">
                     {{ isEditingEquipment ? 'Edit Jenis Alat' : 'Tambah Jenis Alat' }}
@@ -552,7 +552,7 @@ const handleImportFile = (event) => {
                                             </div>
                                         </td>
                                         <td class="p-2 align-middle text-center text-gray-600 font-medium">
-                                            {{ (parseFloat(jp.duration_minutes || 0) / 60).toFixed(3) }} jam
+                                            {{ $formatNumber(parseFloat(jp.duration_minutes || 0) / 60) }} jam
                                         </td>
                                         <td class="p-2 align-top text-center">
                                             <TextInput 
@@ -567,7 +567,7 @@ const handleImportFile = (event) => {
                                             </div>
                                         </td>
                                         <td class="p-2 align-middle text-center font-semibold text-pelindo-blue">
-                                            {{ (((parseFloat(jp.duration_minutes) || 0) / 60) * (parseFloat(jp.frequency_per_year) || 0)).toFixed(3) }}
+                                            {{ $formatNumber(((parseFloat(jp.duration_minutes) || 0) / 60) * (parseFloat(jp.frequency_per_year) || 0)) }}
                                         </td>
                                         <td class="p-2 align-middle text-center">
                                             <button 
@@ -631,7 +631,7 @@ const handleImportFile = (event) => {
                             <InputLabel for="jp_duration" value="Durasi Pekerjaan (Menit)" />
                             <TextInput id="jp_duration" type="number" step="1" class="mt-1 block w-full" v-model="formJobPlan.duration_minutes" required />
                             <div v-if="formJobPlan.errors.duration_minutes" class="text-red-500 text-sm mt-1">{{ formJobPlan.errors.duration_minutes }}</div>
-                            <span class="text-xs text-gray-500 mt-1 block">Konversi: {{ (parseFloat(formJobPlan.duration_minutes || 0) / 60).toFixed(3) }} jam</span>
+                            <span class="text-xs text-gray-500 mt-1 block">Konversi: {{ $formatNumber(parseFloat(formJobPlan.duration_minutes || 0) / 60) }} jam</span>
                         </div>
                         <div>
                             <InputLabel for="jp_frequency" value="Frekuensi per Tahun" />
@@ -642,7 +642,7 @@ const handleImportFile = (event) => {
                     
                     <div class="bg-gray-50 p-4 rounded-md mb-6 flex justify-between items-center border border-gray-200">
                         <span class="text-sm text-gray-600">Total Jam per Tahun:</span>
-                        <span class="font-bold text-lg text-pelindo-blue">{{ totalHoursCalculated.toFixed(3) }} Jam</span>
+                        <span class="font-bold text-lg text-pelindo-blue">{{ $formatNumber(totalHoursCalculated) }} Jam</span>
                     </div>
 
                     <div class="mt-6 flex justify-end space-x-3">

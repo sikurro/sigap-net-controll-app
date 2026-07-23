@@ -257,7 +257,7 @@ const deletePosition = (id) => {
                                         <th v-for="sc in siteClasses" :key="sc.id" class="px-4 py-3 text-center tracking-wider">
                                             <div class="text-xs font-bold text-white uppercase">{{ sc.name }}</div>
                                             <div class="mt-1 inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-pelindo-cyan/20 text-pelindo-cyan border border-pelindo-cyan/30 shadow-sm">
-                                                ⚖️ {{ formatWeightRange(sc) }}
+                                                ⚖️ {{ sc.max_weight !== null ? $formatNumber(sc.min_weight) + ' - ' + $formatNumber(sc.max_weight) : '> ' + $formatNumber(sc.min_weight - 1) }}
                                             </div>
                                         </th>
                                     </tr>
@@ -323,8 +323,8 @@ const deletePosition = (id) => {
                     <tbody class="bg-white divide-y divide-gray-200">
                         <tr v-for="item in siteClasses" :key="item.id">
                             <td class="px-4 py-2 whitespace-nowrap">{{ item.name }}</td>
-                            <td class="px-4 py-2 whitespace-nowrap">{{ item.min_weight }}</td>
-                            <td class="px-4 py-2 whitespace-nowrap">{{ item.max_weight !== null ? item.max_weight : '∞' }}</td>
+                            <td class="px-4 py-2 whitespace-nowrap">{{ $formatNumber(item.min_weight) }}</td>
+                            <td class="px-4 py-2 whitespace-nowrap">{{ item.max_weight !== null ? $formatNumber(item.max_weight) : '∞' }}</td>
                             <td class="px-4 py-2 whitespace-nowrap">
                                 <div class="inline-flex items-center gap-1.5">
                                     <button @click="openSiteClassEdit(item)" class="inline-flex items-center gap-1 px-2.5 py-1 bg-blue-50 hover:bg-pelindo-blue text-pelindo-blue hover:text-white rounded-lg text-xs font-bold transition duration-150" title="Edit Kelas">

@@ -245,10 +245,10 @@ const submitImport = () => {
                                             <span :class="site.work_scheme === 'Shift' ? 'bg-pelindo-blue/10 text-pelindo-blue border border-pelindo-blue/20' : 'bg-pelindo-cyan/10 text-[#007baf] border border-pelindo-cyan/30'" class="px-2 py-1 rounded font-bold">{{ site.work_scheme }}</span>
                                         </td>
                                         <td class="px-4 py-4 whitespace-nowrap text-sm text-center font-bold text-gray-900" @click="toggleRow(site.id)">{{ site.site_class }}</td>
-                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-center font-semibold text-pelindo-blue" @click="toggleRow(site.id)">{{ site.total_weight }}</td>
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-center font-semibold text-pelindo-blue" @click="toggleRow(site.id)">{{ $formatNumber(site.total_weight) }}</td>
                                         <td class="px-4 py-4 whitespace-nowrap text-sm text-center text-gray-500" @click="toggleRow(site.id)">{{ site.jumlah_alat }}</td>
-                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-center text-gray-900 font-semibold" @click="toggleRow(site.id)">{{ site.existing_technical_staff }} <span class="text-gray-400 font-normal">/</span> {{ site.technical_staff_needed }}</td>
-                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-center text-gray-900 font-semibold" @click="toggleRow(site.id)">{{ site.existing_non_technical_staff }} <span class="text-gray-400 font-normal">/</span> {{ site.non_technical_staff_needed }}</td>
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-center text-gray-900 font-semibold" @click="toggleRow(site.id)">{{ $formatNumber(site.existing_technical_staff || 0) }} <span class="text-gray-400 font-normal">/</span> {{ $formatNumber(site.technical_staff_needed) }}</td>
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-center text-gray-900 font-semibold" @click="toggleRow(site.id)">{{ $formatNumber(site.existing_non_technical_staff || 0) }} <span class="text-gray-400 font-normal">/</span> {{ $formatNumber(site.non_technical_staff_needed) }}</td>
                                         <td class="px-4 py-4 whitespace-nowrap text-center font-medium">
                                             <div class="inline-flex items-center justify-center gap-2">
                                                 <button @click.stop="openEditModal(site)" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 hover:bg-pelindo-blue text-pelindo-blue hover:text-white rounded-xl text-xs font-bold shadow-sm transition duration-150" title="Edit Site">
@@ -332,7 +332,7 @@ const submitImport = () => {
                                 <!-- Total Bobot -->
                                 <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100 flex flex-col justify-between">
                                     <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Total Bobot</span>
-                                    <span class="text-lg font-black text-pelindo-blue mt-1">{{ site.total_weight || 0 }}</span>
+                                    <span class="text-lg font-black text-pelindo-blue mt-1">{{ $formatNumber(site.total_weight || 0) }}</span>
                                 </div>
                                 <!-- Jumlah Alat -->
                                 <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100 flex flex-col justify-between">
@@ -344,10 +344,10 @@ const submitImport = () => {
                                     <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Teknisi (Eks/Butuh)</span>
                                     <div class="mt-1 flex items-baseline gap-1">
                                         <span :class="site.existing_technical_staff < site.technical_staff_needed ? 'text-rose-600 font-black' : 'text-slate-800 font-bold'" class="text-sm">
-                                            {{ site.existing_technical_staff || 0 }}
+                                            {{ $formatNumber(site.existing_technical_staff || 0) }}
                                         </span>
                                         <span class="text-xs text-slate-400">/</span>
-                                        <span class="text-xs font-bold text-slate-600">{{ site.technical_staff_needed || 0 }}</span>
+                                        <span class="text-xs font-bold text-slate-600">{{ $formatNumber(site.technical_staff_needed || 0) }}</span>
                                     </div>
                                 </div>
                                 <!-- Non-Teknisi -->
@@ -355,10 +355,10 @@ const submitImport = () => {
                                     <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Non-Teknisi</span>
                                     <div class="mt-1 flex items-baseline gap-1">
                                         <span :class="site.existing_non_technical_staff < site.non_technical_staff_needed ? 'text-rose-600 font-black' : 'text-slate-800 font-bold'" class="text-sm">
-                                            {{ site.existing_non_technical_staff || 0 }}
+                                            {{ $formatNumber(site.existing_non_technical_staff || 0) }}
                                         </span>
                                         <span class="text-xs text-slate-400">/</span>
-                                        <span class="text-xs font-bold text-slate-600">{{ site.non_technical_staff_needed || 0 }}</span>
+                                        <span class="text-xs font-bold text-slate-600">{{ $formatNumber(site.non_technical_staff_needed || 0) }}</span>
                                     </div>
                                 </div>
                             </div>

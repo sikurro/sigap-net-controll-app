@@ -12,10 +12,25 @@ createInertiaApp({
     title: (title) => `${title} - ${appName}`,
     resolve: (name) => resolvePageComponent(`./Pages/${name}.vue`, import.meta.glob('./Pages/**/*.vue')),
     setup({ el, App, props, plugin }) {
-        return createApp({ render: () => h(App, props) })
-            .use(plugin)
+        const vueApp = createApp({ render: () => h(App, props) });
+        
+        vueApp.mixin({
+            methods: {
+                $formatNumber(value) {
+                    if (value === null || value === undefined || value === '') return '-';
+                    return new Intl.NumberFormat('id-ID', {
+                        minimumFractionDigits: 0,
+                        maximumFractionDigits: 2
+                    }).format(value);
+                }
+            }
+        });
+
+        vueApp.use(plugin)
             .use(ZiggyVue)
             .mount(el);
+            
+        return vueApp;
     },
     progress: {
         color: '#4B5563',

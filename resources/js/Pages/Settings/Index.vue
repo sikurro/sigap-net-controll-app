@@ -202,15 +202,15 @@ const submit = () => {
 
                                     <tr class="bg-indigo-50/30 font-semibold text-gray-700">
                                         <td class="p-2 px-3 text-right text-xs">Total Hari Kerja Setahun:</td>
-                                        <td class="p-2 px-3 text-center text-blue-900 border border-gray-200 font-mono">{{ getActiveDays(matrixForm.shift) }}</td>
-                                        <td class="p-2 px-3 text-center text-amber-900 border border-gray-200 font-mono">{{ getActiveDays(matrixForm.non_shift) }}</td>
+                                        <td class="p-2 px-3 text-center text-blue-900 border border-gray-200 font-mono">{{ $formatNumber(getActiveDays(matrixForm.shift)) }}</td>
+                                        <td class="p-2 px-3 text-center text-amber-900 border border-gray-200 font-mono">{{ $formatNumber(getActiveDays(matrixForm.non_shift)) }}</td>
                                         <td class="p-2 text-center text-xs text-gray-500">Hari</td>
                                         <td class="p-2 text-xs text-gray-500">Akumulasi hari aktif setahun</td>
                                     </tr>
                                     <tr class="bg-indigo-50/60 font-bold text-gray-800">
                                         <td class="p-2.5 px-3 text-right">Total Jam Dasar Setahun:</td>
-                                        <td class="p-2.5 px-3 text-center text-blue-950 border border-gray-200 text-base font-mono">{{ getBaseHours(matrixForm.shift) }}</td>
-                                        <td class="p-2.5 px-3 text-center text-amber-950 border border-gray-200 text-base font-mono">{{ getBaseHours(matrixForm.non_shift) }}</td>
+                                        <td class="p-2.5 px-3 text-center text-blue-950 border border-gray-200 text-base font-mono">{{ $formatNumber(getBaseHours(matrixForm.shift)) }}</td>
+                                        <td class="p-2.5 px-3 text-center text-amber-950 border border-gray-200 text-base font-mono">{{ $formatNumber(getBaseHours(matrixForm.non_shift)) }}</td>
                                         <td class="p-2.5 text-center text-xs text-gray-500">Jam</td>
                                         <td class="p-2.5 text-xs text-gray-500">Jam per Hari × Total Hari Kerja</td>
                                     </tr>
@@ -235,8 +235,8 @@ const submit = () => {
                                     </tr>
                                     <tr class="bg-pelindo-cyan/10 font-bold text-[#003B6F] border-t-2 border-pelindo-cyan/30">
                                         <td class="p-3 px-3 uppercase tracking-wider">JAM TERSEDIA / TAHUN</td>
-                                        <td class="p-3 px-3 text-center border border-pelindo-cyan/20 text-base font-mono">{{ getAvailableHours(matrixForm.shift) }}</td>
-                                        <td class="p-3 px-3 text-center border border-pelindo-cyan/20 text-base font-mono">{{ getAvailableHours(matrixForm.non_shift) }}</td>
+                                        <td class="p-3 px-3 text-center border border-pelindo-cyan/20 text-base font-mono">{{ $formatNumber(getAvailableHours(matrixForm.shift)) }}</td>
+                                        <td class="p-3 px-3 text-center border border-pelindo-cyan/20 text-base font-mono">{{ $formatNumber(getAvailableHours(matrixForm.non_shift)) }}</td>
                                         <td class="p-3 text-center text-xs">Jam</td>
                                         <td class="p-3 text-xs text-[#003B6F]/80">Total Jam Dasar - (Cuti + Sakit)</td>
                                     </tr>
@@ -289,15 +289,15 @@ const submit = () => {
                                     </tr>
                                     <tr class="bg-red-50/40 font-semibold text-red-900">
                                         <td class="p-2 px-3 text-right text-xs">Total Kebocoran Harian:</td>
-                                        <td class="p-2 px-3 text-center border border-gray-200 font-mono">{{ getDailyLeak(matrixForm.shift).toFixed(2) }}</td>
-                                        <td class="p-2 px-3 text-center border border-gray-200 font-mono">{{ getDailyLeak(matrixForm.non_shift).toFixed(2) }}</td>
+                                        <td class="p-2 px-3 text-center border border-gray-200 font-mono">{{ $formatNumber(getDailyLeak(matrixForm.shift)) }}</td>
+                                        <td class="p-2 px-3 text-center border border-gray-200 font-mono">{{ $formatNumber(getDailyLeak(matrixForm.non_shift)) }}</td>
                                         <td class="p-2 text-center text-xs">Jam/Hari</td>
                                         <td class="p-2 text-xs text-gray-500">Sum parameter 5 s.d 10</td>
                                     </tr>
                                     <tr class="bg-red-100/60 font-bold text-red-950">
                                         <td class="p-2.5 px-3 text-right">Total Kebocoran Setahun:</td>
-                                        <td class="p-2.5 px-3 text-center border border-gray-200 font-mono">{{ getAnnualLeak(matrixForm.shift) }}</td>
-                                        <td class="p-2.5 px-3 text-center border border-gray-200 font-mono">{{ getAnnualLeak(matrixForm.non_shift) }}</td>
+                                        <td class="p-2.5 px-3 text-center border border-gray-200 font-mono">{{ $formatNumber(getAnnualLeak(matrixForm.shift)) }}</td>
+                                        <td class="p-2.5 px-3 text-center border border-gray-200 font-mono">{{ $formatNumber(getAnnualLeak(matrixForm.non_shift)) }}</td>
                                         <td class="p-2.5 text-center text-xs">Jam</td>
                                         <td class="p-2.5 text-xs text-red-800">Kebocoran Harian × Hari Kerja Setahun</td>
                                     </tr>
@@ -305,8 +305,8 @@ const submit = () => {
                                     <!-- D. HASIL AKHIR -->
                                     <tr class="bg-emerald-100 font-extrabold text-emerald-950 border-t-4 border-emerald-400 text-lg">
                                         <td class="p-4 px-3 uppercase tracking-wider">JAM PRODUKTIF / TAHUN</td>
-                                        <td class="p-4 px-3 text-center bg-emerald-200/80 border border-emerald-300 font-mono text-xl text-blue-950">{{ getProductiveHours(matrixForm.shift) }}</td>
-                                        <td class="p-4 px-3 text-center bg-emerald-200/80 border border-emerald-300 font-mono text-xl text-amber-950">{{ getProductiveHours(matrixForm.non_shift) }}</td>
+                                        <td class="p-4 px-3 text-center bg-emerald-200/80 border border-emerald-300 font-mono text-xl text-blue-950">{{ $formatNumber(getProductiveHours(matrixForm.shift)) }}</td>
+                                        <td class="p-4 px-3 text-center bg-emerald-200/80 border border-emerald-300 font-mono text-xl text-amber-950">{{ $formatNumber(getProductiveHours(matrixForm.non_shift)) }}</td>
                                         <td class="p-4 text-center text-xs text-emerald-900 font-bold">Jam/Thn</td>
                                         <td class="p-4 text-xs text-emerald-800 font-medium">Jam Tersedia - Total Kebocoran Setahun <br/><span class="text-[10px] text-emerald-700">(Dipakai sebagai pembagi otomatis kebutuhan teknisi)</span></td>
                                     </tr>
@@ -347,10 +347,10 @@ const submit = () => {
                                 <div class="w-full md:w-2/3 bg-pelindo-cyan/5 p-4 rounded-xl border border-pelindo-cyan/30 shadow-sm">
                                     <h4 class="text-xs font-bold uppercase tracking-wider text-pelindo-blue mb-1">⚡ Alokasi Breakdown Maintenance Otomatis:</h4>
                                     <p class="text-sm text-gray-700">
-                                        Rasio Breakdown = 100% - <strong class="text-pelindo-blue">{{ targetAvailItem.value || 0 }}%</strong> = <strong class="text-rose-600 text-base">{{ (100 - (targetAvailItem.value || 0)).toFixed(1) }}%</strong>
+                                        Rasio Breakdown = 100% - <strong class="text-pelindo-blue">{{ targetAvailItem.value || 0 }}%</strong> = <strong class="text-rose-600 text-base">{{ $formatNumber(100 - (targetAvailItem.value || 0)) }}%</strong>
                                     </p>
                                     <p class="text-xs text-gray-500 mt-1">
-                                        ℹ️ Estimasi jam gangguan per alat = 8.760 jam × {{ ((100 - (targetAvailItem.value || 0))/100).toFixed(3) }} = <strong class="text-gray-800">{{ (8760 * ((100 - (targetAvailItem.value || 0))/100)).toFixed(1) }} Jam/Tahun</strong>. Alokasi teknisi dihitung dengan membagi total jam breakdown site dengan Jam Produktif Shift ({{ getProductiveHours(matrixForm.shift) }} Jam/Thn).
+                                        ℹ️ Estimasi jam gangguan per alat = 8.760 jam × {{ ((100 - (targetAvailItem.value || 0))/100).toFixed(3) }} = <strong class="text-gray-800">{{ $formatNumber(8760 * ((100 - (targetAvailItem.value || 0))/100)) }} Jam/Tahun</strong>. Alokasi teknisi dihitung dengan membagi total jam breakdown site dengan Jam Produktif Shift ({{ $formatNumber(getProductiveHours(matrixForm.shift)) }} Jam/Thn).
                                     </p>
                                 </div>
                             </div>
