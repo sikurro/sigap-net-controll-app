@@ -301,27 +301,27 @@ const handleImportFile = (event) => {
                         <table class="min-w-full divide-y divide-gray-200">
                             <thead class="bg-slate-800 text-white">
                                 <tr>
-                                    <th class="w-10 px-6 py-3"></th>
-                                    <th class="px-6 py-3 text-left text-xs font-bold text-white uppercase tracking-wider">Kode</th>
-                                    <th class="px-6 py-3 text-left text-xs font-bold text-white uppercase tracking-wider">Nama Jenis Alat</th>
-                                    <th class="px-6 py-3 text-left text-xs font-bold text-white uppercase tracking-wider">Kategori</th>
-                                    <th class="px-6 py-3 text-center text-xs font-bold text-white uppercase tracking-wider">Bobot</th>
-                                    <th class="px-6 py-3 text-left text-xs font-bold text-white uppercase tracking-wider">Ringkasan</th>
-                                    <th class="px-6 py-3 text-right text-xs font-bold text-white uppercase tracking-wider">Aksi</th>
+                                    <th class="w-10 px-4 py-3"></th>
+                                    <th class="px-4 py-3 text-left text-xs font-bold text-white uppercase tracking-wider">Kode</th>
+                                    <th class="px-4 py-3 text-left text-xs font-bold text-white uppercase tracking-wider">Nama Jenis Alat</th>
+                                    <th class="px-4 py-3 text-left text-xs font-bold text-white uppercase tracking-wider">Kategori</th>
+                                    <th class="px-4 py-3 text-center text-xs font-bold text-white uppercase tracking-wider">Bobot</th>
+                                    <th class="px-4 py-3 text-left text-xs font-bold text-white uppercase tracking-wider">Ringkasan</th>
+                                    <th class="px-4 py-3 text-right text-xs font-bold text-white uppercase tracking-wider">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody class="bg-white divide-y divide-gray-200">
                                 <template v-for="eq in filteredEquipmentTypes" :key="eq.id">
                                     <!-- Baris Induk (Jenis Alat) -->
                                     <tr class="hover:bg-gray-50 cursor-pointer transition" @click="toggleExpand(eq.id)">
-                                        <td class="px-6 py-4 whitespace-nowrap text-center text-gray-500">
+                                        <td class="px-4 py-3 whitespace-nowrap text-center text-gray-500">
                                             <span class="transform transition-transform inline-block" :class="{'rotate-90': isExpanded(eq.id)}">
                                                 ▶️
                                             </span>
                                         </td>
-                                        <td class="px-6 py-4 whitespace-nowrap font-medium text-gray-600">{{ eq.code || '-' }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap font-bold text-gray-900">{{ eq.name }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        <td class="px-4 py-3 whitespace-nowrap font-medium text-sm text-gray-600">{{ eq.code || '-' }}</td>
+                                        <td class="px-4 py-3 whitespace-nowrap font-bold text-sm text-gray-900">{{ eq.name }}</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
                                             <span class="px-2.5 py-1 rounded-full text-xs font-semibold border" :class="{
                                                 'bg-pelindo-blue/10 text-pelindo-blue border-pelindo-blue/20': eq.category_baseline?.category === 'Crane',
                                                 'bg-pelindo-cyan/10 text-[#003B6F] border-pelindo-cyan/30': eq.category_baseline?.category === 'Mobile Equipment',
@@ -330,8 +330,8 @@ const handleImportFile = (event) => {
                                                 {{ eq.category_baseline ? eq.category_baseline.category : '-' }}
                                             </span>
                                         </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-center font-bold text-gray-700">{{ $formatNumber(eq.weight) }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap">
+                                        <td class="px-4 py-3 whitespace-nowrap text-center text-sm font-bold text-gray-700">{{ $formatNumber(eq.weight) }}</td>
+                                        <td class="px-4 py-3 whitespace-nowrap">
                                             <div class="flex space-x-2">
                                                 <span class="bg-pelindo-blue/10 text-pelindo-blue border border-pelindo-blue/20 text-xs px-2.5 py-1 rounded-full font-semibold">
                                                     {{ eq.job_plans ? eq.job_plans.length : 0 }} Job Plan
@@ -341,7 +341,7 @@ const handleImportFile = (event) => {
                                                 </span>
                                             </div>
                                         </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-right" @click.stop>
+                                        <td class="px-4 py-3 whitespace-nowrap text-right" @click.stop>
                                             <div class="inline-flex items-center justify-end gap-2">
                                                 <button @click="openEquipmentEdit(eq)" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 hover:bg-pelindo-blue text-pelindo-blue hover:text-white rounded-xl text-xs font-bold shadow-sm transition duration-150" title="Edit Alat">
                                                     <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
