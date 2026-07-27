@@ -1,12 +1,21 @@
-# Stage 1: Build Frontend Assets (Vite/Vue)
+# Stage 1: Install Composer Dependencies
+FROM composer:2.7 AS composer_builder
+WORKDIR /app
+COPY composer.json composer.lock ./
+# Install without dev dependencies and optimize autoloader (we ignore scripts for now to avoid errors without full code)
+RUN composer install --no-dev --no-scripts --no-interaction --prefer-dist --optimize-autoloader
+
+# Stage 2: Build Frontend Assets (Vite/Vue)
 FROM node:20-alpine AS node_builder
 WORKDIR /app
 COPY package*.json ./
 RUN npm ci
 COPY . .
+# Copy vendor from composer to make Ziggy available for Vite
+COPY --from=composer_builder /app/vendor ./vendor
 RUN npm run build
 
-# Stage 2: PHP & Application
+# Stage 3: PHP & Application
 FROM php:8.2-fpm-alpine
 
 # Set working directory
@@ -38,11 +47,16 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 # Copy existing application directory contents
 COPY . .
 
-# Copy frontend build from Stage 1
-COPY --from=node_builder /app/public/build /var/www/public/build
+# Copy vendor from Stage 1
+COPY --from=composer_builder /app/vendor /var/www/vendor
 
-# Install PHP dependencies
-RUN composer install --no-dev --optimize-autoloader
+# Run composer dump-autoload / scripts since we now have the full code
+RUN composer dump-autoload --optimize \
+    && composer run-script post-root-package-install --no-interaction \
+    && composer run-script post-create-project-cmd --no-interaction || true
+
+# Copy frontend build from Stage 2
+COPY --from=node_builder /app/public/build /var/www/public/build
 
 # Make entrypoint executable
 RUN chmod +x /var/www/docker/entrypoint.sh
