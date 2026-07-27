@@ -3,7 +3,7 @@ FROM composer:2.7 AS composer_builder
 WORKDIR /app
 COPY composer.json composer.lock ./
 # Install without dev dependencies and optimize autoloader (we ignore scripts for now to avoid errors without full code)
-RUN composer install --no-dev --no-scripts --no-interaction --prefer-dist --optimize-autoloader
+RUN composer install --no-dev --no-scripts --no-interaction --prefer-dist --optimize-autoloader --ignore-platform-reqs
 
 # Stage 2: Build Frontend Assets (Vite/Vue)
 FROM node:20-alpine AS node_builder
