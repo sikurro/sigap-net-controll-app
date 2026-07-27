@@ -65,5 +65,5 @@ RUN chmod +x /var/www/docker/entrypoint.sh
 EXPOSE 9000
 
 # Set entrypoint
-ENTRYPOINT ["/var/www/docker/entrypoint.sh"]
+ENTRYPOINT ["/bin/sh", "/var/www/docker/entrypoint.sh"]
 CMD ["php-fpm"]
